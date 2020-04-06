@@ -83,7 +83,7 @@ class Individual(object):
                             EventType.INFECTION_AVOIDED,
                             self.id,
                             logger=self.logger,
-                            by=self.id))
+                            by=self))
                     infected[idx] = 0
         #
         for x, infe in zip(x_before, infected):
@@ -138,7 +138,7 @@ class Individual(object):
                             EventType.INFECTION_AVOIDED,
                             self.id,
                             logger=self.logger,
-                            by=self.id))
+                            by=self))
                     infected[idx] = 0
         #
         for x, infe in zip(x_grid, infected):
@@ -159,7 +159,7 @@ class Individual(object):
         #
         params.extend([
             f'r0={self.r0:.2f}', f'r={asymptomatic_infected}',
-            f'r_aym={asymptomatic_infected}'
+            f'r_asym={asymptomatic_infected}'
         ])
         self.logger.write(
             f'{self.logger.id}\t{time:.2f}\t{EventType.INFECTION.name}\t{self.id}\t{",".join(params)}\n'
@@ -169,7 +169,7 @@ class Individual(object):
     def infect(self, time, **kwargs):
         if self.infected is not None:
             self.logger.write(
-                f'{self.logger.id}\t{time:.2f}\t{EventType.INFECTION_IGNORED.name}\t{self.id}\tby={kwargs["by"]}\n'
+                f'{self.logger.id}\t{time:.2f}\t{EventType.INFECTION_IGNORED.name}\t{self.id}\tby={kwargs["by"].id}\n'
             )
             return []
 
@@ -227,7 +227,7 @@ class Event(object):
                 ]
                 if not ids:
                     self.logger.write(
-                        f'{self.logger.id}\t{self.time:.2f}\t{EventType.INFECTION_FAILED.name}\t{self.target.id}\tby={self.kwargs["by"]}\n'
+                        f'{self.logger.id}\t{self.time:.2f}\t{EventType.INFECTION_FAILED.name}\t{self.target.id}\tby={self.kwargs["by"].id}\n'
                     )
                     return []
                 choice = random.choice(ids)
@@ -247,14 +247,14 @@ class Event(object):
             return population[self.target.id].reintegrate(**self.kwargs)
         elif self.action == EventType.INFECTION_AVOIDED:
             self.logger.write(
-                f'{self.logger.id}\t{self.time:.2f}\t{EventType.INFECTION_AVOIDED.name}\t.\tby={self.kwargs["by"]}\n'
+                f'{self.logger.id}\t{self.time:.2f}\t{EventType.INFECTION_AVOIDED.name}\t.\tby={self.kwargs["by"].id}\n'
             )
             return []
         elif self.action == EventType.REMOVAL:
-            self.logger.write(
-                f'{self.logger.id}\t{self.time:.2f}\t{EventType.REMOVAL.name}\t{self.target.id}\t.\n'
-            )
             population.pop(self.target.id)
+            self.logger.write(
+                f'{self.logger.id}\t{self.time:.2f}\t{EventType.REMOVAL.name}\t{self.target.id}\tpopsize={len(population)}\n'
+            )
             return []
         else:
             raise RuntimeError(f'Unrecognized action {self.action}')
@@ -275,9 +275,8 @@ class Simulator(object):
         #
         # get proportion of asymptomatic
         #
-        self.params.draw_proportion_of_asymptomatic_carriers()
-
         self.model = Model(self.params)
+        self.model.draw_proportion_of_asymptomatic_carriers()
 
         # collection of individuals
         population = {
@@ -298,7 +297,8 @@ class Simulator(object):
                     logger=self.logger,
                     till=self.simu_args.pre_quarantine))
         # infect the first person
-        events[0].append(Event(0, EventType.INFECTION, target=0, logger=logger))
+        events[0].append(
+            Event(0, EventType.INFECTION, target=0, logger=self.logger))
 
         while True:
             # find the latest event
@@ -309,8 +309,8 @@ class Simulator(object):
             # processing events
             for evt in events[time]:
                 if evt.action == EventType.ABORT:
-                    logger.write(
-                        f'{logger.id}\t{time:.2f}\t{EventType.ABORT.name}\t{evt.target.id}\t.\n'
+                    self.logger.write(
+                        f'{self.logger.id}\t{time:.2f}\t{EventType.ABORT.name}\t{evt.target.id}\tpopsize={len(population)}\n'
                     )
                     aborted = True
                     break
@@ -324,6 +324,6 @@ class Simulator(object):
 
             if not events or aborted:
                 break
-        logger.write(
-            f'{logger.id}\t{time:.2f}\t{EventType.END.name}\t{len(population)}\tpopsize={len(population)}\n'
+        self.logger.write(
+            f'{self.logger.id}\t{time:.2f}\t{EventType.END.name}\t{len(population)}\tpopsize={len(population)}\n'
         )

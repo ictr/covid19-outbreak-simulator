@@ -44,7 +44,7 @@ def main():
     params = get_default_params(interval=args.interval)
 
     with open(args.logfile, 'w') as logger:
-        simu = Simulator(params=params, logger=logger, args=args)
+        simu = Simulator(params=params, logger=logger, simu_args=args)
         logger.write('id\ttime\tevent\ttarget\tparams\n')
         for i in tqdm(range(args.repeat)):
             simu.simulate(i + 1)
