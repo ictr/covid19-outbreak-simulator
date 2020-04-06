@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 
-"""Tests for `covid_19_outbreak_simulator` package."""
+"""Tests for `covid19_outbreak_simulator` package."""
 
 import pytest
 
 
-from covid_19_outbreak_simulator import covid_19_outbreak_simulator
+from covid19_outbreak_simulator import covid19_outbreak_simulator
 
 
 @pytest.fixture

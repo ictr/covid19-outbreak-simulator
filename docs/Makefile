@@ -4,7 +4,7 @@
 # You can set these variables from the command line.
 SPHINXOPTS    =
 SPHINXBUILD   = python -msphinx
-SPHINXPROJ    = covid_19_outbreak_simulator
+SPHINXPROJ    = covid19_outbreak_simulator
 SOURCEDIR     = .
 BUILDDIR      = _build
 

@@ -25,5 +25,5 @@ deploy:
     secure: PLEASE_REPLACE_ME
   on:
     tags: true
-    repo: BoPeng/covid_19_outbreak_simulator
+    repo: ictr/covid19_outbreak_simulator
     python: 3.8

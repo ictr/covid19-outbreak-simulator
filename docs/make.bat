@@ -9,7 +9,7 @@ if "%SPHINXBUILD%" == "" (
 )
 set SOURCEDIR=.
 set BUILDDIR=_build
-set SPHINXPROJ=covid_19_outbreak_simulator
+set SPHINXPROJ=covid19_outbreak_simulator
 
 if "%1" == "" goto help
 

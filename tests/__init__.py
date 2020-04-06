@@ -1,1 +1,1 @@
-"""Unit test package for covid_19_outbreak_simulator."""
+"""Unit test package for covid19_outbreak_simulator."""

@@ -4,13 +4,14 @@
 
 from setuptools import setup, find_packages
 
-with open('README.rst') as readme_file:
+with open('README.md') as readme_file:
     readme = readme_file.read()
 
-with open('HISTORY.rst') as history_file:
-    history = history_file.read()
-
-requirements = [ ]
+requirements = [
+    'tqdm',
+    'numpy',
+    'scipy'
+ ]
 
 setup_requirements = ['pytest-runner', ]
 
@@ -33,19 +34,19 @@ setup(
     description="Population-based Forward-time Simulator for the Outbreak of COVID-19",
     entry_points={
         'console_scripts': [
-            'covid_19_outbreak_simulator=covid_19_outbreak_simulator.cli:main',
+            'covid19_outbreak_simulator=covid19_outbreak_simulator.cli:main',
         ],
     },
     install_requires=requirements,
-    long_description=readme + '\n\n' + history,
+    long_description=readme,
     include_package_data=True,
-    keywords='covid_19_outbreak_simulator',
-    name='covid_19_outbreak_simulator',
-    packages=find_packages(include=['covid_19_outbreak_simulator', 'covid_19_outbreak_simulator.*']),
+    keywords='covid19_outbreak_simulator',
+    name='covid19_outbreak_simulator',
+    packages=find_packages(include=['covid19_outbreak_simulator', 'covid19_outbreak_simulator.*']),
     setup_requires=setup_requirements,
     test_suite='tests',
     tests_require=test_requirements,
-    url='https://github.com/BoPeng/covid_19_outbreak_simulator',
+    url='https://github.com/ictr/covid19_outbreak_simulator',
     version='0.1.0',
     zip_safe=False,
 )
