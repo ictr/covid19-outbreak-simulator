@@ -33,11 +33,15 @@ def main():
         help='''Days of self-quarantine before introducing infector to the group.
             The simulation will be aborted if the infector shows symptom before
             introduction.''')
+    parser.add_argument(
+        '--interval',
+        default=1 / 24,
+        help='Interval of simulation, default to 1/24, by hour')
     parser.add_argument('--logfile', default='simulation.log', help='logfile')
 
     args = parser.parse_args()
 
-    params = get_default_params()
+    params = get_default_params(interval=args.interval)
 
     with open(args.logfile, 'w') as logger:
         simu = Simulator(params=params, logger=logger, args=args)

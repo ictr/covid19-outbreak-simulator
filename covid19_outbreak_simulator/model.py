@@ -10,7 +10,8 @@ class Params:
 
     def __init__(self):
         self.params = set([
-            'incubation_period', 'proportion_of_asymptomatic_carriers',
+            'simulation_interval', 'incubation_period',
+            'proportion_of_asymptomatic_carriers',
             'proportion_of_asymptomatic_carriers', 'incubation_period',
             'symptomatic_r0', 'asymptomatic_r0'
         ])
@@ -20,7 +21,7 @@ class Params:
             raise ValueError(f'Unrecgonzied parameter {param}')
         if prop is None or prop == 'self':
             setattr(self, param, value)
-        if prop in ('loc', 'low', 'high', 'mean', 'sigma'):
+        elif prop in ('loc', 'low', 'high', 'mean', 'sigma'):
             setattr(self, f'{param}_{prop}', value)
         elif re.match('quantile_(.*)', prop):
             lq = float(re.match('quantile_(.*)', prop)[1]) / 100
@@ -34,8 +35,9 @@ class Params:
             raise ValueError(f'Unrecognized property {prop}')
 
 
-def get_default_params():
+def get_default_params(interval=1 / 24):
     params = Params()
+    params.set('simulation_interval', 'self', interval)
     params.set('proportion_of_asymptomatic_carriers', 'loc', 0.25)
     params.set('proportion_of_asymptomatic_carriers', 'quantile_2.5', 0.1)
     params.set('symptomatic_r0', 'low', 1.4)
@@ -84,10 +86,7 @@ class Model(object):
             mean=self.params.incubation_period_mean,
             sigma=self.params.incubation_period_sigma)
 
-    def get_symptomatic_transmission_probability(self,
-                                                 incu,
-                                                 R0,
-                                                 interval=1 / 24):
+    def get_symptomatic_transmission_probability(self, incu, R0):
         '''Transmission probability.
         incu
             incubation period in days (can be float)
@@ -117,15 +116,16 @@ class Model(object):
         dist_left = norm(incu, sd_left)
         scale = dist_right.pdf(incu) / dist_left.pdf(incu)
 
-        x = np.linspace(0, incu + 8, int((incu + 8) / interval))
-        idx = int(incu / interval)
+        x = np.linspace(0, incu + 8,
+                        int((incu + 8) / self.params.simulation_interval))
+        idx = int(incu / self.params.simulation_interval)
         y = np.concatenate(
             [dist_left.pdf(x[:idx]) * scale,
              dist_right.pdf(x[idx:])])
         sum_y = sum(y)
         return x, y / sum(y) * R0
 
-    def get_asymptomatic_transmission_probability(self, R0, interval=1 / 24):
+    def get_asymptomatic_transmission_probability(self, R0):
         '''Asymptomatic Transmission probability.
         R0
             reproductive number, which is the expected number of infectees
@@ -141,7 +141,7 @@ class Model(object):
             probability of transmission for each time point
         '''
         dist = norm(4.8, self.sd_5)
-        x = np.linspace(0, 12, int(12 / interval))
+        x = np.linspace(0, 12, int(12 / self.params.simulation_interval))
         y = dist.pdf(x)
         sum_y = sum(y)
         return x, y / sum(y) * R0

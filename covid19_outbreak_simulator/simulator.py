@@ -20,8 +20,6 @@ class Individual(object):
 
         self.r0 = None
         self.incubation_period = None
-        self.trans_prob = None
-        self.REMOVALd = None
 
     def quarantine(self, till):
         self.quarantined = till
@@ -33,10 +31,10 @@ class Individual(object):
 
     def symptomatic_infect(self, time, **kwargs):
         self.infected = time
-        self.r0 = self.model.draw_rand_r0(symptomatic=True)
+        self.r0 = self.model.draw_random_r0(symptomatic=True)
         self.incubation_period = self.model.draw_random_incubation_period()
 
-        by = kwargs.get('by',)
+        by = kwargs.get('by', None)
         keep_symptomatic = kwargs.get('keep_symptomatic', False)
 
         # REMOVAL ...
@@ -59,14 +57,14 @@ class Individual(object):
                         self,
                         logger=self.logger))
         #
-        x_grid, self.trans_prob = self.model.get_symptomatic_transmission_probability(
-            self.incubation_period, self.r0, 1 / 24)
+        x_grid, trans_prob = self.model.get_symptomatic_transmission_probability(
+            self.incubation_period, self.r0)
         # infect only before removal
         if keep_symptomatic:
             x_before = x_grid
         else:
             x_before = [x for x in x_grid if x < self.incubation_period]
-        infected = np.random.binomial(1, self.trans_prob[:len(x_before)],
+        infected = np.random.binomial(1, trans_prob[:len(x_before)],
                                       len(x_before))
         presymptomatic_infected = [
             xx for xx, ii in zip(x_before, infected)
@@ -117,58 +115,22 @@ class Individual(object):
         return evts
 
     def asymptomatic_infect(self, time, **kwargs):
-        if self.infected is not None:
-            self.logger.write(
-                f'{self.logger.id}\t{time:.2f}\t{EventType.INFECTION_IGNORED.name}\t{self.id}\tby={kwargs["by"]}\n'
-            )
-            return []
-
         self.infected = time
-        self.r0 = self.model.rand_r0(symptomatic=True)
-        self.incubation_period = self.model.rand_incu()
+        self.r0 = self.model.draw_random_r0(symptomatic=False)
+        self.incubation_period = -1
 
         by = kwargs.get('by',)
-        keep_symptomatic = kwargs.get('keep_symptomatic', False)
 
         # REMOVAL ...
         evts = []
-        if not keep_symptomatic:
-            if self.quarantined and time + self.incubation_period < self.quarantined:
-                # scheduling ABORT
-                evts.append(
-                    Event(
-                        time + self.incubation_period,
-                        EventType.ABORT,
-                        self,
-                        logger=self.logger))
-            else:
-                evts.append(
-                    # scheduling REMOVAL
-                    Event(
-                        time + self.incubation_period,
-                        EventType.REMOVAL,
-                        self,
-                        logger=self.logger))
         #
-        x_grid, self.trans_prob = self.model.get_symptomatic_transmission_probability(
-            self.incubation_period, self.r0, 1 / 24)
+        x_grid, trans_prob = self.model.get_asymptomatic_transmission_probability(
+            self.r0)
         # infect only before removal
-        if keep_symptomatic:
-            x_before = x_grid
-        else:
-            x_before = [x for x in x_grid if x < self.incubation_period]
-        infected = np.random.binomial(1, self.trans_prob[:len(x_before)],
-                                      len(x_before))
-        presymptomatic_infected = [
-            xx for xx, ii in zip(x_before, infected)
-            if ii and xx < self.incubation_period
-        ]
-        symptomatic_infected = [
-            xx for xx, ii in zip(x_before, infected)
-            if ii and xx >= self.incubation_period
-        ]
+        infected = np.random.binomial(1, trans_prob, len(x_grid))
+        asymptomatic_infected = sum(infected)
         if self.quarantined:
-            for idx, x in enumerate(x_before):
+            for idx, x in enumerate(x_grid):
                 if time + x < self.quarantined and infected[idx] != 0:
                     evts.append(
                         Event(
@@ -179,7 +141,7 @@ class Individual(object):
                             by=self.id))
                     infected[idx] = 0
         #
-        for x, infe in zip(x_before, infected):
+        for x, infe in zip(x_grid, infected):
             if infe:
                 evts.append(
                     Event(
@@ -196,11 +158,8 @@ class Individual(object):
             params = []
         #
         params.extend([
-            f'r0={self.r0:.2f}',
-            f'r={sum(infected)}',
-            f'r_presym={len(presymptomatic_infected)}',
-            f'r_sym={len(symptomatic_infected)}',
-            f'incu={self.incubation_period:.2f}',
+            f'r0={self.r0:.2f}', f'r={asymptomatic_infected}',
+            f'r_aym={asymptomatic_infected}'
         ])
         self.logger.write(
             f'{self.logger.id}\t{time:.2f}\t{EventType.INFECTION.name}\t{self.id}\t{",".join(params)}\n'
@@ -214,7 +173,7 @@ class Individual(object):
             )
             return []
 
-        if self.model.drawn_is_asymptomatic():
+        if self.model.draw_is_asymptomatic():
             return self.asymptomatic_infect(time, **kwargs)
         else:
             return self.symptomatic_infect(time, **kwargs)
@@ -255,7 +214,7 @@ class Event(object):
         self.logger = logger
         self.kwargs = kwargs
 
-    def apply(self, population, args):
+    def apply(self, population, simu_args):
         if self.action == EventType.INFECTION:
             if self.target is not None:
                 choice = self.target
@@ -274,7 +233,7 @@ class Event(object):
                 choice = random.choice(ids)
             return population[choice].infect(
                 self.time,
-                keep_symptomatic=args.keep_symptomatic,
+                keep_symptomatic=simu_args.keep_symptomatic,
                 **self.kwargs)
         elif self.action == EventType.QUARANTINE:
             self.logger.write(
@@ -306,9 +265,9 @@ class Event(object):
 
 class Simulator(object):
 
-    def __init__(self, params, logger, args):
+    def __init__(self, params, logger, simu_args):
         self.logger = logger
-        self.args = args
+        self.simu_args = simu_args
         self.params = params
         self.model = None
 
@@ -323,21 +282,21 @@ class Simulator(object):
         # collection of individuals
         population = {
             idx: Individual(idx, model=self.model, logger=self.logger)
-            for idx in range(self.args.popsize)
+            for idx in range(self.simu_args.popsize)
         }
 
         events = defaultdict(list)
         self.logger.id = id
 
         # quanrantine the first person if args.pre-quarantine > 0
-        if self.args.pre_quarantine is not None and self.args.pre_quarantine > 0:
+        if self.simu_args.pre_quarantine is not None and self.simu_args.pre_quarantine > 0:
             events[0].append(
                 Event(
                     0,
                     EventType.QUARANTINE,
                     population[0],
                     logger=self.logger,
-                    till=self.args.pre_quarantine))
+                    till=self.simu_args.pre_quarantine))
         # infect the first person
         events[0].append(Event(0, EventType.INFECTION, target=0, logger=logger))
 
@@ -356,7 +315,7 @@ class Simulator(object):
                     aborted = True
                     break
                 # event triggers new event
-                new_events.extend(evt.apply(population, self.args))
+                new_events.extend(evt.apply(population, self.simu_args))
             events.pop(time)
             #
             for evt in new_events:
