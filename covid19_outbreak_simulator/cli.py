@@ -3,7 +3,7 @@ import argparse
 import sys
 from tqdm import tqdm
 
-from .model import Params
+from .model import get_default_params
 from .simulator import Simulator
 
 
@@ -37,13 +37,7 @@ def main():
 
     args = parser.parse_args()
 
-    params = Params()
-    params.set('proportion_of_asymptomatic_carriers', 'mean', 0.25)
-    params.set('proportion_of_asymptomatic_carriers', 'quantile_2.5', 0.1)
-    params.set('symptomatic_r0', 'low', 1.4)
-    params.set('symptomatic_r0', 'hig', 2.8)
-    params.set('asymptomatic_r0', 'low', 0.14)
-    params.set('asymptomatic_r0', 'hig', 0.28)
+    params = get_default_params()
 
     with open(args.logfile, 'w') as logger:
         simu = Simulator(params=params, logger=logger, args=args)
