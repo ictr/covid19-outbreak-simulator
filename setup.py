@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 """The setup script."""
 
 from setuptools import setup, find_packages
@@ -7,18 +6,18 @@ from setuptools import setup, find_packages
 with open('README.md') as readme_file:
     readme = readme_file.read()
 
-requirements = [
-    'tqdm',
-    'numpy',
-    'scipy'
- ]
+requirements = ['tqdm', 'numpy', 'scipy']
 
-setup_requirements = ['pytest-runner', ]
+setup_requirements = [
+    'pytest-runner',
+]
 
-test_requirements = ['pytest>=3', ]
+test_requirements = [
+    'pytest>=3',
+]
 
 setup(
-    author="COVID-19 Outbreak Simulator",
+    author="Bo Peng",
     author_email='ben.bob@gmail.com',
     python_requires='>=3.5',
     classifiers=[
@@ -34,19 +33,20 @@ setup(
     description="Population-based Forward-time Simulator for the Outbreak of COVID-19",
     entry_points={
         'console_scripts': [
-            'covid19_outbreak_simulator=covid19_outbreak_simulator.cli:main',
+            'outbreak_simulator=covid19_outbreak_simulator.cli:main',
         ],
     },
     install_requires=requirements,
     long_description=readme,
     include_package_data=True,
     keywords='covid19_outbreak_simulator',
-    name='covid19_outbreak_simulator',
-    packages=find_packages(include=['covid19_outbreak_simulator', 'covid19_outbreak_simulator.*']),
+    name='covid19-outbreak-simulator',
+    packages=find_packages(
+        include=['covid19_outbreak_simulator', 'covid19_outbreak_simulator.*']),
     setup_requires=setup_requirements,
     test_suite='tests',
     tests_require=test_requirements,
-    url='https://github.com/ictr/covid19_outbreak_simulator',
+    url='https://github.com/ictr/covid19-outbreak-simulator',
     version='0.1.0',
     zip_safe=False,
 )

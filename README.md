@@ -8,21 +8,21 @@ offloading vessel) but it is being expanded to simulate much larger populations 
 
 This simulator simulates the scenario in which
 
-* A group of individuals in a population in which everyone is susceptible
-* One virus carrier is introduced to the population, potentially after a fixed
-  days of self-quarantine.
-* Infectees are by default removed from from the population (or separated, or
-  quarantined, as long as he or she can no longer infect others) after they
-  displayed symptoms, but options are provided to act otherwise.
+-   A group of individuals in a population in which everyone is susceptible
+-   One virus carrier is introduced to the population, potentially after a fixed
+    days of self-quarantine.
+-   Infectees are by default removed from from the population (or separated, or
+    quarantined, as long as he or she can no longer infect others) after they
+    displayed symptoms, but options are provided to act otherwise.
 
 The simulator simulates the epidemic of the population with the introduction
 of an infector. The following questions can be answered:
 
 1. What is the expected day and distribution for the first person to show
-  symptoms?
+   symptoms?
 2. How many people are expected to be removed once an outbreak starts?
 3. How effective will self-quarantine before dispatch personnels to an
-  enclosed environment?
+   enclosed environment?
 
 The simulator uses the latest knowledge about the spread of COVID-19 and is
 validated against public data. This project will be contantly updated with our
@@ -37,17 +37,21 @@ please run
 ```
 pip install -r requirements.txt
 ```
+
 to install required packages, and then
 
 ```
-pip install covid-19-outbreak-simulator
+pip install covid19-outbreak-simulator
 ```
+
 to install the package.
 
 You can then use command
+
 ```
 outbreak_simulator -h
 ```
+
 to check the usage information.
 
 The output file contains events that happens during the simulations.
@@ -56,6 +60,7 @@ For example, for command
 ```
 outbreak_simulator --repeat 100 --popsize 64 --logfile result_remove_symptomatic.txt
 ```
+
 You will get an output file `result_remove_symptomatic.txt` with the first few
 lines resembling
 
@@ -70,6 +75,7 @@ id      time    event   target  params
 ```
 
 which basically means
+
 1. Individual `0` was infected at time `0.00`, who has `r0=1.66` and an incubation period of `7.70` days.
 2. At day `5.73` the infector infects individual `62`, who has an incubation period of `6.60` days, but will not affect anyone else.
 3. At day `7.70` the first individual showed symptom and is removed.
@@ -79,29 +85,27 @@ which basically means
 
 The columns are
 
-| column | content |
-| --- | --- |
-| `id` | id of the simulation. |
-| `time` | time of the event in days, accurate to hour. |
-| `event` | type of event |
-| `target`| subject of the event, for example the ID of the individual that has been quarantined. |
-| `params`| Additional parameters, mostly for the `INFECTION` event where simulated $R_0$ and incubation period will be displayed. |
-
+| column   | content                                                                                                                |
+| -------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `id`     | id of the simulation.                                                                                                  |
+| `time`   | time of the event in days, accurate to hour.                                                                           |
+| `event`  | type of event                                                                                                          |
+| `target` | subject of the event, for example the ID of the individual that has been quarantined.                                  |
+| `params` | Additional parameters, mostly for the `INFECTION` event where simulated $R_0$ and incubation period will be displayed. |
 
 Currently the following events are tracked
 
-| Name | Event |
-| --- | --- |
-| `INFECTION` | Infect an non-quarantined individual, who might           already been infected. |
-| `INFECION_FAILED` |  No one left to infect |
-| `INFECTION_AVOIDED` | An infection happended during quarantine. The individual   might not have showed sympton. |
-| `INFECTION_IGNORED` |  Infect an infected individual, which does not change anything. |
-| `REMOVAL` | Remove from population. |
-| `QUANTINE` | Quarantine someone till specified time. |
-| `REINTEGRATION` | Reintroduce the quarantined individual to group. |
-| `ABORT` |    If the first carrier show sympton during quarantine. |
-| `END`    |  Simulation ends. |
-
+| Name                | Event                                                                                   |
+| ------------------- | --------------------------------------------------------------------------------------- |
+| `INFECTION`         | Infect an non-quarantined individual, who might already been infected.                  |
+| `INFECION_FAILED`   | No one left to infect                                                                   |
+| `INFECTION_AVOIDED` | An infection happended during quarantine. The individual might not have showed sympton. |
+| `INFECTION_IGNORED` | Infect an infected individual, which does not change anything.                          |
+| `REMOVAL`           | Remove from population.                                                                 |
+| `QUANTINE`          | Quarantine someone till specified time.                                                 |
+| `REINTEGRATION`     | Reintroduce the quarantined individual to group.                                        |
+| `ABORT`             | If the first carrier show sympton during quarantine.                                    |
+| `END`               | Simulation ends.                                                                        |
 
 Currently no built-in plot is provided but it is reasonably easy to read
 the log file and generate statistics and plots using scripting languages

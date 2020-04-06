@@ -1,17 +1,56 @@
 """Console script for covid19_outbreak_simulator."""
 import argparse
 import sys
+from tqdm import tqdm
+
+from .model import Params
+from .simulator import Simulator
 
 
 def main():
     """Console script for covid19_outbreak_simulator."""
-    parser = argparse.ArgumentParser()
-    parser.add_argument('_', nargs='*')
+    parser = argparse.ArgumentParser('COVID Simulator')
+    parser.add_argument(
+        '--popsize',
+        default=64,
+        type=int,
+        help='''Size of the population, including the infector that
+        will be introduced at the beginning of the simulation''')
+    parser.add_argument(
+        '--repeat',
+        default=10000,
+        type=int,
+        help='''Number of replicates to simulate. An ID starting from
+              1 will be assinged to each replicate and as the first columns
+              in the log file.''')
+    parser.add_argument(
+        '--keep-symptomatic',
+        action='store_true',
+        help='Keep affected individuals in the population')
+    parser.add_argument(
+        '--pre-quarantine',
+        type=float,
+        help='''Days of self-quarantine before introducing infector to the group.
+            The simulation will be aborted if the infector shows symptom before
+            introduction.''')
+    parser.add_argument('--logfile', default='simulation.log', help='logfile')
+
     args = parser.parse_args()
 
-    print("Arguments: " + str(args._))
-    print("Replace this message by putting your code into "
-          "covid19_outbreak_simulator.cli.main")
+    params = Params()
+    params.set('proportion_of_asymptomatic_carriers', 'mean', 0.25)
+    params.set('proportion_of_asymptomatic_carriers', 'quantile_2.5', 0.1)
+    params.set('symptomatic_r0', 'low', 1.4)
+    params.set('symptomatic_r0', 'hig', 2.8)
+    params.set('asymptomatic_r0', 'low', 0.14)
+    params.set('asymptomatic_r0', 'hig', 0.28)
+
+    with open(args.logfile, 'w') as logger:
+        simu = Simulator(params=params, logger=logger, args=args)
+        logger.write('id\ttime\tevent\ttarget\tparams\n')
+        for i in tqdm(range(args.repeat)):
+            simu.simulate(i + 1)
+
     return 0
 
 
