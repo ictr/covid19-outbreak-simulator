@@ -189,7 +189,7 @@ def main():
         nargs='*',
         type=float,
         help='''Proportion of asymptomatic cases. You can specify a fix number, or two
-        numbers as the lower and higher CI (95%) of the proportion. Default to 0.10 to 0.40.'''
+        numbers as the lower and higher CI (95%%) of the proportion. Default to 0.10 to 0.40.'''
     )
     args = parser.parse_args()
 
