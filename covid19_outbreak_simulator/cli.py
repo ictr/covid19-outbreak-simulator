@@ -24,20 +24,21 @@ def summarize_simulations(args):
     n_presym_infection = 0
     n_sym_infection = 0
     #
-    remaining_popsize_by_num = defaultdict(int)
-    outbreak_duration_by_day = defaultdict(int)
+    n_remaining_popsize = defaultdict(int)
+    n_outbreak_duration = defaultdict(int)
     #
-    infection_from_seed_by_num = defaultdict(int)
-    infection_from_seed_by_day = defaultdict(int)
-    symptom_from_seed_by_day = defaultdict(int)
-    first_symptom_by_day = defaultdict(int)
-    first_infection_by_day = defaultdict(int)
+    n_num_infected_by_seed = defaultdict(int)
+    n_first_infected_by_seed_on_day = defaultdict(int)
+    n_seed_show_symptom_on_day = defaultdict(int)
+    n_first_symptom_on_day = defaultdict(int)
+    n_first_infection_on_day = defaultdict(int)
     #
-    second_symptom_by_day = defaultdict(int)
-    third_symptom_by_day = defaultdict(int)
+    n_second_symptom_on_day = defaultdict(int)
+    n_third_symptom_on_day = defaultdict(int)
     #
     with open(args.logfile) as lines:
-        n_infection_from_seed_per_sim = defaultdict(int)
+        infection_from_seed_per_sim = defaultdict(int)
+        infection_time_from_seed_per_sim = defaultdict(int)
         first_infection_day_per_sim = defaultdict(int)
         first_symptom_day_per_sim = defaultdict(int)
         second_symptom_per_sim = defaultdict(int)
@@ -55,17 +56,18 @@ def summarize_simulations(args):
             if event == 'INFECTION':
                 n_infection += 1
                 if 'by=0' in params:
-                    n_infection_from_seed_per_sim[id] += 1
-                    infection_from_seed_by_day[int(time) + 1] += 1
-                if id not in first_infection_day_per_sim:
+                    infection_from_seed_per_sim[id] += 1
+                    if id not in infection_time_from_seed_per_sim:
+                        infection_time_from_seed_per_sim[id] = time
+                if time != 0 and id not in first_infection_day_per_sim:
                     first_infection_day_per_sim[id] = time
                 for param in params:
                     if param.startswith('r_asym='):
-                        n_presym_infection += int(param[7:])
+                        n_asym_infection += int(param[7:])
                     elif param.startswith('r_presym='):
                         n_presym_infection += int(param[9:])
                     elif param.startswith('r_sym='):
-                        n_presym_infection += int(param[6:])
+                        n_sym_infection += int(param[6:])
             elif event == 'INFECTION_FAILED':
                 n_infection_failed += 1
             elif event == 'INFECTION_AVOIDED':
@@ -75,13 +77,13 @@ def summarize_simulations(args):
             elif event == 'SHOW_SYMPTOM':
                 n_show_symptom += 1
                 if target == 0:
-                    symptom_from_seed_by_day[int(time) + 1] += 1
+                    n_seed_show_symptom_on_day[int(time) + 1] += 1
                 if id not in first_symptom_day_per_sim:
                     first_symptom_day_per_sim[id] = time
-                if id not in second_symptom_per_sim:
+                elif id not in second_symptom_per_sim:
                     second_symptom_per_sim[
                         id] = time - first_symptom_day_per_sim[id]
-                if id not in third_symptom_per_sim:
+                elif id not in third_symptom_per_sim:
                     third_symptom_per_sim[
                         id] = time - second_symptom_per_sim[id]
             elif event == 'REMOVAL':
@@ -94,40 +96,41 @@ def summarize_simulations(args):
                 n_abort += 1
             elif event == 'END':
                 n_simulation += 1
-                remaining_popsize_by_num[target] += 1
-                outbreak_duration_by_day[0 if time == 0 else int(time) + 1] += 1
+                n_remaining_popsize[target] += 1
+                n_outbreak_duration[0 if time == 0 else int(time) + 1] += 1
             else:
                 raise ValueError(f'Unrecognized event {event}')
     # summarize
-    for v in n_infection_from_seed_per_sim.values():
-        infection_from_seed_by_num[v] += 1
-    infection_from_seed_by_num[0] = n_simulation - sum(
-        infection_from_seed_by_num.values())
+    for v in infection_from_seed_per_sim.values():
+        n_num_infected_by_seed[v] += 1
     #
-    infection_from_seed_by_day[0] = n_simulation - sum(
-        infection_from_seed_by_day.values())
+    for v in infection_time_from_seed_per_sim.values():
+        n_first_infected_by_seed_on_day[int(v) + 1] += 1
+    n_first_infected_by_seed_on_day[0] = n_simulation - sum(
+        n_first_infected_by_seed_on_day.values())
     #
     for v in first_infection_day_per_sim.values():
-        first_infection_by_day[int(v) + 1] += 1
-    first_infection_by_day[0] = n_simulation - sum(
-        first_infection_by_day.values())
+        n_first_infection_on_day[int(v) + 1] += 1
+    n_first_infection_on_day[0] = n_simulation - sum(
+        n_first_infection_on_day.values())
     #
-    symptom_from_seed_by_day[0] = n_simulation - sum(
-        symptom_from_seed_by_day.values())
+    n_seed_show_symptom_on_day[0] = n_simulation - sum(
+        n_seed_show_symptom_on_day.values())
     #
     for v in first_symptom_day_per_sim.values():
-        first_symptom_by_day[int(v) + 1] += 1
-    first_symptom_by_day[0] = n_simulation - sum(first_symptom_by_day.values())
+        n_first_symptom_on_day[int(v) + 1] += 1
+    n_first_symptom_on_day[0] = n_simulation - sum(
+        n_first_symptom_on_day.values())
     #
     for v in second_symptom_per_sim.values():
-        second_symptom_by_day[int(v) + 1] += 1
-    second_symptom_by_day[0] = n_simulation - first_symptom_by_day[0] - sum(
-        second_symptom_by_day.values())
+        n_second_symptom_on_day[int(v) + 1] += 1
+    n_second_symptom_on_day[0] = n_simulation - n_first_symptom_on_day[0] - sum(
+        n_second_symptom_on_day.values())
     #
     for v in third_symptom_per_sim.values():
-        third_symptom_by_day[int(v) + 1] += 1
-    third_symptom_by_day[0] = n_simulation - first_symptom_by_day[
-        0] - second_symptom_by_day[0] - sum(third_symptom_by_day.values())
+        n_third_symptom_on_day[int(v) + 1] += 1
+    n_third_symptom_on_day[0] = n_simulation - n_first_symptom_on_day[
+        0] - n_second_symptom_on_day[0] - sum(n_third_symptom_on_day.values())
     #
     # print
     print(f'logfile\t{args.logfile}')
@@ -158,62 +161,66 @@ def summarize_simulations(args):
     print(f'n_infection_failed\t{n_infection_failed}')
     print(f'n_infection_avoided\t{n_infection_avoided}')
     print(f'n_infection_ignored\t{n_infection_ignored}')
+    print(f'n_show_symptom\t{n_show_symptom}')
     print(f'n_removal\t{n_removal}')
     print(f'n_quarantine\t{n_quarantine}')
     print(f'n_reintegration\t{n_reintegration}')
     print(f'n_abort\t{n_abort}')
     print(f'n_asym_infection\t{n_asym_infection}')
+    print(f'n_presym_infection\t{n_presym_infection}')
     print(f'n_sym_infection\t{n_sym_infection}')
 
-    for num in sorted(remaining_popsize_by_num.keys()):
-        print(
-            f'{num}_remaining_popsize_by_num\t{remaining_popsize_by_num[num]}')
-    for day in sorted(outbreak_duration_by_day.keys()):
+    for num in sorted(n_remaining_popsize.keys()):
+        print(f'n_remaining_popsize_{num}\t{n_remaining_popsize[num]}')
+    for day in sorted(n_outbreak_duration.keys()):
         if day == 0:
-            print(f'no_outbreak\t{outbreak_duration_by_day[day]}')
+            print(f'n_no_outbreak\t{n_outbreak_duration[day]}')
         else:
+            print(f'n_outbreak_duration_{day}\t{n_outbreak_duration[day]}')
+    for num in sorted(n_num_infected_by_seed.keys()):
+        print(f'n_num_infected_by_seed_{num}\t{n_num_infected_by_seed[num]}')
+    for day in sorted(n_first_infected_by_seed_on_day.keys()):
+        if day == 0:
             print(
-                f'{day}_outbreak_duration_by_day\t{outbreak_duration_by_day[day]}'
+                f'n_no_infected_by_seed\t{n_first_infected_by_seed_on_day[day]}'
             )
-    for num in sorted(infection_from_seed_by_num.keys()):
-        print(
-            f'{num}_infection_from_seed_by_num\t{infection_from_seed_by_num[num]}'
-        )
-    for day in sorted(infection_from_seed_by_day.keys()):
-        if day == 0:
-            print(f'no_infection_from_seed\t{infection_from_seed_by_day[day]}')
         else:
             print(
-                f'{day}_infection_from_seed_by_day\t{infection_from_seed_by_day[day]}'
+                f'n_first_infected_by_seed_on_day_{day}\t{n_first_infected_by_seed_on_day[day]}'
             )
-    for day in sorted(symptom_from_seed_by_day.keys()):
+    for day in sorted(n_seed_show_symptom_on_day.keys()):
         if day == 0:
-            print(f'no_symptom_from_seed\t{symptom_from_seed_by_day[day]}')
+            print(f'n_seed_show_no_symptom\t{n_seed_show_symptom_on_day[day]}')
         else:
             print(
-                f'{day}_symptom_from_seed_by_day\t{symptom_from_seed_by_day[day]}'
+                f'{day}_n_seed_show_symptom_on_day\t{n_seed_show_symptom_on_day[day]}'
             )
-    for day in sorted(first_infection_by_day.keys()):
+    for day in sorted(n_first_infection_on_day.keys()):
         if day == 0:
-            print(f'no_first_infection\t{first_infection_by_day[day]}')
+            print(f'n_no_first_infection\t{n_first_infection_on_day[day]}')
         else:
             print(
-                f'{day}_first_infection_by_day\t{first_infection_by_day[day]}')
-    for day in sorted(first_symptom_by_day.keys()):
+                f'n_first_infection_on_day_{day}\t{n_first_infection_on_day[day]}'
+            )
+    for day in sorted(n_first_symptom_on_day.keys()):
         if day == 0:
-            print(f'no_first_symptom\t{first_symptom_by_day[day]}')
+            print(f'n_no_first_symptom\t{n_first_symptom_on_day[day]}')
         else:
-            print(f'{day}_first_symptom_by_day\t{first_symptom_by_day[day]}')
-    for day in sorted(second_symptom_by_day.keys()):
+            print(
+                f'n_first_symptom_on_day_{day}\t{n_first_symptom_on_day[day]}')
+    for day in sorted(n_second_symptom_on_day.keys()):
         if day == 0:
-            print(f'no_second_symptom\t{second_symptom_by_day[day]}')
+            print(f'n_no_second_symptom\t{n_second_symptom_on_day[day]}')
         else:
-            print(f'{day}_second_symptom_by_day\t{second_symptom_by_day[day]}')
-    for day in sorted(third_symptom_by_day.keys()):
+            print(
+                f'n_second_symptom_on_day_{day}\t{n_second_symptom_on_day[day]}'
+            )
+    for day in sorted(n_third_symptom_on_day.keys()):
         if day == 0:
-            print(f'no_third_symptom\t{third_symptom_by_day[day]}')
+            print(f'n_no_third_symptom\t{n_third_symptom_on_day[day]}')
         else:
-            print(f'{day}_third_symptom_by_day\t{third_symptom_by_day[day]}')
+            print(
+                f'n_third_symptom_on_day_{day}\t{n_third_symptom_on_day[day]}')
 
 
 def main():

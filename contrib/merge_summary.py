@@ -16,28 +16,30 @@ def merge_results(files, output_file):
         'n_infection_failed',
         'n_infection_avoided',
         'n_infection_ignored',
+        'n_show_symptom',
         'n_removal',
         'n_quarantine',
         'n_reintegration',
         'n_abort',
         'n_asym_infection',
+        'n_presym_infection',
         'n_sym_infection',
-        'remaining_popsize_by_num',
-        'no_outbreak',
-        'outbreak_duration_by_day',
-        'infection_from_seed_by_num',
-        'no_infection_from_seed',
-        'infection_from_seed_by_day',
-        'no_symptom_from_seed',
-        'symptom_from_seed_by_day',
-        'no_first_infection',
-        'first_infection_by_day',
-        'no_first_symptom',
-        'first_symptom_by_day',
-        'no_second_symptom',
-        'second_symptom_by_day',
-        'no_third_symptom',
-        'third_symptom_by_day',
+        'n_remaining_popsize',
+        'n_no_outbreak',
+        'n_outbreak_duration',
+        'n_no_infected_by_seed',
+        'n_num_infected_by_seed',
+        'n_first_infected_by_seed_on_day',
+        'n_seed_show_no_symptom',
+        'n_seed_show_symptom_on_day',
+        'n_no_first_infection',
+        'n_first_infection_on_day',
+        'n_no_first_symptom',
+        'n_first_symptom_on_day',
+        'n_no_second_symptom',
+        'n_second_symptom_on_day',
+        'n_no_third_symptom',
+        'n_third_symptom_on_day',
     ]
     all_keys = set()
     for file in files:
@@ -54,8 +56,8 @@ def merge_results(files, output_file):
         if key in all_keys:
             available_keys.append(key)
         else:
-            matching_keys = [x for x in all_keys if x.endswith(key)]
-            matching_keys.sort(key=lambda x: int(x.split('_')[0]))
+            matching_keys = [x for x in all_keys if x.startswith(key)]
+            matching_keys.sort(key=lambda x: int(x.rsplit('_', 1)[-1]))
             available_keys.extend(matching_keys)
     # now get available keys from all results
     for key in available_keys:

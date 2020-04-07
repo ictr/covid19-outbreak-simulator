@@ -38,14 +38,14 @@ class Individual(object):
         keep_symptomatic = kwargs.get('keep_symptomatic', False)
 
         # REMOVAL ...
-        evts = []
+        evts = [
+            Event(
+                time + self.incubation_period,
+                EventType.SHOW_SYMPTOM,
+                self,
+                logger=self.logger)
+        ]
         if not keep_symptomatic:
-            evts.append(
-                Event(
-                    time + self.incubation_period,
-                    EventType.SHOW_SYMPTOM,
-                    self,
-                    logger=self.logger))
             if self.quarantined and time + self.incubation_period < self.quarantined:
                 # scheduling ABORT
                 evts.append(
