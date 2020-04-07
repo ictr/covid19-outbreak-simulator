@@ -33,10 +33,15 @@ def summarize_simulations(args):
     first_symptom_by_day = defaultdict(int)
     first_infection_by_day = defaultdict(int)
     #
+    second_symptom_by_day = defaultdict(int)
+    third_symptom_by_day = defaultdict(int)
+    #
     with open(args.logfile) as lines:
         n_infection_from_seed_per_sim = defaultdict(int)
         first_infection_day_per_sim = defaultdict(int)
         first_symptom_day_per_sim = defaultdict(int)
+        second_symptom_per_sim = defaultdict(int)
+        third_symptom_per_sim = defaultdict(int)
 
         for line in lines:
             id, time, event, target, params = line.split('\t')
@@ -51,8 +56,9 @@ def summarize_simulations(args):
                 n_infection += 1
                 if 'by=0' in params:
                     n_infection_from_seed_per_sim[id] += 1
+                    infection_from_seed_by_day[int(time) + 1] += 1
                 if id not in first_infection_day_per_sim:
-                    first_infection_day_per_sim[id] = round(time)
+                    first_infection_day_per_sim[id] = time
                 for param in params:
                     if param.startswith('r_asym='):
                         n_presym_infection += int(param[7:])
@@ -69,9 +75,15 @@ def summarize_simulations(args):
             elif event == 'SHOW_SYMPTOM':
                 n_show_symptom += 1
                 if target == 0:
-                    symptom_from_seed_by_day[round(time)] += 1
+                    symptom_from_seed_by_day[int(time) + 1] += 1
                 if id not in first_symptom_day_per_sim:
-                    first_symptom_day_per_sim[id] = round(time)
+                    first_symptom_day_per_sim[id] = time
+                if id not in second_symptom_per_sim:
+                    second_symptom_per_sim[
+                        id] = time - first_symptom_day_per_sim[id]
+                if id not in third_symptom_per_sim:
+                    third_symptom_per_sim[
+                        id] = time - second_symptom_per_sim[id]
             elif event == 'REMOVAL':
                 n_removal += 1
             elif event == 'QUARANTINE':
@@ -83,16 +95,40 @@ def summarize_simulations(args):
             elif event == 'END':
                 n_simulation += 1
                 remaining_popsize_by_num[target] += 1
+                outbreak_duration_by_day[0 if time == 0 else int(time) + 1] += 1
             else:
                 raise ValueError(f'Unrecognized event {event}')
     # summarize
     for v in n_infection_from_seed_per_sim.values():
         infection_from_seed_by_num[v] += 1
+    infection_from_seed_by_num[0] = n_simulation - sum(
+        infection_from_seed_by_num.values())
+    #
+    infection_from_seed_by_day[0] = n_simulation - sum(
+        infection_from_seed_by_day.values())
+    #
     for v in first_infection_day_per_sim.values():
-        first_infection_by_day[v] += 1
+        first_infection_by_day[int(v) + 1] += 1
+    first_infection_by_day[0] = n_simulation - sum(
+        first_infection_by_day.values())
+    #
+    symptom_from_seed_by_day[0] = n_simulation - sum(
+        symptom_from_seed_by_day.values())
+    #
     for v in first_symptom_day_per_sim.values():
-        first_symptom_by_day[v] += 1
-
+        first_symptom_by_day[int(v) + 1] += 1
+    first_symptom_by_day[0] = n_simulation - sum(first_symptom_by_day.values())
+    #
+    for v in second_symptom_per_sim.values():
+        second_symptom_by_day[int(v) + 1] += 1
+    second_symptom_by_day[0] = n_simulation - first_symptom_by_day[0] - sum(
+        second_symptom_by_day.values())
+    #
+    for v in third_symptom_per_sim.values():
+        third_symptom_by_day[int(v) + 1] += 1
+    third_symptom_by_day[0] = n_simulation - first_symptom_by_day[
+        0] - second_symptom_by_day[0] - sum(third_symptom_by_day.values())
+    #
     # print
     print(f'logfile\t{args.logfile}')
     print(f'popsize\t{args.popsize}')
@@ -133,23 +169,51 @@ def summarize_simulations(args):
         print(
             f'{num}_remaining_popsize_by_num\t{remaining_popsize_by_num[num]}')
     for day in sorted(outbreak_duration_by_day.keys()):
-        print(
-            f'{day}_outbreak_duration_by_day\t{outbreak_duration_by_day[day]}')
+        if day == 0:
+            print(f'no_outbreak\t{outbreak_duration_by_day[day]}')
+        else:
+            print(
+                f'{day}_outbreak_duration_by_day\t{outbreak_duration_by_day[day]}'
+            )
     for num in sorted(infection_from_seed_by_num.keys()):
         print(
             f'{num}_infection_from_seed_by_num\t{infection_from_seed_by_num[num]}'
         )
     for day in sorted(infection_from_seed_by_day.keys()):
-        print(
-            f'{num}_infection_from_seed_by_day\t{infection_from_seed_by_day[day]}'
-        )
+        if day == 0:
+            print(f'no_infection_from_seed\t{infection_from_seed_by_day[day]}')
+        else:
+            print(
+                f'{day}_infection_from_seed_by_day\t{infection_from_seed_by_day[day]}'
+            )
     for day in sorted(symptom_from_seed_by_day.keys()):
-        print(
-            f'{day}_symptom_from_seed_by_day\t{symptom_from_seed_by_day[day]}')
-    for day in sorted(first_symptom_by_day.keys()):
-        print(f'{day}_first_symptom_by_day\t{first_symptom_by_day[day]}')
+        if day == 0:
+            print(f'no_symptom_from_seed\t{symptom_from_seed_by_day[day]}')
+        else:
+            print(
+                f'{day}_symptom_from_seed_by_day\t{symptom_from_seed_by_day[day]}'
+            )
     for day in sorted(first_infection_by_day.keys()):
-        print(f'{day}_first_infection_by_day\t{first_infection_by_day[day]}')
+        if day == 0:
+            print(f'no_first_infection\t{first_infection_by_day[day]}')
+        else:
+            print(
+                f'{day}_first_infection_by_day\t{first_infection_by_day[day]}')
+    for day in sorted(first_symptom_by_day.keys()):
+        if day == 0:
+            print(f'no_first_symptom\t{first_symptom_by_day[day]}')
+        else:
+            print(f'{day}_first_symptom_by_day\t{first_symptom_by_day[day]}')
+    for day in sorted(second_symptom_by_day.keys()):
+        if day == 0:
+            print(f'no_second_symptom\t{second_symptom_by_day[day]}')
+        else:
+            print(f'{day}_second_symptom_by_day\t{second_symptom_by_day[day]}')
+    for day in sorted(third_symptom_by_day.keys()):
+        if day == 0:
+            print(f'no_third_symptom\t{third_symptom_by_day[day]}')
+        else:
+            print(f'{day}_third_symptom_by_day\t{third_symptom_by_day[day]}')
 
 
 def main():
@@ -191,6 +255,12 @@ def main():
         help='''Proportion of asymptomatic cases. You can specify a fix number, or two
         numbers as the lower and higher CI (95%%) of the proportion. Default to 0.10 to 0.40.'''
     )
+
+    parser.add_argument(
+        '--analyze-existing-logfile',
+        action='store_true',
+        help='''Analyze an existing logfile, useful for updating the summarization
+            procedure or uncaptured output.''')
     args = parser.parse_args()
 
     params = get_default_params(interval=args.interval)
@@ -212,11 +282,12 @@ def main():
             raise ValueError(
                 f'Parameter prop-asym-carriers accepts one or two numbers.')
 
-    with open(args.logfile, 'w') as logger:
-        simu = Simulator(params=params, logger=logger, simu_args=args)
-        logger.write('id\ttime\tevent\ttarget\tparams\n')
-        for i in tqdm(range(args.repeat)):
-            simu.simulate(i + 1)
+    if not args.analyze_existing_logfile:
+        with open(args.logfile, 'w') as logger:
+            simu = Simulator(params=params, logger=logger, simu_args=args)
+            logger.write('id\ttime\tevent\ttarget\tparams\n')
+            for i in tqdm(range(args.repeat)):
+                simu.simulate(i + 1)
 
     summarize_simulations(args)
     return 0

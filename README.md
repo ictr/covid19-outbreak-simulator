@@ -142,6 +142,7 @@ multiple replicated simulations. The output contains the following keys and thei
 | `logfile`                        | Log file of the simulation with all the events                                                                                                                                     |
 | `popsize`                        | Initial population size                                                                                                                                                            |
 | `keep_symptomatic`               | If asymptomatic infectees are kept                                                                                                                                                 |
+| `prop_asym_carriers`             | Proportion of asymptomatic carriers, also the probability of infectee who do not show any symptom                                                                                  |
 | `pre_quarantine`                 | If the first carrier is pre-quarantined, if so, for how many days                                                                                                                  |
 | `interval`                       | Interval of time events (1/24 for hours)                                                                                                                                           |
 | `n_simulation`                   | Total number of simulations, which is the number of `END` events                                                                                                                   |
@@ -158,16 +159,32 @@ multiple replicated simulations. The output contains the following keys and thei
 | `n_presym_infection`             | Number of presymptomatic infections                                                                                                                                                |
 | `n_sym_infection`                | Number of symptomatic infections                                                                                                                                                   |
 | `XXX_remaining_popsize_by_num`   | Number of simulations with `XXX` remaining population size                                                                                                                         |
+| `no_outbreak`                    | Number of simulations with no outbreak (no symptom)                                                                                                                                |
 | `XXX_outbreak_duration_by_day`   | Number of simulations with outbreak ends in `XXX` days                                                                                                                             |
-| `XXX_infection_from_seed_by_num` | Number of simulations with `XXX` people affected by the introduced virus carrier                                                                                                   |
-| `XXX_infection_from_seed_by_day` | Number of simulations when the introduced carrier infect the first infectee at day `XXX`                                                                                           |
-| `XXX_symptom_from_seed_by_day`   | Number of simulations when the carrier show symptom at day `XXX`                                                                                                                   |
-| `XXX_first_symptom_by_day`       | Number of simulations when the first symptom appear at day `XXX`, not necessarily by the introduced carrier.                                                                       |
+| `XXX_infection_from_seed_by_num` | Number of simulations with `XXX` people affected by the introduced virus carrier, `XXX` can be zero.                                                                               |
+| `no_infection_from_seed`         | Number of simulations when the introduced carrier does not infect anyone                                                                                                           |
+| `XXX_infection_from_seed_by_day` | Number of simulations when the introduced carrier infect the first infectee at day `XXX`, `XXX<1` is rounded to 1, and so on.                                                      |
+| `no_symptom_from_seed`           | Number of simulations when the seed show no symptom                                                                                                                                |
+| `XXX_symptom_from_seed_by_day`   | Number of simulations when the carrier show symptom at day `XXX`, `XXX < 1` is rounded to 1, and so on.                                                                            |
+| `no_first_infection`             | Number of simualations with no infection at all.                                                                                                                                   |
 | `XXX_first_infection_by_day`     | Number of simualations with the first infection event happens at day `XXX`. It is the same as `XXX_infection_from_seed_by_day` but is reserved when multiple seeds are introduced. |
+| `no_first_symptom`               | Number of simulations when no one showed any symptom                                                                                                                               |
+| `XXX_first_symptom_by_day`       | Number of simulations when the first symptom appear at day `XXX`, `XXX < 1` is rounded to 1, and so on.                                                                            |
+| `no_second_symptom_by_day`       | Number of simulations when there is a first, but no second symptom.                                                                                                                |
+| `XXX_second_symptom_by_day`      | Number of simulations when the second symptom appear at day `XXX` **after the first symptom**                                                                                      |
+| `no_third_symptom_by_day`        | Number of simulations when there is a second, but no third symtom                                                                                                                  |
+| `XXX_third_symptom_by_day`       | Number of simulations when the first symptom appear at day `XXX` **after the second symptom**                                                                                      |
+
+## Data analysis tools
 
 Because all the events have been recorded in the log files, it should not be too difficult for
-you to write your own script (e.g. in R) to analyze them and produce nice figures. The
-[`contrib/time_vs_size.R`](https://github.com/ictr/covid19-outbreak-simulator/blob/master/contrib/time_vs_size.R) script provides an example on how to process the data and produce
+you to write your own script (e.g. in R) to analyze them and produce nice figures. We however
+made a small number of tools available. Please feel free to submit or own script for inclusion in the `contrib`
+library.
+
+### `time_vs_size.R`
+
+The [`contrib/time_vs_size.R`](https://github.com/ictr/covid19-outbreak-simulator/blob/master/contrib/time_vs_size.R) script provides an example on how to process the data and produce
 a figure. It can be used as follows:
 
 ```
@@ -178,8 +195,9 @@ and produces a figure
 
 ![time_vs_size.png](https://raw.githubusercontent.com/ictr/covid19-outbreak-simulator/master/contrib/time_vs_size.png)
 
-Please feel free to submit or own script for inclusion in the `contrib`
-library.
+### `merge_summary.py`
+
+[`contrib/merge_summary.py`](https://github.com/ictr/covid19-outbreak-simulator/blob/master/contrib/merge_summary.py) is a script to merge summary stats from multiple simulation runs.
 
 ## Acknowledgements
 
