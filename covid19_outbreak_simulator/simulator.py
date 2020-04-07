@@ -40,6 +40,12 @@ class Individual(object):
         # REMOVAL ...
         evts = []
         if not keep_symptomatic:
+            evts.append(
+                Event(
+                    time + self.incubation_period,
+                    EventType.SHOW_SYMPTOM,
+                    self,
+                    logger=self.logger))
             if self.quarantined and time + self.incubation_period < self.quarantined:
                 # scheduling ABORT
                 evts.append(
@@ -190,16 +196,17 @@ class EventType(Enum):
     INFECTION_IGNORED = 4
 
     # removal of individual showing symptom
-    REMOVAL = 5
+    SHOW_SYMPTOM = 5
+    REMOVAL = 6
     # quarantine individual given a specified time
-    QUARANTINE = 6
+    QUARANTINE = 7
     # reintegrate individual to the population (release from quarantine)
-    REINTEGRATION = 7
+    REINTEGRATION = 8
 
     # abort simulation, right now due to infector showing symptoms during quarantine
-    ABORT = 8
+    ABORT = 9
     # end of simulation
-    END = 9
+    END = 10
 
 
 class Event(object):
@@ -248,6 +255,11 @@ class Event(object):
         elif self.action == EventType.INFECTION_AVOIDED:
             self.logger.write(
                 f'{self.logger.id}\t{self.time:.2f}\t{EventType.INFECTION_AVOIDED.name}\t.\tby={self.kwargs["by"].id}\n'
+            )
+            return []
+        elif self.action == EventType.SHOW_SYMPTOM:
+            self.logger.write(
+                f'{self.logger.id}\t{self.time:.2f}\t{EventType.SHOW_SYMPTOM.name}\t{self.target.id}\t.\n'
             )
             return []
         elif self.action == EventType.REMOVAL:

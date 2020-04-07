@@ -2,9 +2,131 @@
 import argparse
 import sys
 from tqdm import tqdm
-
+from collections import defaultdict
 from .model import get_default_params
 from .simulator import Simulator
+
+
+def summarize_simulations(args):
+    # write some summary information into standard output
+    n_simulation = 0
+    n_infection = 0
+    n_infection_failed = 0
+    n_infection_avoided = 0
+    n_infection_ignored = 0
+    n_show_symptom = 0
+    n_removal = 0
+    n_quarantine = 0
+    n_reintegration = 0
+    n_abort = 0
+    #
+    n_asym_infection = 0
+    n_presym_infection = 0
+    n_sym_infection = 0
+    #
+    remaining_popsize_by_num = defaultdict(int)
+    outbreak_duration_by_day = defaultdict(int)
+    #
+    infection_from_seed_by_num = defaultdict(int)
+    infection_from_seed_by_day = defaultdict(int)
+    symptom_from_seed_by_day = defaultdict(int)
+    first_symptom_by_day = defaultdict(int)
+    first_infection_by_day = defaultdict(int)
+    #
+    with open(args.logfile) as lines:
+        n_infection_from_seed_per_sim = defaultdict(int)
+        first_infection_day_per_sim = defaultdict(int)
+        first_symptom_day_per_sim = defaultdict(int)
+
+        for line in lines:
+            id, time, event, target, params = line.split('\t')
+            if id == 'id':
+                # skip header
+                continue
+            time = float(time)
+            target = None if target == '.' else int(target)
+            params = params.split(',')
+            #
+            if event == 'INFECTION':
+                n_infection += 1
+                if 'by=0' in params:
+                    n_infection_from_seed_per_sim[id] += 1
+                if id not in first_infection_day_per_sim:
+                    first_infection_day_per_sim[id] = round(time)
+                for param in params:
+                    if param.startswith('r_asym='):
+                        n_presym_infection += int(param[7:])
+                    elif param.startswith('r_presym='):
+                        n_presym_infection += int(param[9:])
+                    elif param.startswith('r_sym='):
+                        n_presym_infection += int(param[6:])
+            elif event == 'INFECTION_FAILED':
+                n_infection_failed += 1
+            elif event == 'INFECTION_AVOIDED':
+                n_infection_avoided += 1
+            elif event == 'INFECTION_IGNORED':
+                n_infection_ignored += 1
+            elif event == 'SHOW_SYMPTOM':
+                n_show_symptom += 1
+                if target == 0:
+                    symptom_from_seed_by_day[round(time)] += 1
+                if id not in first_symptom_day_per_sim:
+                    first_symptom_day_per_sim[id] = round(time)
+            elif event == 'REMOVAL':
+                n_removal += 1
+            elif event == 'QUARANTINE':
+                n_quarantine += 1
+            elif event == 'REINTEGRATION':
+                n_reintegration += 1
+            elif event == 'ABORT':
+                n_abort += 1
+            elif event == 'END':
+                n_simulation += 1
+                remaining_popsize_by_num[target] += 1
+            else:
+                raise ValueError(f'Unrecognized event {event}')
+    # summarize
+    for v in n_infection_from_seed_per_sim.values():
+        infection_from_seed_by_num[v] += 1
+    for v in first_infection_day_per_sim.values():
+        first_infection_by_day[v] += 1
+    for v in first_symptom_day_per_sim.values():
+        first_symptom_by_day[v] += 1
+
+    # print
+    print(f'n_simulation\t{n_simulation}')
+    print(f'n_infection\t{n_infection}')
+    print(f'n_infection_failed\t{n_infection_failed}')
+    print(f'n_infection_avoided\t{n_infection_avoided}')
+    print(f'n_infection_ignored\t{n_infection_ignored}')
+    print(f'n_removal\t{n_removal}')
+    print(f'n_quarantine\t{n_quarantine}')
+    print(f'n_reintegration\t{n_reintegration}')
+    print(f'n_abort\t{n_abort}')
+    print(f'n_asym_infection\t{n_asym_infection}')
+    print(f'n_sym_infection\t{n_sym_infection}')
+
+    for num in sorted(remaining_popsize_by_num.keys()):
+        print(
+            f'{num}_remaining_popsize_by_num\t{remaining_popsize_by_num[num]}')
+    for day in sorted(outbreak_duration_by_day.keys()):
+        print(
+            f'{day}_outbreak_duration_by_day\t{outbreak_duration_by_day[day]}')
+    for num in sorted(infection_from_seed_by_num.keys()):
+        print(
+            f'{num}_infection_from_seed_by_num\t{infection_from_seed_by_num[num]}'
+        )
+    for day in sorted(infection_from_seed_by_day.keys()):
+        print(
+            f'{num}_infection_from_seed_by_day\t{infection_from_seed_by_day[day]}'
+        )
+    for day in sorted(symptom_from_seed_by_day.keys()):
+        print(
+            f'{day}_symptom_from_seed_by_day\t{symptom_from_seed_by_day[day]}')
+    for day in sorted(first_symptom_by_day.keys()):
+        print(f'{day}_first_symptom_by_day\t{first_symptom_by_day[day]}')
+    for day in sorted(first_infection_by_day.keys()):
+        print(f'{day}_first_infection_by_day\t{first_infection_by_day[day]}')
 
 
 def main():
@@ -63,8 +185,7 @@ def main():
             params.set('proportion_of_asymptomatic_carriers', 'loc',
                        (args.proportion_of_asymptomatic_carriers[0] +
                         args.proportion_of_asymptomatic_carriers[1]) / 2)
-            params.set('proportion_of_asymptomatic_carriers_scale',
-                       'quantile_2.5',
+            params.set('proportion_of_asymptomatic_carriers', 'quantile_2.5',
                        args.proportion_of_asymptomatic_carriers[0])
         else:
             raise ValueError(
@@ -77,6 +198,7 @@ def main():
         for i in tqdm(range(args.repeat)):
             simu.simulate(i + 1)
 
+    summarize_simulations(args)
     return 0
 
 

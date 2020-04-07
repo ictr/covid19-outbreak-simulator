@@ -54,6 +54,8 @@ outbreak_simulator -h
 
 to check the usage information.
 
+## Output from the simulator
+
 The output file contains events that happens during the simulations.
 For example, for command
 
@@ -61,29 +63,7 @@ For example, for command
 outbreak_simulator --repeat 100 --popsize 64 --logfile result_remove_symptomatic.txt
 ```
 
-You will get an output file `result_remove_symptomatic.txt` with the first few
-lines resembling
-
-```
-id      time    event   target  params
-1       0.00    INFECTION       0       r0=1.66,r=1,incu=7.70
-1       5.73    INFECTION       62      by=0,r0=1.64,r=0,incu=6.60
-1       7.70    REMOVAL 0       .
-1       12.32   REMOVAL 62      .
-1       12.32   END     62      popsize=62
-2       0.00    INFECTION       0       r0=2.20,r=0,incu=6.36
-```
-
-which basically means
-
-1. Individual `0` was infected at time `0.00`, who has `r0=1.66` and an incubation period of `7.70` days.
-2. At day `5.73` the infector infects individual `62`, who has an incubation period of `6.60` days, but will not affect anyone else.
-3. At day `7.70` the first individual showed symptom and is removed.
-4. At day `12.32` individual `62` is removed.
-5. The simulation ends with a remaining population size of 62.
-6. Starts of the second simulation.
-
-The columns are
+You will get an output file `result_remove_symptomatic.txt` with the following columns:
 
 | column   | content                                                                                                                |
 | -------- | ---------------------------------------------------------------------------------------------------------------------- |
@@ -101,15 +81,84 @@ Currently the following events are tracked
 | `INFECION_FAILED`   | No one left to infect                                                                   |
 | `INFECTION_AVOIDED` | An infection happended during quarantine. The individual might not have showed sympton. |
 | `INFECTION_IGNORED` | Infect an infected individual, which does not change anything.                          |
+| `SHOW_SYMPTOM`      | Show symptom.                                                                           |
 | `REMOVAL`           | Remove from population.                                                                 |
 | `QUANTINE`          | Quarantine someone till specified time.                                                 |
 | `REINTEGRATION`     | Reintroduce the quarantined individual to group.                                        |
 | `ABORT`             | If the first carrier show sympton during quarantine.                                    |
 | `END`               | Simulation ends.                                                                        |
 
-Currently no built-in plot is provided but it is reasonably easy to read
-the log file and generate statistics and plots using scripting languages
-such as R.
+The log file of a typical simulation would look like the following:
+
+```
+id      time    event   target  params
+1       0.00    INFECTION       0       r0=0.53,r=0,r_asym=0
+1       0.00    END     64      popsize=64,prop_asym=0.276
+2       0.00    INFECTION       0       r0=2.42,r=1,r_presym=1,r_sym=0,incu=5.51
+2       4.10    INFECTION       62      by=0,r0=1.60,r=2,r_presym=2,r_sym=0,incu=5.84
+2       5.51    SHOW_SYMPTOM    0       .
+2       5.51    REMOVAL 0       popsize=63
+2       9.59    INFECTION       9       by=62,r0=2.13,r=2,r_presym=2,r_sym=0,incu=3.34
+2       9.84    INFECTION_IGNORED       9       by=62
+2       9.94    SHOW_SYMPTOM    62      .
+2       9.94    REMOVAL 62      popsize=62
+2       10.76   INFECTION       30      by=9,r0=1.96,r=2,r_presym=2,r_sym=0,incu=4.85
+2       11.64   INFECTION       57      by=9,r0=0.39,r=0,r_asym=0
+2       12.23   INFECTION       56      by=30,r0=1.65,r=1,r_presym=1,r_sym=0,incu=4.26
+2       12.93   SHOW_SYMPTOM    9       .
+2       12.93   REMOVAL 9       popsize=61
+2       14.37   INFECTION       6       by=30,r0=1.60,r=0,r_presym=0,r_sym=0,incu=2.63
+2       15.61   SHOW_SYMPTOM    30      .
+2       15.61   REMOVAL 30      popsize=60
+2       16.37   INFECTION       1       by=56,r0=1.57,r=1,r_presym=1,r_sym=0,incu=5.14
+2       16.49   SHOW_SYMPTOM    56      .
+2       16.49   REMOVAL 56      popsize=59
+2       16.99   SHOW_SYMPTOM    6       .
+2       16.99   REMOVAL 6       popsize=58
+2       18.42   INFECTION       8       by=1,r0=2.45,r=1,r_presym=1,r_sym=0,incu=3.74
+2       20.35   INFECTION       44      by=8,r0=2.37,r=1,r_presym=1,r_sym=0,incu=3.92
+2       21.51   SHOW_SYMPTOM    1       .
+2       21.51   REMOVAL 1       popsize=57
+2       22.16   SHOW_SYMPTOM    8       .
+2       22.16   REMOVAL 8       popsize=56
+2       22.62   INFECTION       42      by=44,r0=1.49,r=0,r_presym=0,r_sym=0,incu=4.30
+2       24.27   SHOW_SYMPTOM    44      .
+2       24.27   REMOVAL 44      popsize=55
+2       26.92   SHOW_SYMPTOM    42      .
+2       26.92   REMOVAL 42      popsize=54
+2       26.92   END     54      popsize=54,prop_asym=0.216
+3       0.00    INFECTION       0       r0=2.00,r=2,r_presym=2,r_sym=0,incu=4.19
+```
+
+which I assume would be pretty self-explanatory.
+
+## Summary report from multiple replicates
+
+At the end of each command, a report will be given to summarize key statistics from
+multiple replicated simulations. The output contains the following keys and their values
+
+| name                             | value                                                                                                                                                                              |
+| -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `n_simulation`                   | Total number of simulations, which is the number of `END` events                                                                                                                   |
+| `n_infection`                    | Number of `INFECTION` events                                                                                                                                                       |
+| `n_infection_failed`             | Number of `INFECTION_FAILED` events                                                                                                                                                |
+| `n_infection_avoided`            | Number of `INFECTION_AVOIDED` events                                                                                                                                               |
+| `n_infection_ignored`            | Number of `INFECTION_IGNORED` events                                                                                                                                               |
+| `n_show_symptom`                 | Number of `SHOW_SYMPTOM` events                                                                                                                                                    |
+| `n_removal`                      | Number of `REMOVAL` events                                                                                                                                                         |
+| `n_quarantine`                   | Number of `QUARANTINE` events                                                                                                                                                      |
+| `n_reintegration`                | Number of `REINTEGRATION` events                                                                                                                                                   |
+| `n_abort`                        | Number of `ABORT` events                                                                                                                                                           |
+| `n_asym_infection`               | Number of asymptomatic infections                                                                                                                                                  |
+| `n_presym_infection`             | Number of presymptomatic infections                                                                                                                                                |
+| `n_sym_infection`                | Number of symptomatic infections                                                                                                                                                   |
+| `XXX_remaining_popsize_by_num`   | Number of simulations with `XXX` remaining population size                                                                                                                         |
+| `XXX_outbreak_duration_by_day`   | Number of simulations with outbreak ends in `XXX` days                                                                                                                             |
+| `XXX_infection_from_seed_by_num` | Number of simulations with `XXX` people affected by the introduced virus carrier                                                                                                   |
+| `XXX_infection_from_seed_by_day` | Number of simulations when the introduced carrier infect the first infectee at day `XXX`                                                                                           |
+| `XXX_symptom_from_seed_by_day`   | Number of simulations when the carrier show symptom at day `XXX`                                                                                                                   |
+| `XXX_first_symptom_by_day`       | Number of simulations when the first symptom appear at day `XXX`, not necessarily by the introduced carrier.                                                                       |
+| `XXX_first_infection_by_day`     | Number of simualations with the first infection event happens at day `XXX`. It is the same as `XXX_infection_from_seed_by_day` but is reserved when multiple seeds are introduced. |
 
 ## Acknowledgements
 
