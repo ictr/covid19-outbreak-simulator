@@ -167,7 +167,7 @@ multiple replicated simulations. The output contains the following keys and thei
 
 Because all the events have been recorded in the log files, it should not be too difficult for
 you to write your own script (e.g. in R) to analyze them and produce nice figures. The
-`contrib/time_vs_size.R` script provides an example on how to process the data and produce
+[`contrib/time_vs_size.R`](https://github.com/ictr/covid19-outbreak-simulator/blob/master/contrib/time_vs_size.R) script provides an example on how to process the data and produce
 a figure. It can be used as follows:
 
 ```
