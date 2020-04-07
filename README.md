@@ -139,6 +139,11 @@ multiple replicated simulations. The output contains the following keys and thei
 
 | name                             | value                                                                                                                                                                              |
 | -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `logfile`                        | Log file of the simulation with all the events                                                                                                                                     |
+| `popsize`                        | Initial population size                                                                                                                                                            |
+| `keep_symptomatic`               | If asymptomatic infectees are kept                                                                                                                                                 |
+| `pre_quarantine`                 | If the first carrier is pre-quarantined, if so, for how many days                                                                                                                  |
+| `interval`                       | Interval of time events (1/24 for hours)                                                                                                                                           |
 | `n_simulation`                   | Total number of simulations, which is the number of `END` events                                                                                                                   |
 | `n_infection`                    | Number of `INFECTION` events                                                                                                                                                       |
 | `n_infection_failed`             | Number of `INFECTION_FAILED` events                                                                                                                                                |
@@ -159,6 +164,22 @@ multiple replicated simulations. The output contains the following keys and thei
 | `XXX_symptom_from_seed_by_day`   | Number of simulations when the carrier show symptom at day `XXX`                                                                                                                   |
 | `XXX_first_symptom_by_day`       | Number of simulations when the first symptom appear at day `XXX`, not necessarily by the introduced carrier.                                                                       |
 | `XXX_first_infection_by_day`     | Number of simualations with the first infection event happens at day `XXX`. It is the same as `XXX_infection_from_seed_by_day` but is reserved when multiple seeds are introduced. |
+
+Because all the events have been recorded in the log files, it should not be too difficult for
+you to write your own script (e.g. in R) to analyze them and produce nice figures. The
+`contrib/time_vs_size.R` script provides an example on how to process the data and produce
+a figure. It can be used as follows:
+
+```
+Rscript time_vs_size.R  simulation.log 'COVID19 Outbreak Simulation with Default Paramters' time_vs_size.png
+```
+
+and produces a figure
+
+![time_vs_size.png](https://raw.githubusercontent.com/ictr/covid19-outbreak-simulator/master/contrib/time_vs_size.png)
+
+Please feel free to submit or own script for inclusion in the `contrib`
+library.
 
 ## Acknowledgements
 

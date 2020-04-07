@@ -30,12 +30,12 @@ def test_quarantine(individual):
 
 
 def test_infect(individual):
-    individual.model.draw_proportion_of_asymptomatic_carriers()
+    individual.model.draw_prop_asym_carriers()
     res = individual.infect(5.0, by=None)
 
 
 def test_infect_infected(individual):
-    individual.model.draw_proportion_of_asymptomatic_carriers()
+    individual.model.draw_prop_asym_carriers()
     individual.infected = 5.5
 
     res = individual.infect(5.0, by=None)
@@ -50,7 +50,7 @@ def test_symptomatic_infect(individual_factory, by, keep_symptomatic,
     ind1 = individual_factory(id=1)
     ind2 = individual_factory(id=2)
 
-    ind1.model.draw_proportion_of_asymptomatic_carriers()
+    ind1.model.draw_prop_asym_carriers()
     if quarantined:
         ind2.quarantine(20)
     #
@@ -69,7 +69,7 @@ def test_asymptomatic_infect(individual_factory, by, keep_symptomatic,
     ind1 = individual_factory(id=1)
     ind2 = individual_factory(id=2)
 
-    ind1.model.draw_proportion_of_asymptomatic_carriers()
+    ind1.model.draw_prop_asym_carriers()
     if quarantined:
         ind2.quarantine(20)
     #

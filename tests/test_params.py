@@ -8,18 +8,17 @@ import numpy as np
 
 
 def test_params_set_mean(params):
-    params.set('proportion_of_asymptomatic_carriers', 'loc', 0.3)
-    assert params.proportion_of_asymptomatic_carriers_loc == 0.3
+    params.set('prop_asym_carriers', 'loc', 0.3)
+    assert params.prop_asym_carriers_loc == 0.3
 
 
-def test_proportion_of_asymptomatic_carriers(params):
-    params.set('proportion_of_asymptomatic_carriers', prop='loc', value=0.25)
-    params.set(
-        'proportion_of_asymptomatic_carriers', prop='quantile_2.5', value=0.1)
+def test_prop_asym_carriers(params):
+    params.set('prop_asym_carriers', prop='loc', value=0.25)
+    params.set('prop_asym_carriers', prop='quantile_2.5', value=0.1)
 
     dist = norm(
-        loc=params.proportion_of_asymptomatic_carriers_loc,
-        scale=params.proportion_of_asymptomatic_carriers_scale)
+        loc=params.prop_asym_carriers_loc,
+        scale=params.prop_asym_carriers_scale)
 
     assert math.fabs(dist.cdf(0.1) - 0.025) < 0.001
     assert math.fabs(dist.cdf(0.4) - 0.975) < 0.001
@@ -41,18 +40,17 @@ def test_asymptomatic_r0(params):
     assert params.asymptomatic_r0_high == 0.28
 
 
-def test_draw_proportion_of_asymptomatic_carriers(default_model):
+def test_draw_prop_asym_carriers(default_model):
     props = []
     for i in range(1000):
-        props.append(default_model.draw_proportion_of_asymptomatic_carriers())
+        props.append(default_model.draw_prop_asym_carriers())
 
     assert math.fabs(
-        sum(props) / 1000 -
-        default_model.params.proportion_of_asymptomatic_carriers_loc) < 0.05
+        sum(props) / 1000 - default_model.params.prop_asym_carriers_loc) < 0.05
 
 
 def test_drawn_is_asymptomatic(default_model):
-    prop = default_model.draw_proportion_of_asymptomatic_carriers()
+    prop = default_model.draw_prop_asym_carriers()
     is_asymp = []
     for i in range(1000):
         is_asymp.append(default_model.draw_is_asymptomatic())

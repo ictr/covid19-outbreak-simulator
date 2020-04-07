@@ -94,6 +94,29 @@ def summarize_simulations(args):
         first_symptom_by_day[v] += 1
 
     # print
+    print(f'logfile\t{args.logfile}')
+    print(f'popsize\t{args.popsize}')
+    print(f'keep_symptomatic\t{"yes" if args.keep_symptomatic else "no"}')
+    if args.pre_quarantine is None:
+        print(f'pre_quarantine\tno')
+    else:
+        print(f'pre_quarantine\t{args.pre_quarantine} days')
+    if args.interval == 1 / 24:
+        print(f'interval\t1 hour')
+    elif args.interval == 1:
+        print(f'interval\t1 day')
+    else:
+        print(f'interval\t{args.interval:.2f} day')
+    if args.prop_asym_carriers:
+        if len(args.prop_asym_carriers) == 1:
+            print(f'prop_asy_carriers\t{args.prop_asym_carriers[0]*100:.1f}%')
+        else:
+            print(
+                f'prop_asy_carriers\t{args.prop_asym_carriers[0]*100:.1f}% to {args.prop_asym_carriers[1]*100:.1f}%'
+            )
+    else:
+        print(f'prop_asy_carriers\t10% to 40%')
+
     print(f'n_simulation\t{n_simulation}')
     print(f'n_infection\t{n_infection}')
     print(f'n_infection_failed\t{n_infection_failed}')
@@ -162,7 +185,7 @@ def main():
     parser.add_argument('--logfile', default='simulation.log', help='logfile')
 
     parser.add_argument(
-        '--proportion-of-asymptomatic-carriers',
+        '--prop-asym-carriers',
         nargs='*',
         type=float,
         help='''Proportion of asymptomatic cases. You can specify a fix number, or two
@@ -171,26 +194,23 @@ def main():
     args = parser.parse_args()
 
     params = get_default_params(interval=args.interval)
-    if args.proportion_of_asymptomatic_carriers:
-        if len(args.proportion_of_asymptomatic_carriers) == 1:
-            params.set('proportion_of_asymptomatic_carriers', 'loc',
-                       args.proportion_of_asymptomatic_carriers[0])
-            params.set('proportion_of_asymptomatic_carriers', 'scale', 0)
-        elif len(args.proportion_of_asymptomatic_carriers) == 2:
-            if args.proportion_of_asymptomatic_carriers[
-                    0] > args.proportion_of_asymptomatic_carriers[1]:
+    if args.prop_asym_carriers:
+        if len(args.prop_asym_carriers) == 1:
+            params.set('prop_asym_carriers', 'loc', args.prop_asym_carriers[0])
+            params.set('prop_asym_carriers', 'scale', 0)
+        elif len(args.prop_asym_carriers) == 2:
+            if args.prop_asym_carriers[0] > args.prop_asym_carriers[1]:
                 raise ValueError(
-                    f'Proportions for parameter proportion-of-asymptomatic-carriers should be incremental.'
+                    f'Proportions for parameter prop-asym-carriers should be incremental.'
                 )
-            params.set('proportion_of_asymptomatic_carriers', 'loc',
-                       (args.proportion_of_asymptomatic_carriers[0] +
-                        args.proportion_of_asymptomatic_carriers[1]) / 2)
-            params.set('proportion_of_asymptomatic_carriers', 'quantile_2.5',
-                       args.proportion_of_asymptomatic_carriers[0])
+            params.set(
+                'prop_asym_carriers', 'loc',
+                (args.prop_asym_carriers[0] + args.prop_asym_carriers[1]) / 2)
+            params.set('prop_asym_carriers', 'quantile_2.5',
+                       args.prop_asym_carriers[0])
         else:
             raise ValueError(
-                f'Parameter proportion-of-asymptomatic-carriers accepts one or two numbers.'
-            )
+                f'Parameter prop-asym-carriers accepts one or two numbers.')
 
     with open(args.logfile, 'w') as logger:
         simu = Simulator(params=params, logger=logger, simu_args=args)

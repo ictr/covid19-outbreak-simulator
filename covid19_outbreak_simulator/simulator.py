@@ -288,7 +288,7 @@ class Simulator(object):
         # get proportion of asymptomatic
         #
         self.model = Model(self.params)
-        self.model.draw_proportion_of_asymptomatic_carriers()
+        self.model.draw_prop_asym_carriers()
 
         # collection of individuals
         population = {
@@ -337,5 +337,5 @@ class Simulator(object):
             if not events or aborted:
                 break
         self.logger.write(
-            f'{self.logger.id}\t{time:.2f}\t{EventType.END.name}\t{len(population)}\tpopsize={len(population)},prop_asym={self.model.params.proportion_of_asymptomatic_carriers:.3f}\n'
+            f'{self.logger.id}\t{time:.2f}\t{EventType.END.name}\t{len(population)}\tpopsize={len(population)},prop_asym={self.model.params.prop_asym_carriers:.3f}\n'
         )

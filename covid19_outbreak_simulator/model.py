@@ -10,10 +10,9 @@ class Params:
 
     def __init__(self):
         self.params = set([
-            'simulation_interval', 'incubation_period',
-            'proportion_of_asymptomatic_carriers',
-            'proportion_of_asymptomatic_carriers', 'incubation_period',
-            'symptomatic_r0', 'asymptomatic_r0'
+            'simulation_interval', 'incubation_period', 'prop_asym_carriers',
+            'prop_asym_carriers', 'incubation_period', 'symptomatic_r0',
+            'asymptomatic_r0'
         ])
 
     def set(self, param, prop, value):
@@ -38,8 +37,8 @@ class Params:
 def get_default_params(interval=1 / 24):
     params = Params()
     params.set('simulation_interval', 'self', interval)
-    params.set('proportion_of_asymptomatic_carriers', 'loc', 0.25)
-    params.set('proportion_of_asymptomatic_carriers', 'quantile_2.5', 0.1)
+    params.set('prop_asym_carriers', 'loc', 0.25)
+    params.set('prop_asym_carriers', 'quantile_2.5', 0.1)
     params.set('symptomatic_r0', 'low', 1.4)
     params.set('symptomatic_r0', 'high', 2.8)
     params.set('asymptomatic_r0', 'low', 0.28)
@@ -56,17 +55,16 @@ class Model(object):
 
     def __init__(self, params):
         self.params = params
-        self.params.proportion_of_asymptomatic_carriers = None
+        self.params.prop_asym_carriers = None
 
-    def draw_proportion_of_asymptomatic_carriers(self):
-        self.params.proportion_of_asymptomatic_carriers = np.random.normal(
-            loc=self.params.proportion_of_asymptomatic_carriers_loc,
-            scale=self.params.proportion_of_asymptomatic_carriers_scale)
-        return min(max(self.params.proportion_of_asymptomatic_carriers, 0), 1)
+    def draw_prop_asym_carriers(self):
+        self.params.prop_asym_carriers = np.random.normal(
+            loc=self.params.prop_asym_carriers_loc,
+            scale=self.params.prop_asym_carriers_scale)
+        return min(max(self.params.prop_asym_carriers, 0), 1)
 
     def draw_is_asymptomatic(self):
-        return np.random.uniform(
-            0, 1) < self.params.proportion_of_asymptomatic_carriers
+        return np.random.uniform(0, 1) < self.params.prop_asym_carriers
 
     def draw_random_r0(self, symptomatic):
         '''
