@@ -21,7 +21,7 @@ class Params:
             raise ValueError(f'Unrecgonzied parameter {param}')
         if prop is None or prop == 'self':
             setattr(self, param, value)
-        elif prop in ('loc', 'low', 'high', 'mean', 'sigma'):
+        elif prop in ('loc', 'low', 'high', 'mean', 'sigma', 'scale'):
             setattr(self, f'{param}_{prop}', value)
         elif re.match('quantile_(.*)', prop):
             lq = float(re.match('quantile_(.*)', prop)[1]) / 100
@@ -42,8 +42,8 @@ def get_default_params(interval=1 / 24):
     params.set('proportion_of_asymptomatic_carriers', 'quantile_2.5', 0.1)
     params.set('symptomatic_r0', 'low', 1.4)
     params.set('symptomatic_r0', 'high', 2.8)
-    params.set('asymptomatic_r0', 'low', 0.14)
-    params.set('asymptomatic_r0', 'high', 0.28)
+    params.set('asymptomatic_r0', 'low', 0.28)
+    params.set('asymptomatic_r0', 'high', 0.56)
     params.set('incubation_period', 'mean', 1.621)
     params.set('incubation_period', 'sigma', 0.418)
     return params
@@ -62,7 +62,7 @@ class Model(object):
         self.params.proportion_of_asymptomatic_carriers = np.random.normal(
             loc=self.params.proportion_of_asymptomatic_carriers_loc,
             scale=self.params.proportion_of_asymptomatic_carriers_scale)
-        return self.params.proportion_of_asymptomatic_carriers
+        return min(max(self.params.proportion_of_asymptomatic_carriers, 0), 1)
 
     def draw_is_asymptomatic(self):
         return np.random.uniform(

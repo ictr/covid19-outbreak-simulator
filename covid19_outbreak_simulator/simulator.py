@@ -325,5 +325,5 @@ class Simulator(object):
             if not events or aborted:
                 break
         self.logger.write(
-            f'{self.logger.id}\t{time:.2f}\t{EventType.END.name}\t{len(population)}\tpopsize={len(population)}\n'
+            f'{self.logger.id}\t{time:.2f}\t{EventType.END.name}\t{len(population)}\tpopsize={len(population)},prop_asym={self.model.params.proportion_of_asymptomatic_carriers:.3f}\n'
         )
