@@ -148,13 +148,13 @@ def summarize_simulations(args):
         print(f'interval\t{args.interval:.2f} day')
     if args.prop_asym_carriers:
         if len(args.prop_asym_carriers) == 1:
-            print(f'prop_asy_carriers\t{args.prop_asym_carriers[0]*100:.1f}%')
+            print(f'prop_asym_carriers\t{args.prop_asym_carriers[0]*100:.1f}%')
         else:
             print(
-                f'prop_asy_carriers\t{args.prop_asym_carriers[0]*100:.1f}% to {args.prop_asym_carriers[1]*100:.1f}%'
+                f'prop_asym_carriers\t{args.prop_asym_carriers[0]*100:.1f}% to {args.prop_asym_carriers[1]*100:.1f}%'
             )
     else:
-        print(f'prop_asy_carriers\t10% to 40%')
+        print(f'prop_asym_carriers\t10% to 40%')
 
     print(f'n_simulation\t{n_simulation}')
     print(f'n_infection\t{n_infection}')
