@@ -10,20 +10,21 @@ from .simulator import Simulator
 def summarize_simulations(args):
     # write some summary information into standard output
     n_simulation = 0
-    n_infection = 0
-    n_infection_failed = 0
-    n_infection_avoided = 0
-    n_infection_ignored = 0
-    n_show_symptom = 0
-    n_removal = 0
-    n_quarantine = 0
-    n_reintegration = 0
-    n_abort = 0
+    total_infection = 0
+    total_infection_failed = 0
+    total_infection_avoided = 0
+    total_infection_ignored = 0
+    total_show_symptom = 0
+    total_removal = 0
+    total_quarantine = 0
+    total_reintegration = 0
+    total_abort = 0
     #
-    n_asym_infection = 0
-    n_presym_infection = 0
-    n_sym_infection = 0
+    total_asym_infection = 0
+    total_presym_infection = 0
+    total_sym_infection = 0
     #
+    n_no_outbreak = 0
     n_remaining_popsize = defaultdict(int)
     n_outbreak_duration = defaultdict(int)
     #
@@ -54,7 +55,7 @@ def summarize_simulations(args):
             params = params.split(',')
             #
             if event == 'INFECTION':
-                n_infection += 1
+                total_infection += 1
                 if 'by=0' in params:
                     infection_from_seed_per_sim[id] += 1
                     if id not in infection_time_from_seed_per_sim:
@@ -63,22 +64,24 @@ def summarize_simulations(args):
                     first_infection_day_per_sim[id] = time
                 for param in params:
                     if param.startswith('r_asym='):
-                        n_asym_infection += int(param[7:])
+                        total_asym_infection += int(param[7:])
                     elif param.startswith('r_presym='):
-                        n_presym_infection += int(param[9:])
+                        total_presym_infection += int(param[9:])
                     elif param.startswith('r_sym='):
-                        n_sym_infection += int(param[6:])
+                        total_sym_infection += int(param[6:])
             elif event == 'INFECTION_FAILED':
-                n_infection_failed += 1
+                total_infection_failed += 1
             elif event == 'INFECTION_AVOIDED':
-                n_infection_avoided += 1
+                total_infection_avoided += 1
             elif event == 'INFECTION_IGNORED':
-                n_infection_ignored += 1
+                total_infection_ignored += 1
             elif event == 'SHOW_SYMPTOM':
-                n_show_symptom += 1
+                total_show_symptom += 1
                 if target == 0:
                     n_seed_show_symptom_on_day[int(time) + 1] += 1
-                if id not in first_symptom_day_per_sim:
+                if args.pre_quarantine and time < args.pre_quarantine:
+                    pass
+                elif id not in first_symptom_day_per_sim:
                     first_symptom_day_per_sim[id] = time
                 elif id not in second_symptom_per_sim:
                     second_symptom_per_sim[
@@ -87,17 +90,24 @@ def summarize_simulations(args):
                     third_symptom_per_sim[
                         id] = time - second_symptom_per_sim[id]
             elif event == 'REMOVAL':
-                n_removal += 1
+                total_removal += 1
             elif event == 'QUARANTINE':
-                n_quarantine += 1
+                total_quarantine += 1
             elif event == 'REINTEGRATION':
-                n_reintegration += 1
+                total_reintegration += 1
             elif event == 'ABORT':
-                n_abort += 1
+                total_abort += 1
             elif event == 'END':
                 n_simulation += 1
                 n_remaining_popsize[target] += 1
-                n_outbreak_duration[0 if time == 0 else int(time) + 1] += 1
+                if not args.pre_quarantine:
+                    n_outbreak_duration[0 if time == 0 else int(time) + 1] += 1
+                else:
+                    n_outbreak_duration[0 if time <= args.pre_quarantine else
+                                        int(time - args.pre_quarantine) +
+                                        1] += 1
+                if target == 64 and id not in first_symptom_day_per_sim:
+                    n_no_outbreak += 1
             else:
                 raise ValueError(f'Unrecognized event {event}')
     # summarize
@@ -105,12 +115,19 @@ def summarize_simulations(args):
         n_num_infected_by_seed[v] += 1
     #
     for v in infection_time_from_seed_per_sim.values():
-        n_first_infected_by_seed_on_day[int(v) + 1] += 1
+        if args.pre_quarantine:
+            n_first_infected_by_seed_on_day[int(v - args.pre_quarantine) +
+                                            1] += 1
+        else:
+            n_first_infected_by_seed_on_day[int(v) + 1] += 1
     n_first_infected_by_seed_on_day[0] = n_simulation - sum(
         n_first_infected_by_seed_on_day.values())
     #
     for v in first_infection_day_per_sim.values():
-        n_first_infection_on_day[int(v) + 1] += 1
+        if args.pre_quarantine:
+            n_first_infection_on_day[int(v - args.pre_quarantine) + 1] += 1
+        else:
+            n_first_infection_on_day[int(v) + 1] += 1
     n_first_infection_on_day[0] = n_simulation - sum(
         n_first_infection_on_day.values())
     #
@@ -118,19 +135,19 @@ def summarize_simulations(args):
         n_seed_show_symptom_on_day.values())
     #
     for v in first_symptom_day_per_sim.values():
-        n_first_symptom_on_day[int(v) + 1] += 1
-    n_first_symptom_on_day[0] = n_simulation - sum(
-        n_first_symptom_on_day.values())
+        if args.pre_quarantine:
+            n_first_symptom_on_day[int(v - args.pre_quarantine) + 1] += 1
+        else:
+            n_first_symptom_on_day[int(v) + 1] += 1
+    n_first_symptom = sum(n_first_symptom_on_day.values())
     #
     for v in second_symptom_per_sim.values():
         n_second_symptom_on_day[int(v) + 1] += 1
-    n_second_symptom_on_day[0] = n_simulation - n_first_symptom_on_day[0] - sum(
-        n_second_symptom_on_day.values())
+    n_second_symptom = sum(n_second_symptom_on_day.values())
     #
     for v in third_symptom_per_sim.values():
         n_third_symptom_on_day[int(v) + 1] += 1
-    n_third_symptom_on_day[0] = n_simulation - n_first_symptom_on_day[
-        0] - n_second_symptom_on_day[0] - sum(n_third_symptom_on_day.values())
+    n_third_symptom = sum(n_third_symptom_on_day.values())
     #
     # print
     print(f'logfile\t{args.logfile}')
@@ -155,28 +172,27 @@ def summarize_simulations(args):
             )
     else:
         print(f'prop_asym_carriers\t10% to 40%')
-
+    print(f'allow_lead_time\t{"yes" if args.allow_lead_time else "no"}')
     print(f'n_simulation\t{n_simulation}')
-    print(f'n_infection\t{n_infection}')
-    print(f'n_infection_failed\t{n_infection_failed}')
-    print(f'n_infection_avoided\t{n_infection_avoided}')
-    print(f'n_infection_ignored\t{n_infection_ignored}')
-    print(f'n_show_symptom\t{n_show_symptom}')
-    print(f'n_removal\t{n_removal}')
-    print(f'n_quarantine\t{n_quarantine}')
-    print(f'n_reintegration\t{n_reintegration}')
-    print(f'n_abort\t{n_abort}')
-    print(f'n_asym_infection\t{n_asym_infection}')
-    print(f'n_presym_infection\t{n_presym_infection}')
-    print(f'n_sym_infection\t{n_sym_infection}')
+    print(f'total_infection\t{total_infection}')
+    print(f'total_infection_failed\t{total_infection_failed}')
+    print(f'total_infection_avoided\t{total_infection_avoided}')
+    print(f'total_infection_ignored\t{total_infection_ignored}')
+    print(f'total_show_symptom\t{total_show_symptom}')
+    print(f'total_removal\t{total_removal}')
+    print(f'total_quarantine\t{total_quarantine}')
+    print(f'total_reintegration\t{total_reintegration}')
+    print(f'total_abort\t{total_abort}')
+    print(f'total_asym_infection\t{total_asym_infection}')
+    print(f'total_presym_infection\t{total_presym_infection}')
+    print(f'total_sym_infection\t{total_sym_infection}')
 
     for num in sorted(n_remaining_popsize.keys()):
         print(f'n_remaining_popsize_{num}\t{n_remaining_popsize[num]}')
+    # no outbreak is defined as final population size of 64
+    print(f'n_no_outbreak\t{n_no_outbreak}')
     for day in sorted(n_outbreak_duration.keys()):
-        if day == 0:
-            print(f'n_no_outbreak\t{n_outbreak_duration[day]}')
-        else:
-            print(f'n_outbreak_duration_{day}\t{n_outbreak_duration[day]}')
+        print(f'n_outbreak_duration_{day}\t{n_outbreak_duration[day]}')
     for num in sorted(n_num_infected_by_seed.keys()):
         print(f'n_num_infected_by_seed_{num}\t{n_num_infected_by_seed[num]}')
     for day in sorted(n_first_infected_by_seed_on_day.keys()):
@@ -202,25 +218,15 @@ def summarize_simulations(args):
             print(
                 f'n_first_infection_on_day_{day}\t{n_first_infection_on_day[day]}'
             )
+    print(f'n_first_symptom\t{n_first_symptom}')
     for day in sorted(n_first_symptom_on_day.keys()):
-        if day == 0:
-            print(f'n_no_first_symptom\t{n_first_symptom_on_day[day]}')
-        else:
-            print(
-                f'n_first_symptom_on_day_{day}\t{n_first_symptom_on_day[day]}')
+        print(f'n_first_symptom_on_day_{day}\t{n_first_symptom_on_day[day]}')
+    print(f'n_second_symptom\t{n_second_symptom}')
     for day in sorted(n_second_symptom_on_day.keys()):
-        if day == 0:
-            print(f'n_no_second_symptom\t{n_second_symptom_on_day[day]}')
-        else:
-            print(
-                f'n_second_symptom_on_day_{day}\t{n_second_symptom_on_day[day]}'
-            )
+        print(f'n_second_symptom_on_day_{day}\t{n_second_symptom_on_day[day]}')
+    print(f'n_third_symptom\t{n_third_symptom}')
     for day in sorted(n_third_symptom_on_day.keys()):
-        if day == 0:
-            print(f'n_no_third_symptom\t{n_third_symptom_on_day[day]}')
-        else:
-            print(
-                f'n_third_symptom_on_day_{day}\t{n_third_symptom_on_day[day]}')
+        print(f'n_third_symptom_on_day_{day}\t{n_third_symptom_on_day[day]}')
 
 
 def main():
@@ -262,7 +268,12 @@ def main():
         help='''Proportion of asymptomatic cases. You can specify a fix number, or two
         numbers as the lower and higher CI (95%%) of the proportion. Default to 0.10 to 0.40.'''
     )
-
+    parser.add_argument(
+        '--allow-lead-time',
+        action='store_true',
+        help='''The seed carrier will be asumptomatic but always be at the beginning
+            of incurbation time. If allow lead time is set to True, the carrier will
+            be anywhere in his or her incubation period.''')
     parser.add_argument(
         '--analyze-existing-logfile',
         action='store_true',

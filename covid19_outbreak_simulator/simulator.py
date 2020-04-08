@@ -35,22 +35,30 @@ class Individual(object):
         self.incubation_period = self.model.draw_random_incubation_period()
 
         by = kwargs.get('by', None)
+
+        if by is None and 'allow_lead_time' in kwargs:
+            # this is the first infection, the guy should be asymptomatic, but
+            # could be anywhere in his incubation period
+            lead_time = np.random.uniform(0, self.incubation_period)
+        else:
+            lead_time = 0
+
         keep_symptomatic = kwargs.get('keep_symptomatic', False)
 
         # REMOVAL ...
         evts = [
             Event(
-                time + self.incubation_period,
+                time + self.incubation_period - lead_time,
                 EventType.SHOW_SYMPTOM,
                 self,
                 logger=self.logger)
         ]
         if not keep_symptomatic:
-            if self.quarantined and time + self.incubation_period < self.quarantined:
+            if self.quarantined and time + self.incubation_period - lead_time < self.quarantined:
                 # scheduling ABORT
                 evts.append(
                     Event(
-                        time + self.incubation_period,
+                        time + self.incubation_period - lead_time,
                         EventType.ABORT,
                         self,
                         logger=self.logger))
@@ -58,7 +66,7 @@ class Individual(object):
                 evts.append(
                     # scheduling REMOVAL
                     Event(
-                        time + self.incubation_period,
+                        time + self.incubation_period - lead_time,
                         EventType.REMOVAL,
                         self,
                         logger=self.logger))
@@ -69,7 +77,9 @@ class Individual(object):
         if keep_symptomatic:
             x_before = x_grid
         else:
-            x_before = [x for x in x_grid if x < self.incubation_period]
+            x_before = [
+                x for x in x_grid if x < self.incubation_period - lead_time
+            ]
         infected = np.random.binomial(1, trans_prob[:len(x_before)],
                                       len(x_before))
         presymptomatic_infected = [
@@ -105,6 +115,8 @@ class Individual(object):
         if by:
             by.n_infectee += 1
             params = [f'by={by.id}']
+        elif lead_time:
+            params = [f'leadtime={lead_time:.2f}']
         else:
             params = []
         #
@@ -127,11 +139,25 @@ class Individual(object):
 
         by = kwargs.get('by',)
 
+        if by is None and 'allow_lead_time' in kwargs:
+            # this is the first infection, the guy should be asymptomatic, but
+            # could be anywhere in his incubation period
+            lead_time = np.random.uniform(0, 10)
+        else:
+            lead_time = 0
+
         # REMOVAL ...
         evts = []
         #
         x_grid, trans_prob = self.model.get_asymptomatic_transmission_probability(
             self.r0)
+
+        if lead_time > 0:
+            idx = int(lead_time / self.model.params.simulation_interval)
+            trans_prob = trans_prob[idx:]
+            x_grid = x_grid[idx:]
+            x_grid = x_grid - x_grid[0]
+
         # infect only before removal
         infected = np.random.binomial(1, trans_prob, len(x_grid))
         asymptomatic_infected = sum(infected)
@@ -160,6 +186,8 @@ class Individual(object):
         if by:
             by.n_infectee += 1
             params = [f'by={by.id}']
+        elif lead_time > 0:
+            params = [f'leadtime={lead_time:.2f}']
         else:
             params = []
         #
@@ -241,6 +269,7 @@ class Event(object):
             return population[choice].infect(
                 self.time,
                 keep_symptomatic=simu_args.keep_symptomatic,
+                allow_lead_time=simu_args.allow_lead_time,
                 **self.kwargs)
         elif self.action == EventType.QUARANTINE:
             self.logger.write(
@@ -336,6 +365,9 @@ class Simulator(object):
 
             if not events or aborted:
                 break
+            # if self.simu_args.keep_symptomatic and all(
+            #         x.infected for x in population.values()):
+            #     break
         self.logger.write(
             f'{self.logger.id}\t{time:.2f}\t{EventType.END.name}\t{len(population)}\tpopsize={len(population)},prop_asym={self.model.params.prop_asym_carriers:.3f}\n'
         )
