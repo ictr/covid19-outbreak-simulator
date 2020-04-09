@@ -38,6 +38,7 @@ setup(
     },
     install_requires=requirements,
     long_description=readme,
+    long_description_content_type="text/markdown",
     include_package_data=True,
     keywords='covid19_outbreak_simulator',
     name='covid19-outbreak-simulator',
@@ -47,6 +48,6 @@ setup(
     test_suite='tests',
     tests_require=test_requirements,
     url='https://github.com/ictr/covid19-outbreak-simulator',
-    version='0.1.0',
+    version='0.1.1',
     zip_safe=False,
 )

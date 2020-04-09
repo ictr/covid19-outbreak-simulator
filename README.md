@@ -1,3 +1,9 @@
+[![PyPI](https://img.shields.io/pypi/v/covid19-outbreak-simulator.svg)](https://pypi.python.org/pypi/covid19-outbreak-simulator)
+[![PyPI version](https://img.shields.io/pypi/pyversions/covid19-outbreak-simulator.svg)](https://pypi.python.org/pypi/covid19-outbreak-simulator)
+[![Documentation](https://img.shields.io/badge/docs-latest-brightgreen.svg)](https://miyakogi.github.io/covid19-outbreak-simulator)
+[![Build Status](https://travis-ci.org/miyakogi/covid19-outbreak-simulator.svg?branch=master)](https://travis-ci.org/miyakogi/covid19-outbreak-simulator)
+[![codecov](https://codecov.io/gh/miyakogi/covid19-outbreak-simulator/branch/master/graph/badge.svg)](https://codecov.io/gh/miyakogi/covid19-outbreak-simulator)
+
 # COVID-19 Outbreak Simulator
 
 The COVID-19 outbreak simulator simulates the outbreak of COVID-19 in a population. It was first designed to simulate
