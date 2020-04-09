@@ -1,4 +1,25 @@
 
+
+.. image:: https://img.shields.io/pypi/v/covid19-outbreak-simulator.svg
+   :target: https://pypi.python.org/pypi/covid19-outbreak-simulator
+   :alt: PyPI
+
+
+.. image:: https://img.shields.io/pypi/pyversions/covid19-outbreak-simulator.svg
+   :target: https://pypi.python.org/pypi/covid19-outbreak-simulator
+   :alt: PyPI version
+
+
+.. image:: https://img.shields.io/badge/docs-latest-brightgreen.svg
+   :target: https://ictr.github.io/covid19-outbreak-simulator
+   :alt: Documentation
+
+
+.. image:: https://travis-ci.org/ictr/covid19-outbreak-simulator.svg?branch=master
+   :target: https://travis-ci.org/ictr/covid19-outbreak-simulator
+   :alt: Build Status
+
+
 COVID-19 Outbreak Simulator
 ===========================
 
@@ -32,6 +53,23 @@ of an infector. The following questions can be answered:
 The simulator uses the latest knowledge about the spread of COVID-19 and is
 validated against public data. This project will be contantly updated with our
 deepening knowledge on this virus.
+
+Modeling the outbreak of COVID-19
+---------------------------------
+
+We developed multiple statistical models to model the incubation time, serial interval,
+generation time, proportion of asymptomatic transmissions, using results from
+multiple publications. We validated the models with empirical data to ensure they
+generate, for example, correct distributions of serial intervals and proporitons
+of asymptomatic, pre-symptomatic, and symptomatic cases.
+
+The statistical models and related references are available at
+
+
+#. Model v1: `model_v1.ipynb <https://github.com/ictr/covid19-outbreak-simulator/blob/master/docs/model_v1.ipynb>`_
+#. Model v1: `model_v2.ipynb <https://github.com/ictr/covid19-outbreak-simulator/blob/master/docs/model_v2.ipynb>`_
+
+The models will continuously be updated as we learn more about the virus.
 
 How to use the simulator
 ------------------------

@@ -102,7 +102,7 @@ def test_get_symptomatic_transmission_probability(default_model):
         infected = np.random.binomial(1, prob, len(x_grid))
         r.append(sum(infected))
     #
-    assert math.fabs(sum(r) / N) - R0 < 0.01
+    assert math.fabs(sum(r) / N) - R0 < 0.05
 
 
 def test_get_asymptomatic_transmission_probability(default_model):

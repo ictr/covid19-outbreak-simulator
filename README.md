@@ -43,8 +43,8 @@ of asymptomatic, pre-symptomatic, and symptomatic cases.
 
 The statistical models and related references are available at
 
-1. Model v1: [model_v1.ipynb](https://github.com/ictr/covid19-outbreak-simulator/docs/movel_v1.ipynb)
-2. Model v1: [model_v2.ipynb](https://github.com/ictr/covid19-outbreak-simulator/docs/movel_v2.ipynb)
+1. Model v1: [model_v1.ipynb](https://github.com/ictr/covid19-outbreak-simulator/blob/master/docs/model_v1.ipynb)
+2. Model v1: [model_v2.ipynb](https://github.com/ictr/covid19-outbreak-simulator/blob/master/docs/model_v2.ipynb)
 
 The models will continuously be updated as we learn more about the virus.
 
