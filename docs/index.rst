@@ -1,5 +1,5 @@
 Welcome to COVID-19 Outbreak Simulator's documentation!
-======================================
+=======================================================
 
 .. toctree::
    :maxdepth: 2
