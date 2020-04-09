@@ -1,8 +1,7 @@
 [![PyPI](https://img.shields.io/pypi/v/covid19-outbreak-simulator.svg)](https://pypi.python.org/pypi/covid19-outbreak-simulator)
 [![PyPI version](https://img.shields.io/pypi/pyversions/covid19-outbreak-simulator.svg)](https://pypi.python.org/pypi/covid19-outbreak-simulator)
-[![Documentation](https://img.shields.io/badge/docs-latest-brightgreen.svg)](https://miyakogi.github.io/covid19-outbreak-simulator)
-[![Build Status](https://travis-ci.org/miyakogi/covid19-outbreak-simulator.svg?branch=master)](https://travis-ci.org/miyakogi/covid19-outbreak-simulator)
-[![codecov](https://codecov.io/gh/miyakogi/covid19-outbreak-simulator/branch/master/graph/badge.svg)](https://codecov.io/gh/miyakogi/covid19-outbreak-simulator)
+[![Documentation](https://img.shields.io/badge/docs-latest-brightgreen.svg)](https://ictr.github.io/covid19-outbreak-simulator)
+[![Build Status](https://travis-ci.org/ictr/covid19-outbreak-simulator.svg?branch=master)](https://travis-ci.org/ictr/covid19-outbreak-simulator)
 
 # COVID-19 Outbreak Simulator
 
@@ -33,6 +32,21 @@ of an infector. The following questions can be answered:
 The simulator uses the latest knowledge about the spread of COVID-19 and is
 validated against public data. This project will be contantly updated with our
 deepening knowledge on this virus.
+
+## Modeling the outbreak of COVID-19
+
+We developed multiple statistical models to model the incubation time, serial interval,
+generation time, proportion of asymptomatic transmissions, using results from
+multiple publications. We validated the models with empirical data to ensure they
+generate, for example, correct distributions of serial intervals and proporitons
+of asymptomatic, pre-symptomatic, and symptomatic cases.
+
+The statistical models and related references are available at
+
+1. Model v1: [model_v1.ipynb](https://github.com/ictr/covid19-outbreak-simulator/docs/movel_v1.ipynb)
+2. Model v1: [model_v2.ipynb](https://github.com/ictr/covid19-outbreak-simulator/docs/movel_v2.ipynb)
+
+The models will continuously be updated as we learn more about the virus.
 
 ## How to use the simulator
 
