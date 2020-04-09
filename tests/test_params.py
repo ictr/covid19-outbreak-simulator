@@ -66,7 +66,7 @@ def test_drawn_random_r0(default_model):
     #
     assert math.fabs(sum(symp_r0) /
                      N) - (default_model.params.symptomatic_r0_low +
-                           default_model.params.symptomatic_r0_high) / 2 < 0.001
+                           default_model.params.symptomatic_r0_high) / 2 < 0.005
 
     asymp_r0 = []
     for i in range(N):
@@ -74,7 +74,7 @@ def test_drawn_random_r0(default_model):
     #
     assert math.fabs(sum(asymp_r0) / N) - (
         default_model.params.asymptomatic_r0_low +
-        default_model.params.asymptomatic_r0_high) / 2 < 0.001
+        default_model.params.asymptomatic_r0_high) / 2 < 0.005
 
 
 def draw_random_incubation_period(default_model):

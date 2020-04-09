@@ -34,11 +34,13 @@ def test_infect(individual):
     res = individual.infect(5.0, by=None)
 
 
-def test_infect_infected(individual):
-    individual.model.draw_prop_asym_carriers()
-    individual.infected = 5.5
+def test_infect_infected(individual_factory):
+    ind = individual_factory(id=1)
+    ind1 = individual_factory(id=3)
+    ind.model.draw_prop_asym_carriers()
+    ind.infected = 5.5
 
-    res = individual.infect(5.0, by=None)
+    res = ind.infect(5.0, by=ind1)
 
     assert not res
 
