@@ -66,8 +66,8 @@ of asymptomatic, pre-symptomatic, and symptomatic cases.
 The statistical models and related references are available at
 
 
-#. Model v1: `model_v1.ipynb <https://bioworkflows.com/ictr/COVID19-outbreak-simulator-model/1>`_
-#. Model v1: `model_v2.ipynb <https://bioworkflows.com/ictr/COVID19-outbreak-simulator-model/2>`_
+#. `Statistical models of COVID-19 outbreaks (Version 1) <https://bioworkflows.com/ictr/COVID19-outbreak-simulator-model/1>`_
+#. `Statistical models of COVID-19 outbreaks (Version 2) <https://bioworkflows.com/ictr/COVID19-outbreak-simulator-model/2>`_
 
 The models will continuously be updated as we learn more about the virus.
 
