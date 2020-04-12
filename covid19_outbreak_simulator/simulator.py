@@ -357,21 +357,18 @@ class Simulator(object):
                 raise ValueError(
                     f'The first value of pre_quarantine should be days (a float number): {self.simu_args.pre_quarantine[0]} provided'
                 )
-            IDs = '0' if len(self.simu_args.pre_quarantine
-                            ) == 1 else self.simu_args.pre_quarantine[1:]
+            IDs = ['0'] if len(self.simu_args.pre_quarantine
+                              ) == 1 else self.simu_args.pre_quarantine[1:]
             for ID in IDs:
                 if ID not in population:
                     raise ValueError(f'Invalid ID to quanrantine {ID}')
                 events[0].append(
                     Event(
                         0,
-                        ID,
                         EventType.QUARANTINE,
                         population[ID],
                         logger=self.logger,
                         till=till))
-            # for statistics calculation, which uses only the number
-            self.simu_args.pre_quarantine = till
 
         infectors = [
             '0'

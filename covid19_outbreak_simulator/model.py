@@ -22,7 +22,6 @@ class Params:
         elif prop in ('loc', 'low', 'high', 'mean', 'sigma',
                       'scale') or prop.startswith('multiplier_'):
             setattr(self, f'{param}_{prop}', value)
-            print(f'{param}_{prop} is set tp {value}')
         elif re.match('quantile_(.*)', prop):
             lq = float(re.match('quantile_(.*)', prop)[1]) / 100
             loc = getattr(self, f'{param}_loc')
