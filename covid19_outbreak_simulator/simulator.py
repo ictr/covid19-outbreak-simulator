@@ -9,9 +9,10 @@ from .model import Model
 
 class Individual(object):
 
-    def __init__(self, id, model, logger):
+    def __init__(self, id, group, model, logger):
         self.id = id
         self.model = model
+        self.group = group
         self.logger = logger
 
         self.infected = None
@@ -31,8 +32,9 @@ class Individual(object):
 
     def symptomatic_infect(self, time, **kwargs):
         self.infected = time
-        self.r0 = self.model.draw_random_r0(symptomatic=True)
-        self.incubation_period = self.model.draw_random_incubation_period()
+        self.r0 = self.model.draw_random_r0(symptomatic=True, group=self.group)
+        self.incubation_period = self.model.draw_random_incubation_period(
+            group=self.group)
 
         by = kwargs.get('by', None)
 
@@ -320,26 +322,68 @@ class Simulator(object):
         self.model.draw_prop_asym_carriers()
 
         # collection of individuals
-        population = {
-            idx: Individual(idx, model=self.model, logger=self.logger)
-            for idx in range(self.simu_args.popsize)
-        }
+        population = {}
+        idx = 0
+        for ps in self.simu_args.popsize:
+            if '=' in ps:
+                # this is named population size
+                name, sz = ps.split('=', 1)
+
+            else:
+                name = ''
+                sz = ps
+            try:
+                sz = int(sz)
+            except Exception:
+                raise ValueError(
+                    f'Named population size should be name=int: {ps} provided')
+
+            population.update({
+                name + str(idx): Individual(
+                    name + str(idx),
+                    group=name,
+                    model=self.model,
+                    logger=self.logger) for idx in range(idx, idx + sz)
+            })
 
         events = defaultdict(list)
         self.logger.id = id
 
         # quanrantine the first person if args.pre-quarantine > 0
-        if self.simu_args.pre_quarantine is not None and self.simu_args.pre_quarantine > 0:
+        if self.simu_args.pre_quarantine:
+            try:
+                till = float(self.simu_args.pre_quarantine[0])
+            except Exception:
+                raise ValueError(
+                    f'The first value of pre_quarantine should be days (a float number): {self.simu_args.pre_quarantine[0]} provided'
+                )
+            IDs = '0' if len(self.simu_args.pre_quarantine
+                            ) == 1 else self.simu_args.pre_quarantine[1:]
+            for ID in IDs:
+                if ID not in population:
+                    raise ValueError(f'Invalid ID to quanrantine {ID}')
+                events[0].append(
+                    Event(
+                        0,
+                        ID,
+                        EventType.QUARANTINE,
+                        population[ID],
+                        logger=self.logger,
+                        till=till))
+            # for statistics calculation, which uses only the number
+            self.simu_args.pre_quarantine = till
+
+        infectors = [
+            '0'
+        ] if not self.simu_args.infectors else self.simu_args.infectors
+        for infector in infectors:
+            if infector not in population:
+                raise ValueError(f'Invalid ID for carrier {infector}')
+            # infect the first person
             events[0].append(
                 Event(
-                    0,
-                    EventType.QUARANTINE,
-                    population[0],
-                    logger=self.logger,
-                    till=self.simu_args.pre_quarantine))
-        # infect the first person
-        events[0].append(
-            Event(0, EventType.INFECTION, target=0, logger=self.logger))
+                    0, EventType.INFECTION, target=infector,
+                    logger=self.logger))
 
         while True:
             # find the latest event

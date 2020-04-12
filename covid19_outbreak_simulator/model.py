@@ -10,9 +10,8 @@ class Params:
 
     def __init__(self):
         self.params = set([
-            'simulation_interval', 'incubation_period', 'prop_asym_carriers',
-            'prop_asym_carriers', 'incubation_period', 'symptomatic_r0',
-            'asymptomatic_r0'
+            'simulation_interval', 'prop_asym_carriers', 'incubation_period',
+            'symptomatic_r0', 'asymptomatic_r0'
         ])
 
     def set(self, param, prop, value):
@@ -20,8 +19,10 @@ class Params:
             raise ValueError(f'Unrecgonzied parameter {param}')
         if prop is None or prop == 'self':
             setattr(self, param, value)
-        elif prop in ('loc', 'low', 'high', 'mean', 'sigma', 'scale'):
+        elif prop in ('loc', 'low', 'high', 'mean', 'sigma',
+                      'scale') or prop.startswith('multiplier_'):
             setattr(self, f'{param}_{prop}', value)
+            print(f'{param}_{prop} is set tp {value}')
         elif re.match('quantile_(.*)', prop):
             lq = float(re.match('quantile_(.*)', prop)[1]) / 100
             loc = getattr(self, f'{param}_loc')
@@ -66,23 +67,38 @@ class Model(object):
     def draw_is_asymptomatic(self):
         return np.random.uniform(0, 1) < self.params.prop_asym_carriers
 
-    def draw_random_r0(self, symptomatic):
+    def draw_random_r0(self, symptomatic, group=''):
         '''
         Reproduction number, drawn randomly between 1.4 and 2.8.
         '''
+        if symptomatic:
+            r0 = np.random.uniform(self.params.symptomatic_r0_low,
+                                   self.params.symptomatic_r0_high)
+            return r0 * getattr(self.params,
+                                f'symptomatic_r0_multiplier_{group}', 1.0)
+        else:
+            r0 = np.random.uniform(self.params.asymptomatic_r0_low,
+                                   self.params.asymptomatic_r0_high)
+            return r0 * getattr(self.params,
+                                f'asymptomatic_r0_multiplier_{group}', 1.0)
 
-        return np.random.uniform(
-            self.params.symptomatic_r0_low, self.params.symptomatic_r0_high
-        ) if symptomatic else np.random.uniform(
-            self.params.asymptomatic_r0_low, self.params.asymptomatic_r0_high)
-
-    def draw_random_incubation_period(self):
+    def draw_random_incubation_period(self, group=''):
         '''
         Incubation period, drawn from a lognormal distribution.
         '''
-        return np.random.lognormal(
-            mean=self.params.incubation_period_mean,
-            sigma=self.params.incubation_period_sigma)
+        if hasattr(self.params, 'incubation_period_loc'):
+            # if a normal distribution is specified
+            ip = max(
+                0,
+                np.random.normal(
+                    loc=self.params.incubation_period_loc,
+                    scale=self.params.incubation_period_scale))
+        else:
+            ip = np.random.lognormal(
+                mean=self.params.incubation_period_mean,
+                sigma=self.params.incubation_period_sigma)
+        return ip * getattr(self.params,
+                            f'incubation_period_multiplier_{group}', 1.0)
 
     def get_symptomatic_transmission_probability(self, incu, R0):
         '''Transmission probability.
@@ -105,21 +121,32 @@ class Model(object):
         # right side with 6 day interval
         incu = incu * 2 / 3
         dist_right = norm(incu, self.sd_6)
-        # left hand side with a incu day interval
-        sd_left = bisect(
-            lambda x: norm.cdf(2 * incu, loc=incu, scale=x) - 0.99,
-            a=0.001,
-            b=15,
-            xtol=0.001)
-        dist_left = norm(incu, sd_left)
-        scale = dist_right.pdf(incu) / dist_left.pdf(incu)
 
-        x = np.linspace(0, incu + 8,
-                        int((incu + 8) / self.params.simulation_interval))
-        idx = int(incu / self.params.simulation_interval)
-        y = np.concatenate(
-            [dist_left.pdf(x[:idx]) * scale,
-             dist_right.pdf(x[idx:])])
+        # if there is no left-hand-side
+        if incu <= self.params.simulation_interval:
+            x = np.linspace(0, incu + 8,
+                            int((incu + 8) / self.params.simulation_interval))
+            y = dist_right.pdf(x)
+        else:
+            # left hand side with a incu day interval
+            try:
+                sd_left = bisect(
+                    lambda x: norm.cdf(2 * incu, loc=incu, scale=x) - 0.99,
+                    a=0.001,
+                    b=15,
+                    xtol=0.001)
+            except:
+                # if incubation period is zer0
+                sd_left = 0.0
+            dist_left = norm(incu, sd_left)
+            scale = dist_right.pdf(incu) / dist_left.pdf(incu)
+
+            x = np.linspace(0, incu + 8,
+                            int((incu + 8) / self.params.simulation_interval))
+            idx = int(incu / self.params.simulation_interval)
+            y = np.concatenate(
+                [dist_left.pdf(x[:idx]) * scale,
+                 dist_right.pdf(x[idx:])])
         sum_y = sum(y)
         return x, y / sum(y) * R0
 

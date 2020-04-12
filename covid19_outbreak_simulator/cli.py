@@ -47,18 +47,24 @@ def summarize_simulations(args):
         second_symptom_per_sim = defaultdict(int)
         third_symptom_per_sim = defaultdict(int)
 
+        if args.infectors:
+            infectors = args.infectors
+        else:
+            infectors = ['0']
+
+        total_popsize = sum(int(x.split('=')[-1]) for x in args.popsize)
         for line in lines:
             id, time, event, target, params = line.split('\t')
             if id == 'id':
                 # skip header
                 continue
             time = float(time)
-            target = None if target == '.' else int(target)
+            target = None if target == '.' else target
             params = params.split(',')
             #
             if event == 'INFECTION':
                 total_infection += 1
-                if 'by=0' in params:
+                if any(x in params for x in [f'by={x}' for x in infectors]):
                     infection_from_seed_per_sim[id] += 1
                     if id not in infection_time_from_seed_per_sim:
                         infection_time_from_seed_per_sim[id] = time
@@ -79,7 +85,7 @@ def summarize_simulations(args):
                 total_infection_ignored += 1
             elif event == 'SHOW_SYMPTOM':
                 total_show_symptom += 1
-                if target == 0:
+                if target in infectors:
                     n_seed_show_symptom_on_day[int(time) + 1] += 1
                 if args.pre_quarantine and time < args.pre_quarantine:
                     pass
@@ -108,7 +114,7 @@ def summarize_simulations(args):
                     n_outbreak_duration[0 if time <= args.pre_quarantine else
                                         int(time - args.pre_quarantine) +
                                         1] += 1
-                if target == 64 and id not in first_symptom_day_per_sim:
+                if target == total_popsize and id not in first_symptom_day_per_sim:
                     n_no_outbreak += 1
             else:
                 raise ValueError(f'Unrecognized event {event}')
@@ -153,12 +159,20 @@ def summarize_simulations(args):
     #
     # print
     print(f'logfile\t{args.logfile}')
-    print(f'popsize\t{args.popsize}')
+    print(f'popsize\t{" ".join(args.popsize)}')
     print(f'keep_symptomatic\t{"yes" if args.keep_symptomatic else "no"}')
+    if args.symptomatic_r0:
+        print(f'symptomatic_r0\t{" - ".join(args.symptomatic_r0)}')
+    if args.asymptomatic_r0:
+        print(f'asymptomatic_r0\t{" - ".join(args.asymptomatic_r0)}')
+    if args.incubation_period:
+        print(
+            f'incubation_period\t{args.incubation_period[0]}({args.incubation_period[1]}, {args.incubation_period[2]}) '
+            + ' '.join(args.incubation_period[3:]))
     if args.pre_quarantine is None:
         print(f'pre_quarantine\tno')
     else:
-        print(f'pre_quarantine\t{args.pre_quarantine} days')
+        print(f'pre_quarantine\t{" ".join(args.pre_quarantine)}')
     if args.interval == 1 / 24:
         print(f'interval\t1 hour')
     elif args.interval == 1:
@@ -191,7 +205,7 @@ def summarize_simulations(args):
 
     for num in sorted(n_remaining_popsize.keys()):
         print(f'n_remaining_popsize_{num}\t{n_remaining_popsize[num]}')
-    # no outbreak is defined as final population size of 64
+    # no outbreak is defined as final population size
     print(f'n_no_outbreak\t{n_no_outbreak}')
     for day in sorted(n_outbreak_duration.keys()):
         print(f'n_outbreak_duration_{day}\t{n_outbreak_duration[day]}')
@@ -242,6 +256,109 @@ class Worker(multiprocessing.Process):
 
     def set_params(self, args):
         params = get_default_params(interval=args.interval)
+        if args.symptomatic_r0:
+            # if symptomatic_r0 is specified, it should a number of a range...
+            params.set('symptomatic_r0', 'low', float(args.symptomatic_r0[0]))
+            multiplier_loc = 1
+            if len(args.symptomatic_r0
+                  ) > 1 and '=' not in args.symptomatic_r0[1]:
+                # this should be upper bound
+                try:
+                    params.set('symptomatic_r0', 'high',
+                               float(args.symptomatic_r0[1]))
+                except Exception:
+                    raise ValueError(
+                        f'The second parameter of symptomatic_r0 should be a float number, if it is not a multiplier for groups: {args.symtptomatic_r0[1]} provided'
+                    )
+                multiplier_loc = 2
+            else:
+                params.set('symptomatic_r0', 'high',
+                           float(args.symptomatic_r0[0]))
+            for multiplier in args.symptomatic_r0[multiplier_loc:]:
+                if '=' not in multiplier:
+                    raise ValueError(
+                        f'Multiplier should have format name=float_value: {multiplier} provided'
+                    )
+                name, value = multiplier.split('=', 1)
+                try:
+                    value = float(value)
+                except Exception:
+                    raise ValueError(
+                        f'Multiplier should have format name=float_value: {multiplier} provided'
+                    )
+                params.set('symptomatic_r0', f'multiplier_{name}', value)
+        if args.asymptomatic_r0:
+            # if asymptomatic_r0 is specified, it should a number of a range...
+            params.set('asymptomatic_r0', 'low', float(args.asymptomatic_r0[0]))
+            multiplier_loc = 1
+            if len(args.asymptomatic_r0
+                  ) > 1 and '=' not in args.asymptomatic_r0[1]:
+                # this should be upper bound
+                try:
+                    params.set('asymptomatic_r0', 'high',
+                               float(args.asymptomatic_r0[1]))
+                except Exception:
+                    raise ValueError(
+                        f'The second parameter of asymptomatic_r0 should be a float number, if it is not a multiplier for groups: {args.symtptomatic_r0[1]} provided'
+                    )
+                multiplier_loc = 2
+            else:
+                params.set('asymptomatic_r0', 'high',
+                           float(args.asymptomatic_r0[0]))
+            for multiplier in args.asymptomatic_r0[multiplier_loc:]:
+                if '=' not in multiplier:
+                    raise ValueError(
+                        f'Multiplier should have format name=float_value: {multiplier} provided'
+                    )
+                name, value = multiplier.split('=', 1)
+                try:
+                    value = float(value)
+                except Exception:
+                    raise ValueError(
+                        f'Multiplier should have format name=float_value: {multiplier} provided'
+                    )
+                params.set('asymptomatic_r0', f'multiplier_{name}', value)
+        if args.incubation_period:
+            if len(args.incubation_period) < 3:
+                raise ValueError(
+                    f'Parameter incubation period requires aat least three values: {len(args.incubation_period)} provided'
+                )
+            if args.incubation_period[0] not in ('normal', 'lognormal'):
+                raise ValueError(
+                    f'Only normal or lognormal distribution for incubation period is supported. {args.incubation_period[0]} provided'
+                )
+            try:
+                params.set(
+                    'incubation_period', 'mean'
+                    if args.incubation_period[0] == 'lognormal' else 'loc',
+                    float(args.incubation_period[1]))
+            except Exception:
+                raise ValueError(
+                    f'Second parameter of incubation_period should be a float number: {args.incubation_period[1]} provided'
+                )
+            try:
+                params.set(
+                    'incubation_period', 'sigma'
+                    if args.incubation_period[0] == 'lognormal' else 'scale',
+                    float(args.incubation_period[2]))
+            except Exception:
+                raise ValueError(
+                    f'Third parameter of lognormal incubation_period should be a float number: {args.incubation_period[2]} provided'
+                )
+            # multipliers
+            for multiplier in args.incubation_period[3:]:
+                if '=' not in multiplier:
+                    raise ValueError(
+                        f'Multiplier should have format name=float_value: {multiplier} provided'
+                    )
+                name, value = multiplier.split('=', 1)
+                try:
+                    value = float(value)
+                except Exception:
+                    raise ValueError(
+                        f'Multiplier should have format name=float_value: {multiplier} provided'
+                    )
+                params.set('incubation_period', f'multiplier_{name}', value)
         if args.prop_asym_carriers:
             if len(args.prop_asym_carriers) == 1:
                 params.set('prop_asym_carriers', 'loc',
@@ -283,10 +400,35 @@ def main():
     parser = argparse.ArgumentParser('COVID Simulator')
     parser.add_argument(
         '--popsize',
-        default=64,
-        type=int,
+        default='64',
+        nargs='+',
         help='''Size of the population, including the infector that
-        will be introduced at the beginning of the simulation''')
+        will be introduced at the beginning of the simulation. It should be specified
+        as a single number, or a serial of name=size values for different groups. For
+        example "--popsize nurse=10 patient=100". The names will be used for setting
+        group specific parameters. The IDs of these individuals will be nurse0, nurse1
+        etc.''')
+    parser.add_argument(
+        '--symptomatic-r0',
+        nargs='+',
+        help='''Production number of symptomatic infectors, should be specified as a single
+            fixed number, or a range, followed by multipliers for different groups such as
+            A=1.2. For example "--symptomatic-r0 1.4 2.8 nurse=1.2" means a general R0
+            ranging from 1.4 to 2.8, while nursed has a range from 1.4*1.2 and 2.8*1.2.'''
+    )
+    parser.add_argument(
+        '--asymptomatic-r0',
+        nargs='+',
+        help='''Production number of asymptomatic infectors, should be specified as a single
+            fixed number, or a range, followed by multipliers for different groups'''
+    )
+    parser.add_argument(
+        '--incubation-period',
+        nargs='+',
+        help='''Incubation period period, should be specified as "lognormal" followed by two
+            numbers as mean and sigma, or "normal" followed by mean and sd, followed
+            by multipliers for different groups. Default to "lognormal 1.621 0.418"'''
+    )
     parser.add_argument(
         '--repeats',
         default=10000,
@@ -300,10 +442,19 @@ def main():
         help='Keep affected individuals in the population')
     parser.add_argument(
         '--pre-quarantine',
-        type=float,
+        nargs='*',
         help='''Days of self-quarantine before introducing infector to the group.
             The simulation will be aborted if the infector shows symptom before
-            introduction.''')
+            introduction. If you quarantine multiple people or specified named
+            groups, you will need to append the IDs to the parameter (e.g.
+            --pre-quarantine day nurse1 nurse2''')
+    parser.add_argument(
+        '--infectors',
+        nargs='*',
+        help='''Infectees to introduce to the population, default to '0'. If you
+            would like to introduce multiple infectees to the population, or if
+            you have named groups, you will have to specify the IDs of carrier
+            such as --infectors nurse1 nurse2''')
     parser.add_argument(
         '--interval',
         default=1 / 24,
