@@ -1,6 +1,8 @@
 """Console script for covid19_outbreak_simulator."""
 import argparse
 import sys
+import multiprocessing
+from io import StringIO
 from tqdm import tqdm
 from collections import defaultdict
 from .model import get_default_params
@@ -229,6 +231,53 @@ def summarize_simulations(args):
         print(f'n_third_symptom_on_day_{day}\t{n_third_symptom_on_day[day]}')
 
 
+class Worker(multiprocessing.Process):
+
+    def __init__(self, task_queue, result_queue, args):
+        multiprocessing.Process.__init__(self)
+        self.task_queue = task_queue
+        self.result_queue = result_queue
+        self.params = self.set_params(args)
+        self.simu_args = args
+
+    def set_params(self, args):
+        params = get_default_params(interval=args.interval)
+        if args.prop_asym_carriers:
+            if len(args.prop_asym_carriers) == 1:
+                params.set('prop_asym_carriers', 'loc',
+                           args.prop_asym_carriers[0])
+                params.set('prop_asym_carriers', 'scale', 0)
+            elif len(args.prop_asym_carriers) == 2:
+                if args.prop_asym_carriers[0] > args.prop_asym_carriers[1]:
+                    raise ValueError(
+                        f'Proportions for parameter prop-asym-carriers should be incremental.'
+                    )
+                params.set(
+                    'prop_asym_carriers', 'loc',
+                    (args.prop_asym_carriers[0] + args.prop_asym_carriers[1]) /
+                    2)
+                params.set('prop_asym_carriers', 'quantile_2.5',
+                           args.prop_asym_carriers[0])
+            else:
+                raise ValueError(
+                    f'Parameter prop-asym-carriers accepts one or two numbers.')
+        return params
+
+    def run(self):
+        while True:
+            id = self.task_queue.get()
+            if id is None:
+                self.task_queue.task_done()
+                break
+            with StringIO() as logger:
+                logger.id = id
+                simu = Simulator(
+                    params=self.params, logger=logger, simu_args=self.simu_args)
+                simu.simulate(id)
+                self.task_queue.task_done()
+                self.result_queue.put(logger.getvalue())
+
+
 def main():
     """Console script for covid19_outbreak_simulator."""
     parser = argparse.ArgumentParser('COVID Simulator')
@@ -239,7 +288,7 @@ def main():
         help='''Size of the population, including the infector that
         will be introduced at the beginning of the simulation''')
     parser.add_argument(
-        '--repeat',
+        '--repeats',
         default=10000,
         type=int,
         help='''Number of replicates to simulate. An ID starting from
@@ -278,34 +327,36 @@ def main():
         '--analyze-existing-logfile',
         action='store_true',
         help='''Analyze an existing logfile, useful for updating the summarization
-            procedure or uncaptured output.''')
+            procedure or uncaptured output. ''')
+    parser.add_argument(
+        '-j',
+        '--jobs',
+        type=int,
+        help='Number of process to use for simulation. Default to number of CPU cores.'
+    )
     args = parser.parse_args()
 
-    params = get_default_params(interval=args.interval)
-    if args.prop_asym_carriers:
-        if len(args.prop_asym_carriers) == 1:
-            params.set('prop_asym_carriers', 'loc', args.prop_asym_carriers[0])
-            params.set('prop_asym_carriers', 'scale', 0)
-        elif len(args.prop_asym_carriers) == 2:
-            if args.prop_asym_carriers[0] > args.prop_asym_carriers[1]:
-                raise ValueError(
-                    f'Proportions for parameter prop-asym-carriers should be incremental.'
-                )
-            params.set(
-                'prop_asym_carriers', 'loc',
-                (args.prop_asym_carriers[0] + args.prop_asym_carriers[1]) / 2)
-            params.set('prop_asym_carriers', 'quantile_2.5',
-                       args.prop_asym_carriers[0])
-        else:
-            raise ValueError(
-                f'Parameter prop-asym-carriers accepts one or two numbers.')
-
     if not args.analyze_existing_logfile:
+        tasks = multiprocessing.JoinableQueue()
+        results = multiprocessing.Queue()
+
+        if not args.jobs:
+            args.jobs = multiprocessing.cpu_count()
+
+        workers = [Worker(tasks, results, args) for i in range(args.jobs)]
+        for worker in workers:
+            worker.start()
+
         with open(args.logfile, 'w') as logger:
-            simu = Simulator(params=params, logger=logger, simu_args=args)
             logger.write('id\ttime\tevent\ttarget\tparams\n')
-            for i in tqdm(range(args.repeat)):
-                simu.simulate(i + 1)
+            for i in range(args.repeats):
+                tasks.put(i + 1)
+            for i in range(args.jobs):
+                tasks.put(None)
+            #
+            for i in tqdm(range(args.repeats)):
+                result = results.get()
+                logger.write(result)
 
     summarize_simulations(args)
     return 0

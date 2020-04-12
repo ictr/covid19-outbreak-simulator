@@ -114,8 +114,8 @@ The log file of a typical simulation would look like the following:
 
 ```
 id      time    event   target  params
-1       0.00    INFECTION       0       r0=0.53,r=0,r_asym=0
-1       0.00    END     64      popsize=64,prop_asym=0.276
+5       0.00    INFECTION       0       r0=0.53,r=0,r_asym=0
+5       0.00    END     64      popsize=64,prop_asym=0.276
 2       0.00    INFECTION       0       r0=2.42,r=1,r_presym=1,r_sym=0,incu=5.51
 2       4.10    INFECTION       62      by=0,r0=1.60,r=2,r_presym=2,r_sym=0,incu=5.84
 2       5.51    SHOW_SYMPTOM    0       .
@@ -149,10 +149,12 @@ id      time    event   target  params
 2       26.92   SHOW_SYMPTOM    42      .
 2       26.92   REMOVAL 42      popsize=54
 2       26.92   END     54      popsize=54,prop_asym=0.216
-3       0.00    INFECTION       0       r0=2.00,r=2,r_presym=2,r_sym=0,incu=4.19
+1       0.00    INFECTION       0       r0=2.00,r=2,r_presym=2,r_sym=0,incu=4.19
 ```
 
-which I assume would be pretty self-explanatory.
+which I assume would be pretty self-explanatory. Note that **the simulation IDs
+are not ordered because the they are run in parallel but you can expect all events
+belong to the same simulation are recorded together.**.
 
 ## Summary report from multiple replicates
 
