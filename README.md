@@ -83,6 +83,7 @@ to check the usage information.
 ```
 $ outbreak_simulator -h
 usage: COVID Simulator [-h] [--popsize POPSIZE [POPSIZE ...]]
+                       [--susceptibility SUSCEPTIBILITY [SUSCEPTIBILITY ...]]
                        [--symptomatic-r0 SYMPTOMATIC_R0 [SYMPTOMATIC_R0 ...]]
                        [--asymptomatic-r0 ASYMPTOMATIC_R0 [ASYMPTOMATIC_R0 ...]]
                        [--incubation-period INCUBATION_PERIOD [INCUBATION_PERIOD ...]]
@@ -104,6 +105,13 @@ optional arguments:
                         "--popsize nurse=10 patient=100". The names will be
                         used for setting group specific parameters. The IDs of
                         these individuals will be nurse0, nurse1 etc.
+  --susceptibility SUSCEPTIBILITY [SUSCEPTIBILITY ...]
+                        Weight of susceptibility. The default value is 1,
+                        meaning everyone is equally susceptible. With options
+                        such as "--susceptibility nurse=1.2 patients=0.8" you
+                        can give weights to different groups of people so that
+                        they have higher or lower probabilities to be
+                        infected.
   --symptomatic-r0 SYMPTOMATIC_R0 [SYMPTOMATIC_R0 ...]
                         Production number of symptomatic infectors, should be
                         specified as a single fixed number, or a range, and/or
@@ -153,6 +161,7 @@ optional arguments:
                         summarization procedure or uncaptured output.
   -j JOBS, --jobs JOBS  Number of process to use for simulation. Default to
                         number of CPU cores.
+
 ```
 
 ### Homogeneous and heterogeneous populations
@@ -203,13 +212,15 @@ which multiplies specified values to values drawn from the default distribution.
 
 For example, if in a hospital environment nurses, once affected, tends to have
 higher `R0` because he or she contact more patients, and on the other hand
-patients are less mobile and should have lower `R0`, you can run a simulation
+patients are less mobile and should have lower `R0`. In some cases the nurses
+are even less protected and are more susceptible. You can run a simulation
 with two patients carrying the virus with the following options:
 
 ```
 outbreak_simulator --popsize nurse=10 patient=100 \
     --symptomatic-r0 nurse=1.5 patient=0.8 \
     --asymptomatic-r0 nurse=1.5 patient=0.8 \
+    --susceptibility nurse=1.2 patient=0.8 \
     --infector patient0 patient1
 ```
 

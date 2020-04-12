@@ -2,6 +2,7 @@
 import argparse
 import sys
 import multiprocessing
+import numpy as np
 from io import StringIO
 from tqdm import tqdm
 from collections import defaultdict
@@ -385,6 +386,20 @@ class Worker(multiprocessing.Process):
                         f'Multiplier should have format name=float_value: {multiplier} provided'
                     )
                 params.set('incubation_period', f'multiplier_{name}', value)
+        if args.susceptibility:
+            for multiplier in args.susceptibility:
+                if '=' not in multiplier:
+                    raise ValueError(
+                        f'Susceptibility has to be specified as name=weight: {multiplier} specified.'
+                    )
+                name, value = multiplier.split('=', 1)
+                try:
+                    value = float(value)
+                except Exception:
+                    raise ValueError(
+                        f'Multiplier should have format name=float_value: {multiplier} provided'
+                    )
+                params.set('susceptibility', f'multiplier_{name}', value)
         if args.prop_asym_carriers:
             if len(args.prop_asym_carriers) == 1:
                 params.set('prop_asym_carriers', 'loc',
@@ -407,6 +422,8 @@ class Worker(multiprocessing.Process):
         return params
 
     def run(self):
+        # set random seed to a random number
+        np.random.seed()
         while True:
             id = self.task_queue.get()
             if id is None:
@@ -433,7 +450,15 @@ def main():
         as a single number, or a serial of name=size values for different groups. For
         example "--popsize nurse=10 patient=100". The names will be used for setting
         group specific parameters. The IDs of these individuals will be nurse0, nurse1
-        etc.''')
+        etc. ''')
+    parser.add_argument(
+        '--susceptibility',
+        nargs='+',
+        help='''Weight of susceptibility. The default value is 1, meaning everyone is
+            equally susceptible. With options such as
+            "--susceptibility nurse=1.2 patients=0.8" you can give weights to different
+            groups of people so that they have higher or lower probabilities to be
+            infected.''')
     parser.add_argument(
         '--symptomatic-r0',
         nargs='+',

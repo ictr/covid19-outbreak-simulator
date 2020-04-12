@@ -2,6 +2,7 @@ from enum import Enum
 
 import random
 import numpy as np
+from numpy.random import choice
 from collections import defaultdict
 
 from .model import Model
@@ -9,10 +10,11 @@ from .model import Model
 
 class Individual(object):
 
-    def __init__(self, id, group, model, logger):
+    def __init__(self, id, group, susceptibility, model, logger):
         self.id = id
         self.model = model
         self.group = group
+        self.susceptibility = susceptibility
         self.logger = logger
 
         self.infected = None
@@ -254,7 +256,22 @@ class Event(object):
     def apply(self, population, simu_args):
         if self.action == EventType.INFECTION:
             if self.target is not None:
-                choice = self.target
+                selected = self.target
+            elif simu_args.susceptibility:
+                # select one non-quarantined indivudal to infect
+                ids = [(id, ind.susceptibility)
+                       for id, ind in population.items()
+                       if (not self.target or id != self.target.id) and
+                       not ind.quarantined]
+
+                if not ids:
+                    self.logger.write(
+                        f'{self.logger.id}\t{self.time:.2f}\t{EventType.INFECTION_FAILED.name}\t{self.target.id}\tby={self.kwargs["by"].id}\n'
+                    )
+                    return []
+                weights = np.array([x[1] for x in ids])
+                weights = weights / sum(weights)
+                selected = ids[choice(len(ids), 1, p=weights)[0]][0]
             else:
                 # select one non-quarantined indivudal to infect
                 ids = [
@@ -267,8 +284,8 @@ class Event(object):
                         f'{self.logger.id}\t{self.time:.2f}\t{EventType.INFECTION_FAILED.name}\t{self.target.id}\tby={self.kwargs["by"].id}\n'
                     )
                     return []
-                choice = random.choice(ids)
-            return population[choice].infect(
+                selected = random.choice(ids)
+            return population[selected].infect(
                 self.time,
                 keep_symptomatic=simu_args.keep_symptomatic,
                 allow_lead_time=simu_args.allow_lead_time,
@@ -342,6 +359,9 @@ class Simulator(object):
                 name + str(idx): Individual(
                     name + str(idx),
                     group=name,
+                    susceptibility=getattr(self.model.params,
+                                           f'susceptibility_multiplier_{name}',
+                                           1),
                     model=self.model,
                     logger=self.logger) for idx in range(idx, idx + sz)
             })

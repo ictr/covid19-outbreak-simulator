@@ -11,7 +11,7 @@ class Params:
     def __init__(self):
         self.params = set([
             'simulation_interval', 'prop_asym_carriers', 'incubation_period',
-            'symptomatic_r0', 'asymptomatic_r0'
+            'symptomatic_r0', 'asymptomatic_r0', 'susceptibility'
         ])
 
     def set(self, param, prop, value):
