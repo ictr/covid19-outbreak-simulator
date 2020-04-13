@@ -4,7 +4,7 @@ from covid19_outbreak_simulator.simulator import Individual, EventType
 
 
 def test_individual(default_model, logger):
-    ind = Individual(0, default_model, logger)
+    ind = Individual(0, 'group 1', 1.2, default_model, logger)
 
     assert ind.infected is None
     assert ind.quarantined is None
