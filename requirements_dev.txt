@@ -9,4 +9,5 @@ Sphinx==1.8.5
 twine==1.14.0
 
 pytest==4.6.5
+python-coveralls==2.9.3
 pytest-runner==5.1
