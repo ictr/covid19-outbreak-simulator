@@ -8,7 +8,7 @@ from scipy.optimize import bisect
 
 class Params:
 
-    def __init__(self, args):
+    def __init__(self, args=None):
         # args should be args returned from argparser
         self.params = set([
             'simulation_interval', 'prop_asym_carriers', 'incubation_period',
@@ -63,7 +63,8 @@ class Params:
 
     def set_params(self, args):
         # set some default values first
-        self.set('simulation_interval', 'self', args.interval)
+        self.set('simulation_interval', 'self',
+                 args.interval if args else 1 / 24)
         self.set('prop_asym_carriers', 'loc', 0.25)
         self.set('prop_asym_carriers', 'quantile_2.5', 0.1)
         self.set('symptomatic_r0', 'low', 1.4)
@@ -73,6 +74,8 @@ class Params:
         self.set('incubation_period', 'mean', 1.621)
         self.set('incubation_period', 'sigma', 0.418)
 
+        if not args:
+            return
         if args.popsize:
             for ps in args.popsize:
                 if '=' in ps:
