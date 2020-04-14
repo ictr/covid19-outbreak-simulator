@@ -1,6 +1,7 @@
 
+import os
 import pytest
-from covid19_outbreak_simulator.cli import parse_args
+from covid19_outbreak_simulator.cli import parse_args, main
 from covid19_outbreak_simulator.model import Params
 
 def test_option_popsize():
@@ -21,6 +22,10 @@ def test_option_popsize():
         params = Params(args)
 
     with pytest.raises(ValueError):
+        args = parse_args(['--popsize', '50A'])
+        params = Params(args)
+
+    with pytest.raises(ValueError):
         args = parse_args(['--popsize', '500', 'A=300', 'A=200'])
         params = Params(args)
 
@@ -38,8 +43,8 @@ def test_option_susceptibility():
         params.susceptibility_multiplier_B
 
     # group does not exist
-    args = parse_args(['--popsize', 'A=500', 'B=300', '--susceptibility', 'C=0.8'])
     with pytest.raises(ValueError):
+        args = parse_args(['--popsize', 'A=500', 'B=300', '--susceptibility', 'C=0.8'])
         params = Params(args)
 
 def test_option_symptomatic_r0():
@@ -168,3 +173,30 @@ def test_option_infectors():
         args = parse_args(['--popsize', 'A=10', 'B=10',
              '--infectors', 'A10'])
         params = Params(args)
+
+def test_main_default():
+    main(['--jobs', '1', '--repeats', '100'])
+    main(['--jobs', '1', '--repeats', '100', '--logfile', 'test.out'])
+    assert os.path.isfile('test.out')
+    main(['--analyze-existing-logfile', '--logfile', 'test.out'])
+
+def test_main_symptomatic():
+    main(['--jobs', '1', '--repeats', '100', '--symptomatic-r0', '1.0'])
+    main(['--jobs', '1', '--repeats', '100', '--symptomatic-r0', '1.0', '2.0'])
+
+def test_main_asymptomatic():
+    main(['--jobs', '1', '--repeats', '100', '--asymptomatic-r0', '0.5'])
+    main(['--jobs', '1', '--repeats', '100', '--asymptomatic-r0', '0.5', '1.5'])
+    main(['--jobs', '1', '--repeats', '100', '--popsize', 'A=100', 'B=50',
+        '--asymptomatic-r0', '0.5', '1.5', 'A=1.2', '--infector', 'A0'])
+
+def test_main_pre_quarantine():
+    main(['--jobs', '1', '--repeats', '100', '--pre-quarantine', '7'])
+    main(['--jobs', '1', '--repeats', '100', '--pre-quarantine', '7', '1', '2'])
+    main(['--jobs', '1', '--repeats', '100', '--popsize', 'A=100', 'B=200',
+        '--pre-quarantine', '7', 'A2', 'A7',  '--infector', 'A2', 'A7'])
+
+def test_main_incubation_period():
+    main(['--jobs', '1', '--repeats', '100', '--incubation-period', 'lognormal', '1', '0.2'])
+    main(['--jobs', '1', '--repeats', '100', '--incubation-period', 'normal', '1', '2'])
+

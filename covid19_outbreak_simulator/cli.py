@@ -374,9 +374,9 @@ def parse_args(args=None):
     return parser.parse_args(args)
 
 
-def main():
+def main(args=None):
     """Console script for covid19_outbreak_simulator."""
-    args = parse_args()
+    args = parse_args(args)
     if not args.analyze_existing_logfile:
         tasks = multiprocessing.JoinableQueue()
         results = multiprocessing.Queue()
