@@ -1,6 +1,6 @@
 import pytest
 
-from covid19_outbreak_simulator.model import Params, Model, get_default_params
+from covid19_outbreak_simulator.model import Params, Model
 from covid19_outbreak_simulator.simulator import Simulator, Individual
 from argparse import Namespace
 
@@ -11,13 +11,8 @@ def params():
 
 
 @pytest.fixture
-def default_params():
-    return get_default_params()
-
-
-@pytest.fixture
 def default_model():
-    return Model(get_default_params())
+    return Model(Params())
 
 
 @pytest.fixture
@@ -28,14 +23,14 @@ def logger():
 
 
 @pytest.fixture
-def simulator(default_params, logger):
+def simulator(params, logger):
     simu_args = Namespace()
     simu_args.popsize = 64
     simu_args.repeat = 1
     simu_args.keep_symptomatic = True
     simu_args.pre_quarantine = None
 
-    return Simulator(params=default_params, logger=logger, simu_args=simu_args)
+    return Simulator(params=params, logger=logger, simu_args=simu_args)
 
 
 @pytest.fixture

@@ -6,8 +6,8 @@ import numpy as np
 from io import StringIO
 from tqdm import tqdm
 from collections import defaultdict
-from .model import get_default_params
 from .simulator import Simulator
+from .model import Params
 
 
 def summarize_simulations(args):
@@ -255,171 +255,8 @@ class Worker(multiprocessing.Process):
         multiprocessing.Process.__init__(self)
         self.task_queue = task_queue
         self.result_queue = result_queue
-        self.params = self.set_params(args)
+        self.params = Params(args)
         self.simu_args = args
-
-    def set_params(self, args):
-        params = get_default_params(interval=args.interval)
-        if args.symptomatic_r0:
-            # if asymptomatic_r0 is specified, it should a number of a range...
-            pars = [x for x in args.symptomatic_r0 if '=' not in x]
-            if len(pars) == 1:
-                try:
-                    params.set('symptomatic_r0', 'low', float(pars[0]))
-                    params.set('symptomatic_r0', 'high', float(pars[0]))
-                except Exception:
-                    raise ValueError(
-                        f'The symptomatic_r0 should be a float number, if it is not a multiplier for groups: {pars[0]} provided'
-                    )
-            elif len(pars) == 2:
-                try:
-                    params.set('symptomatic_r0', 'low', float(pars[0]))
-                except Exception as e:
-                    raise ValueError(
-                        f'The symptomatic_r0 should be a float number, if it is not a multiplier for groups: {pars[0]} provided'
-                    )
-                try:
-                    params.set('symptomatic_r0', 'high', float(pars[1]))
-                except Exception as e:
-                    raise ValueError(
-                        f'The symptomatic_r0 should be a float number, if it is not a multiplier for groups: {pars[1]} provided'
-                    )
-            elif len(pars) > 2:
-                raise ValueError(
-                    f'The symptomatic_r0 should be one or two float number.')
-            #
-            for multiplier in [x for x in args.symptomatic_r0 if '=' in x]:
-                if '=' not in multiplier:
-                    raise ValueError(
-                        f'Multiplier should have format name=float_value: {multiplier} provided'
-                    )
-                name, value = multiplier.split('=', 1)
-                try:
-                    value = float(value)
-                except Exception:
-                    raise ValueError(
-                        f'Multiplier should have format name=float_value: {multiplier} provided'
-                    )
-                params.set('symptomatic_r0', f'multiplier_{name}', value)
-        if args.asymptomatic_r0:
-            # if asymptomatic_r0 is specified, it should a number of a range...
-            pars = [x for x in args.asymptomatic_r0 if '=' not in x]
-            if len(pars) == 1:
-                try:
-                    params.set('asymptomatic_r0', 'low', float(pars[0]))
-                    params.set('asymptomatic_r0', 'high', float(pars[0]))
-                except Exception:
-                    raise ValueError(
-                        f'The asymptomatic_r0 should be a float number, if it is not a multiplier for groups: {pars[0]} provided'
-                    )
-            elif len(pars) == 2:
-                try:
-                    params.set('asymptomatic_r0', 'low', float(pars[0]))
-                except Exception as e:
-                    raise ValueError(
-                        f'The asymptomatic_r0 should be a float number, if it is not a multiplier for groups: {pars[0]} provided'
-                    )
-                try:
-                    params.set('asymptomatic_r0', 'high', float(pars[1]))
-                except Exception as e:
-                    raise ValueError(
-                        f'The asymptomatic_r0 should be a float number, if it is not a multiplier for groups: {pars[1]} provided'
-                    )
-            elif len(pars) > 2:
-                raise ValueError(
-                    f'The asymptomatic_r0 should be one or two float number.')
-            #
-            for multiplier in [x for x in args.asymptomatic_r0 if '=' in x]:
-                if '=' not in multiplier:
-                    raise ValueError(
-                        f'Multiplier should have format name=float_value: {multiplier} provided'
-                    )
-                name, value = multiplier.split('=', 1)
-                try:
-                    value = float(value)
-                except Exception:
-                    raise ValueError(
-                        f'Multiplier should have format name=float_value: {multiplier} provided'
-                    )
-                params.set('asymptomatic_r0', f'multiplier_{name}', value)
-        if args.incubation_period:
-            pars = [
-                x for x in args.incubation_period
-                if x in ('normal', 'lognormal') or '=' not in x
-            ]
-            if pars:
-                if len(pars) < 3:
-                    raise ValueError(
-                        f'Parameter incubation period requires aat least three values: {len(args.incubation_period)} provided'
-                    )
-                if pars[0] not in ('normal', 'lognormal'):
-                    raise ValueError(
-                        f'Only normal or lognormal distribution for incubation period is supported. {pars[0]} provided'
-                    )
-                try:
-                    params.set('incubation_period',
-                               'mean' if pars[0] == 'lognormal' else 'loc',
-                               float(pars[1]))
-                except Exception:
-                    raise ValueError(
-                        f'Second parameter of incubation_period should be a float number: {pars[1]} provided'
-                    )
-                try:
-                    params.set('incubation_period',
-                               'sigma' if pars[0] == 'lognormal' else 'scale',
-                               float(pars[2]))
-                except Exception:
-                    raise ValueError(
-                        f'Third parameter of lognormal incubation_period should be a float number: {pars[2]} provided'
-                    )
-            # multipliers
-            for multiplier in [x for x in args.incubation_period if '=' in x]:
-                if '=' not in multiplier:
-                    raise ValueError(
-                        f'Multiplier should have format name=float_value: {multiplier} provided'
-                    )
-                name, value = multiplier.split('=', 1)
-                try:
-                    value = float(value)
-                except Exception:
-                    raise ValueError(
-                        f'Multiplier should have format name=float_value: {multiplier} provided'
-                    )
-                params.set('incubation_period', f'multiplier_{name}', value)
-        if args.susceptibility:
-            for multiplier in args.susceptibility:
-                if '=' not in multiplier:
-                    raise ValueError(
-                        f'Susceptibility has to be specified as name=weight: {multiplier} specified.'
-                    )
-                name, value = multiplier.split('=', 1)
-                try:
-                    value = float(value)
-                except Exception:
-                    raise ValueError(
-                        f'Multiplier should have format name=float_value: {multiplier} provided'
-                    )
-                params.set('susceptibility', f'multiplier_{name}', value)
-        if args.prop_asym_carriers:
-            if len(args.prop_asym_carriers) == 1:
-                params.set('prop_asym_carriers', 'loc',
-                           args.prop_asym_carriers[0])
-                params.set('prop_asym_carriers', 'scale', 0)
-            elif len(args.prop_asym_carriers) == 2:
-                if args.prop_asym_carriers[0] > args.prop_asym_carriers[1]:
-                    raise ValueError(
-                        f'Proportions for parameter prop-asym-carriers should be incremental.'
-                    )
-                params.set(
-                    'prop_asym_carriers', 'loc',
-                    (args.prop_asym_carriers[0] + args.prop_asym_carriers[1]) /
-                    2)
-                params.set('prop_asym_carriers', 'quantile_2.5',
-                           args.prop_asym_carriers[0])
-            else:
-                raise ValueError(
-                    f'Parameter prop-asym-carriers accepts one or two numbers.')
-        return params
 
     def run(self):
         # set random seed to a random number
@@ -438,12 +275,11 @@ class Worker(multiprocessing.Process):
                 self.result_queue.put(logger.getvalue())
 
 
-def main():
-    """Console script for covid19_outbreak_simulator."""
+def parse_args(args=None):
     parser = argparse.ArgumentParser('outbreak_simulator')
     parser.add_argument(
         '--popsize',
-        default='64',
+        default=['64'],
         nargs='+',
         help='''Size of the population, including the infector that
         will be introduced at the beginning of the simulation. It should be specified
@@ -535,8 +371,12 @@ def main():
         type=int,
         help='Number of process to use for simulation. Default to number of CPU cores.'
     )
-    args = parser.parse_args()
+    return parser.parse_args(args)
 
+
+def main():
+    """Console script for covid19_outbreak_simulator."""
+    args = parse_args()
     if not args.analyze_existing_logfile:
         tasks = multiprocessing.JoinableQueue()
         results = multiprocessing.Queue()
