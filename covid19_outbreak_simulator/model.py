@@ -30,6 +30,9 @@ class Params:
                 raise ValueError(
                     f'Group {group} does not exist. Available groups are: {", ".join(self.groups.keys())}'
                 )
+            if value < 0:
+                raise ValueError(
+                    f'Multiplier should be positive {value} specified')
             setattr(self, f'{param}_{prop}', value)
         elif re.match('quantile_(.*)', prop):
             lq = float(re.match('quantile_(.*)', prop)[1]) / 100
@@ -86,7 +89,7 @@ class Params:
                         )
                 else:
                     name = ''
-                    size = ps
+                    size = int(ps)
                 try:
                     size = int(size)
                 except Exception:
@@ -141,10 +144,6 @@ class Params:
                     f'The symptomatic_r0 should be one or two float number.')
             #
             for multiplier in [x for x in args.symptomatic_r0 if '=' in x]:
-                if '=' not in multiplier:
-                    raise ValueError(
-                        f'Multiplier should have format name=float_value: {multiplier} provided'
-                    )
                 name, value = multiplier.split('=', 1)
                 try:
                     value = float(value)
@@ -182,10 +181,6 @@ class Params:
                     f'The asymptomatic_r0 should be one or two float number.')
             #
             for multiplier in [x for x in args.asymptomatic_r0 if '=' in x]:
-                if '=' not in multiplier:
-                    raise ValueError(
-                        f'Multiplier should have format name=float_value: {multiplier} provided'
-                    )
                 name, value = multiplier.split('=', 1)
                 try:
                     value = float(value)
@@ -226,10 +221,6 @@ class Params:
                     )
             # multipliers
             for multiplier in [x for x in args.incubation_period if '=' in x]:
-                if '=' not in multiplier:
-                    raise ValueError(
-                        f'Multiplier should have format name=float_value: {multiplier} provided'
-                    )
                 name, value = multiplier.split('=', 1)
                 try:
                     value = float(value)
@@ -253,24 +244,37 @@ class Params:
                     )
                 self.set('susceptibility', f'multiplier_{name}', value)
         if args.prop_asym_carriers:
-            if len(args.prop_asym_carriers) == 1:
-                self.set('prop_asym_carriers', 'loc',
-                         args.prop_asym_carriers[0])
+            try:
+                pars = [
+                    float(x) for x in args.prop_asym_carriers if '=' not in x
+                ]
+            except Exception:
+                raise ValueError(
+                    f'Paramter prop-asym-carriers expect one or two float value or multipliers: {" ".join(args.prop_asym_carriers)} provided'
+                )
+            if len(pars) == 1:
+                self.set('prop_asym_carriers', 'loc', float(pars[0]))
                 self.set('prop_asym_carriers', 'scale', 0)
-            elif len(args.prop_asym_carriers) == 2:
-                if args.prop_asym_carriers[0] > args.prop_asym_carriers[1]:
+            elif len(pars) == 2:
+                if pars[0] > pars[1]:
                     raise ValueError(
                         f'Proportions for parameter prop-asym-carriers should be incremental.'
                     )
-                self.set(
-                    'prop_asym_carriers', 'loc',
-                    (args.prop_asym_carriers[0] + args.prop_asym_carriers[1]) /
-                    2)
-                self.set('prop_asym_carriers', 'quantile_2.5',
-                         args.prop_asym_carriers[0])
-            else:
+                self.set('prop_asym_carriers', 'loc', (pars[0] + pars[1]) / 2)
+                self.set('prop_asym_carriers', 'quantile_2.5', pars[0])
+            elif len(pars) > 2:
                 raise ValueError(
                     f'Parameter prop-asym-carriers accepts one or two numbers.')
+            #
+            for multiplier in [x for x in args.prop_asym_carriers if '=' in x]:
+                name, value = multiplier.split('=', 1)
+                try:
+                    value = float(value)
+                except Exception:
+                    raise ValueError(
+                        f'Multiplier should have format name=float_value: {multiplier} provided'
+                    )
+                self.set('prop_asym_carriers', f'multiplier_{name}', value)
 
 
 class Model(object):
@@ -282,11 +286,15 @@ class Model(object):
         self.params = params
         self.params.prop_asym_carriers = None
 
-    def draw_prop_asym_carriers(self):
+    def draw_prop_asym_carriers(self, group=''):
         self.params.prop_asym_carriers = np.random.normal(
             loc=self.params.prop_asym_carriers_loc,
             scale=self.params.prop_asym_carriers_scale)
-        return min(max(self.params.prop_asym_carriers, 0), 1)
+        return min(
+            max(
+                self.params.prop_asym_carriers * getattr(
+                    self.params, f'prop_asym_carriers_multiplier_{group}', 1.0),
+                0), 1)
 
     def draw_is_asymptomatic(self):
         return np.random.uniform(0, 1) < self.params.prop_asym_carriers

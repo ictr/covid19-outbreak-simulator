@@ -47,6 +47,11 @@ def test_option_susceptibility():
         args = parse_args(['--popsize', 'A=500', 'B=300', '--susceptibility', 'C=0.8'])
         params = Params(args)
 
+    # not as multiplier
+    with pytest.raises(ValueError):
+        args = parse_args(['--popsize', 'A=500', 'B=300', '--susceptibility', '0.8'])
+        params = Params(args)
+
 def test_option_symptomatic_r0():
     args = parse_args(['--symptomatic-r0', '1.0'])
     params = Params(args)
@@ -66,6 +71,24 @@ def test_option_symptomatic_r0():
     assert params.symptomatic_r0_high == 1.5
     assert params.symptomatic_r0_multiplier_A == 0.8
 
+    # not float number
+    with pytest.raises(ValueError):
+        args = parse_args(['--symptomatic-r0', '1.0f'])
+        params = Params(args)
+
+    with pytest.raises(ValueError):
+        args = parse_args(['--symptomatic-r0', '0.8a', '1.0'])
+        params = Params(args)
+
+    with pytest.raises(ValueError):
+        args = parse_args(['--symptomatic-r0', '0.8', '1.0f'])
+        params = Params(args)
+
+    # more numbers
+    with pytest.raises(ValueError):
+        args = parse_args(['--symptomatic-r0', '0.8', '1.0', '2.0'])
+        params = Params(args)
+
 def test_option_asymptomatic_r0():
     args = parse_args(['--asymptomatic-r0', '1.0'])
     params = Params(args)
@@ -84,6 +107,24 @@ def test_option_asymptomatic_r0():
     assert params.asymptomatic_r0_low == 1.5
     assert params.asymptomatic_r0_high == 1.5
     assert params.asymptomatic_r0_multiplier_A == 0.8
+
+    # not float number
+    with pytest.raises(ValueError):
+        args = parse_args(['--asymptomatic-r0', '1.0f'])
+        params = Params(args)
+
+    with pytest.raises(ValueError):
+        args = parse_args(['--asymptomatic-r0', '0.8a', '1.0'])
+        params = Params(args)
+
+    with pytest.raises(ValueError):
+        args = parse_args(['--asymptomatic-r0', '0.8', '1.0f'])
+        params = Params(args)
+
+    # more numbers
+    with pytest.raises(ValueError):
+        args = parse_args(['--asymptomatic-r0', '0.8', '1.0', '2.0'])
+        params = Params(args)
 
 def test_option_inclubation_period():
     with pytest.raises(ValueError):
@@ -128,6 +169,22 @@ def test_option_inclubation_period():
     assert params.incubation_period_multiplier_A == 1.13
     assert params.incubation_period_multiplier_B == 0.95
 
+    with pytest.raises(ValueError):
+        args = parse_args(['--popsize', 'A=500', 'B=300',
+            '--incubation-period', 'normal', '5', '2.3p'])
+        params = Params(args)
+
+    with pytest.raises(ValueError):
+        args = parse_args(['--popsize', 'A=500', 'B=300',
+            '--incubation-period', 'normal', '5', '2.3p', 'A=1.4p'])
+        params = Params(args)
+
+    # negative multiplier
+    with pytest.raises(ValueError):
+        args = parse_args(['--popsize', 'A=500', 'B=300',
+            '--incubation-period', 'A=-1'])
+        params = Params(args)
+
 def test_option_pre_quarantine():
     args = parse_args(['--pre-quarantine', '10'])
     params = Params(args)
@@ -141,9 +198,21 @@ def test_option_pre_quarantine():
              '--pre-quarantine', '10', '1'])
         params = Params(args)
 
+    # index out of range
     with pytest.raises(ValueError):
         args = parse_args(['--popsize', 'A=10', 'B=10',
              '--pre-quarantine', '10', 'C1', 'C2'])
+        params = Params(args)
+
+    # missing quarantine time
+    with pytest.raises(ValueError):
+        args = parse_args(['--popsize', 'A=10', 'B=10',
+             '--pre-quarantine', 'A1', 'A2'])
+        params = Params(args)
+
+    with pytest.raises(ValueError):
+        args = parse_args(['--popsize', '100',
+             '--pre-quarantine', '10', '101'])
         params = Params(args)
 
     with pytest.raises(ValueError):
@@ -173,6 +242,36 @@ def test_option_infectors():
         args = parse_args(['--popsize', 'A=10', 'B=10',
              '--infectors', 'A10'])
         params = Params(args)
+
+def test_option_prop_asym_carriers():
+    args = parse_args(['--prop-asym-carriers', '0.1'])
+    params = Params(args)
+    assert params.prop_asym_carriers_loc == 0.1
+    assert params.prop_asym_carriers_scale == 0.0
+
+    args = parse_args(['--prop-asym-carriers', '0.1', '0.3'])
+    params = Params(args)
+    assert params.prop_asym_carriers_loc == 0.2
+
+    with pytest.raises(ValueError):
+        args = parse_args(['--popsize', 'A=10', 'B=10',
+             '--prop-asym-carriers', 'C=1.2'])
+        params = Params(args)
+
+    with pytest.raises(ValueError):
+        args = parse_args(['--popsize', 'A=10', 'B=10',
+             '--prop-asym-carriers', 'A=-1.2'])
+        params = Params(args)
+
+    with pytest.raises(ValueError):
+        args = parse_args(['--popsize', 'A=10', 'B=10',
+             '--prop-asym-carriers', 'A=1.2f'])
+        params = Params(args)
+
+    args = parse_args(['--popsize', 'A=10', 'B=10',
+            '--prop-asym-carriers', 'A=1.2'])
+    params = Params(args)
+    assert params.prop_asym_carriers_multiplier_A == 1.2
 
 def test_main_default():
     main(['--jobs', '1', '--repeats', '100'])

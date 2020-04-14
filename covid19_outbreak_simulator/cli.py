@@ -350,10 +350,10 @@ def parse_args(args=None):
     parser.add_argument(
         '--prop-asym-carriers',
         nargs='*',
-        type=float,
         help='''Proportion of asymptomatic cases. You can specify a fix number, or two
-        numbers as the lower and higher CI (95%%) of the proportion. Default to 0.10 to 0.40.'''
-    )
+        numbers as the lower and higher CI (95%%) of the proportion. Default to 0.10 to 0.40.
+        Multipliers can be specified to set proportion of asymptomatic carriers
+        for particular groups.''')
     parser.add_argument(
         '--allow-lead-time',
         action='store_true',
