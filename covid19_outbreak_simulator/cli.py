@@ -440,7 +440,7 @@ class Worker(multiprocessing.Process):
 
 def main():
     """Console script for covid19_outbreak_simulator."""
-    parser = argparse.ArgumentParser('COVID Simulator')
+    parser = argparse.ArgumentParser('outbreak_simulator')
     parser.add_argument(
         '--popsize',
         default='64',

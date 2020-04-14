@@ -33,7 +33,7 @@ Command line options
 .. code-block:: sh
 
    $ outbreak_simulator -h
-   usage: COVID Simulator [-h] [--popsize POPSIZE [POPSIZE ...]]
+   usage: outbreak_simulator [-h] [--popsize POPSIZE [POPSIZE ...]]
                           [--susceptibility SUSCEPTIBILITY [SUSCEPTIBILITY ...]]
                           [--symptomatic-r0 SYMPTOMATIC_R0 [SYMPTOMATIC_R0 ...]]
                           [--asymptomatic-r0 ASYMPTOMATIC_R0 [ASYMPTOMATIC_R0 ...]]
