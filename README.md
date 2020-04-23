@@ -10,7 +10,7 @@ The COVID-19 outbreak simulator simulates the outbreak of COVID-19 in a populati
 the outbreak of COVID-19 in small populations in enclosed environments, such as a FPSO (floating production storage and
 offloading vessel) but has since been expanded to simulate much larger populations with dynamic parameters.
 
-This README file contains all essential information but you can also visit our [documentation](https://covid19-outbreak-simulator.readthedocs.io/en/latest/?badge=latest) for more details.
+This README file contains all essential information but you can also visit our [documentation](https://covid19-outbreak-simulator.readthedocs.io/en/latest/?badge=latest) for more details. Please feel free to [contact us](https://github.com/ictr/covid19-outbreak-simulator/issues) if you would like to simulate any particular environment.
 
 ## Background
 
