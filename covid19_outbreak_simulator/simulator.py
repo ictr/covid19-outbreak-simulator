@@ -406,6 +406,22 @@ class Simulator(object):
             # find the latest event
             time = min(events.keys())
 
+            if self.simu_args.stop_if is not None:
+                if self.simu_args.stop_if[0].startswith('t>'):
+                    #
+                    try:
+                        st = float(self.simu_args.stop_if[0][2:])
+                    except Exception:
+                        raise ValueError(
+                            f'Invalid value for option --stop-if "{self.simu_args.stop_if[0]}": {e}'
+                        )
+                    if time > st:
+                        time = st
+                        break
+                else:
+                    raise ValueError(
+                        f'Option --stop-if currently only supports t>TIME to stop after certain time point.'
+                    )
             new_events = []
             aborted = False
             # processing events
@@ -429,6 +445,13 @@ class Simulator(object):
             # if self.simu_args.keep_symptomatic and all(
             #         x.infected for x in population.values()):
             #     break
+        res = {
+            'popsize': len(population),
+            'prop_asym': f'{self.model.params.prop_asym_carriers:.3f}'
+        }
+        if self.simu_args.stop_if:
+            res['stop_if'] = ''.join(self.simu_args.stop_if)
+        params = ','.join([f'{x}={y}' for x, y in res.items()])
         self.logger.write(
-            f'{self.logger.id}\t{time:.2f}\t{EventType.END.name}\t{len(population)}\tpopsize={len(population)},prop_asym={self.model.params.prop_asym_carriers:.3f}\n'
+            f'{self.logger.id}\t{time:.2f}\t{EventType.END.name}\t{len(population)}\t{params}\n'
         )

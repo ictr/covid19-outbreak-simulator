@@ -355,6 +355,13 @@ def parse_args(args=None):
         Multipliers can be specified to set proportion of asymptomatic carriers
         for particular groups.''')
     parser.add_argument(
+        '--stop-if',
+        nargs='*',
+        help='''Condition at which the simulation will end. By default the simulation
+            stops when all individuals are affected or all infected individuals
+            are removed. Current you can specify a time after which the simulation
+            will stop in the format of `--stop-if "t>10"' (for 10 days).''')
+    parser.add_argument(
         '--allow-lead-time',
         action='store_true',
         help='''The seed carrier will be asumptomatic but always be at the beginning

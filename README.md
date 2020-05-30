@@ -16,13 +16,18 @@ This README file contains all essential information but you can also visit our [
 
 This simulator simulates the scenario in which
 
--   A group of individuals in a population in which everyone is susceptible.
+-   A group of individuals in a population in which everyone is susceptible. The population
+    is by default free of virus, but seroprevalence and incidance rate could be specifed
+    to initialize the population with virus.
 -   The population can be divided into multiple subgroups with different parameters.
 -   One or more virus carriers are introduced to the population, potentially after a fixed
     days of self-quarantine.
 -   Infectees are by default removed from from the population (or separated, or
     quarantined, as long as he or she can no longer infect others) after they
     displayed symptoms, but options are provided to act otherwise.
+-   The simulation is by default stopped after the population is free of virus (all
+    infected individuals have been removed), or everyone is infected, or after
+    a pre-specified time (e.g. after 10 days).
 
 The simulator simulates the epidemic of the population with the introduction of
 infectors. Detailed statistics are captured from the simulations to answer questions
