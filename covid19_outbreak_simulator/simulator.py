@@ -6,6 +6,7 @@ from numpy.random import choice
 from collections import defaultdict
 
 from .model import Model
+from importlib import import_module
 
 
 class Individual(object):
@@ -385,6 +386,49 @@ class Simulator(object):
         self.simu_args = simu_args
         self.params = params
         self.model = None
+        self.plugins = {}
+
+    def load_plugins(self, population):
+        if not self.simu_args.plugins:
+            return
+        for plugin in self.simu_args.plugins:
+            if '.' not in plugin:
+                raise ValueError(
+                    f'Plugins have to be specified as modulename.pluginname: {plugin} provided'
+                )
+            module_name, plugin_name = plugin.rsplit('.', 1)
+            try:
+                mod = import_module(module_name)
+            except Exception as e:
+                try:
+                    mod = import_module(
+                        f'covid19_outbreak_simulator.plugins.{module_name}')
+                except Exception as e:
+                    raise ValueError(
+                        f'Failed to import module {module_name}: {e}')
+            try:
+                obj = getattr(mod, plugin_name)(
+                    simulator=self, population=population)
+            except Exception as e:
+                raise ValueError(
+                    f'Failed to retrieve plugin {plugin_name} from module {module_name}'
+                )
+            # if there is a parser
+            if hasattr(obj, 'get_parser'):
+                parser = obj.get_parser()
+                args = parser.parse_known_args()
+            else:
+                args = None
+            #
+            if not hasattr(obj, 'apply'):
+                raise ValueError('No "apply" function is defined for plugin')
+            self.plugins[obj] = args
+
+    def call_plugins(self, time, population):
+        events = []
+        for plugin, args in self.plugins.items():
+            events.extend(plugin.apply(time=time, args=args))
+        return events
 
     def simulate(self, id):
         #
@@ -396,6 +440,8 @@ class Simulator(object):
         # collection of individuals
         population = {}
         idx = 0
+
+        self.load_plugins(population=population)
 
         # population prevalence and incidence rate
         ir = {'': 0.0}
@@ -578,6 +624,10 @@ class Simulator(object):
                     break
                 # event triggers new event
                 new_events.extend(evt.apply(population, self.simu_args))
+
+            #
+            new_events.extend(
+                self.call_plugins(time=time, population=population))
             events.pop(time)
             #
             for evt in new_events:

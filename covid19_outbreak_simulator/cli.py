@@ -129,7 +129,9 @@ def summarize_simulations(args):
                     key, value = param.split('=')
                     timed_stats[key][time] = value
             else:
-                raise ValueError(f'Unrecognized event {event}')
+                # customized events
+                pass
+
     # summarize
     for v in infection_from_seed_per_sim.values():
         n_num_infected_by_seed[v] += 1
@@ -405,6 +407,15 @@ def parse_args(args=None):
         action='store_true',
         help='''Analyze an existing logfile, useful for updating the summarization
             procedure or uncaptured output. ''')
+    parser.add_argument(
+        '--plugins',
+        nargs='*',
+        help='''One or more name of Python modules that will be used by the simulator.
+            The module should define classes derived from outbreak_simulator.plugin.BasePlugin.
+            Plugins should be provided in the format of 'module1.plugin1` where `module` is
+            name of the module and `plugin` is the name of the class. The plugins will be
+            triggered by specific event, or once at each time epoc when any other events happen.
+            ''')
     parser.add_argument(
         '-j',
         '--jobs',

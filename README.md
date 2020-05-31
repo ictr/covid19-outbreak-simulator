@@ -84,6 +84,40 @@ outbreak_simulator -h
 
 to check the usage information.
 
+## Plug-in system
+
+It is very likely that for complex simulations you would have scenarios that are
+not provided by the core simulator. This simulator has a plug-in system that allows
+you to define your own functions that would be called by the simulator at specified
+intervals or events. The simulator will even pass command line arguments
+to the plugins so that the plugins can be customized through command line arguments.
+
+The plugins should be written as Python classes that
+
+1. Drive from `outbreak_simulator.BasePlugin` and calls its `__init__` function.
+
+2. Provide as class attributes:
+
+  * `version` (optional): version of plugin and tells the simulator how to handle it
+  * `events` (optional): a set of events that triggers the plugin, default to no event.
+
+3. Provide as member function:
+
+  * `get_parser()` (optional): a function that returns a parser defined through Python `argparse` module. It will be used to parse command line using `parse_known_args` function.
+
+  * `apply(time, population, simulator, args)` (required): A function that accepts parameters `time` (time when the plugin is called), `population` (the entire population of being simulated), `simulator` (the simulator object with properties such as `simu_args`, `params`, and `model` so you can access command line simulator arguments, model parameters, and change simulation model), and `args` (plugin args).
+
+If `events` are provided, the plugin will be triggered whenever one of the `events` is trigged. Otherwise the plugin will be triggered at each time point when any event happens. The plugin can change the status of the population or simulation parameters, write to system log `simulator.logger` or write to its own output files. It should return a list of events that can happen at a later time, or an empty list indicating no future event is triggered.
+
+The plugins should be triggered by
+
+```
+outbreak_simulator --plugins modulename.plugin_name modulename1.plugin_name1
+```
+where `modulename` is the name of the python module and `plugin_name` is the name of the class that defines the plugin.
+
+Please check the [plugins directory](https://github.com/ictr/covid19-outbreak-simulator/plugins) for examples on how to write plugins for the simulator.
+
 ## Command line options
 
 ```
