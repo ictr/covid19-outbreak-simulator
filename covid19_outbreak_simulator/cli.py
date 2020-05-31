@@ -372,7 +372,8 @@ def parse_args(args=None):
         help='''Infectees to introduce to the population, default to '0'. If you
             would like to introduce multiple infectees to the population, or if
             you have named groups, you will have to specify the IDs of carrier
-            such as --infectors nurse1 nurse2''')
+            such as --infectors nurse1 nurse2. Specifying this parameter without
+            value will not introduce any infector.''')
     parser.add_argument(
         '--interval',
         default=1 / 24,
