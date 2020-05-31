@@ -346,27 +346,37 @@ class Event(object):
             return []
         elif self.action == EventType.STAT:
             stat = {}
+            stat[f'n_recovered'] = len(
+                [x for x, ind in population.items() if ind.recovered is True])
+            stat[f'n_infected'] = len([
+                x for x, ind in population.items()
+                if ind.infected not in (False, None)
+            ])
+            stat[f'n_popsize'] = len([x for x, ind in population.items()])
+            stat[f'n_seroprevalence'] = '0' if stat[
+                f'n_popsize'] == 0 else '{:.3f}'.format(
+                    (stat[f'n_recovered'] + stat[f'n_infected']) /
+                    stat[f'n_popsize'])
+
             groups = set([x.group for x in population.values()])
             for group in groups:
                 if group == '':
-                    name = ''
-                else:
-                    name = group + '_'
-                stat[f'n_{name}recovered'] = len([
+                    continue
+                stat[f'n_{group}_recovered'] = len([
                     x for x, ind in population.items()
                     if ind.recovered is True and ind.group == group
                 ])
-                stat[f'n_{name}infected'] = len([
+                stat[f'n_{group}_infected'] = len([
                     x for x, ind in population.items()
                     if ind.infected not in (False, None) and ind.group == group
                 ])
-                stat[f'n_{name}popsize'] = len(
+                stat[f'n_{group}_popsize'] = len(
                     [x for x, ind in population.items() if ind.group == group])
-                stat[f'n_seroprevalence'] = 0 if stat[
-                    f'n_{name}popsize'] == 0 else ((stat[f'n_{name}recovered'] +
-                                                    stat[f'n_{name}infected']) /
-                                                   stat[f'n_{name}popsize'])
-                stat[f'n_seroprevalence'] = f"{stat[f'n_seroprevalence']:0.3f}"
+                stat[f'n_{group}_seroprevalence'] = 0 if stat[
+                    f'n_{group}_popsize'] == '0' else '{:.3f}'.format(
+                        (stat[f'n_{group}_recovered'] +
+                         stat[f'n_{group}_infected']) /
+                        stat[f'n_{group}_popsize'])
             param = ','.join(f'{k}={v}' for k, v in stat.items())
             self.logger.write(
                 f'{self.logger.id}\t{self.time:.2f}\t{EventType.STAT.name}\t.\t{param}\n'

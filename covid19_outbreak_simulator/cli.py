@@ -42,6 +42,7 @@ def summarize_simulations(args):
     n_third_symptom_on_day = defaultdict(int)
     #
     timed_stats = defaultdict(dict)
+    customized_stats = defaultdict(dict)
     #
     with open(args.logfile) as lines:
         infection_from_seed_per_sim = defaultdict(int)
@@ -126,11 +127,21 @@ def summarize_simulations(args):
                 id, time, event, target, params = line.split('\t')
                 params = params.split(',')
                 for param in params:
-                    key, value = param.split('=')
-                    timed_stats[key][time] = value
+                    try:
+                        key, value = param.split('=')
+                        timed_stats[key][time] = value
+                    except Exception:
+                        pass
             else:
                 # customized events
-                pass
+                id, time, event, target, params = line.split('\t')
+                params = params.split(',')
+                for param in params:
+                    try:
+                        key, value = param.split('=')
+                        customized_stats[f'{event.lower()}_{key}'][time] = value
+                    except Exception:
+                        pass
 
     # summarize
     for v in infection_from_seed_per_sim.values():
@@ -263,6 +274,9 @@ def summarize_simulations(args):
         print(f'n_third_symptom_on_day_{day}\t{n_third_symptom_on_day[day]}')
     for item, timed_value in timed_stats.items():
         for time, value in timed_value.items():
+            print(f'{item}_{time}\t{value.strip()}')
+    for item, timed_value in customized_stats.items():
+        for time, value in customized_stats.items():
             print(f'{item}_{time}\t{value.strip()}')
 
 

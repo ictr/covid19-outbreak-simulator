@@ -116,7 +116,7 @@ outbreak_simulator --plugins modulename.plugin_name modulename1.plugin_name1
 ```
 where `modulename` is the name of the python module and `plugin_name` is the name of the class that defines the plugin.
 
-Please check the [plugins directory](https://github.com/ictr/covid19-outbreak-simulator/plugins) for examples on how to write plugins for the simulator.
+Please check the [plugins directory](https://github.com/ictr/covid19-outbreak-simulator/tree/master/covid19_outbreak_simulator/plugins) for examples on how to write plugins for the simulator.
 
 ## Command line options
 
@@ -396,6 +396,7 @@ multiple replicated simulations. The output contains the following keys and thei
 | 'n_YYY_recovered_XXX' | Number of recovered individuals in group YYY at time `XXX` |
 | 'seroprevalence_XXX' | Seroprevalence (infected + recovered)/popsize) at time `XXX` |
 | 'YYY_seroprevalence_XXX' | Seroprevalence in group YYY at time `XXX` |
+| 'EVENT_STAT_XXX' | Reported statistics `STAT` for customized event `EVENT` at time `XXX` |
 
 ## Data analysis tools
 
