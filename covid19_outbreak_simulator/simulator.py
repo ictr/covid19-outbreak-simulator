@@ -10,14 +10,16 @@ from .model import Model
 
 class Individual(object):
 
-    def __init__(self, id, group, susceptibility, model, logger):
+    def __init__(self, id, group, susceptibility, infected, recovered, model,
+                 logger):
         self.id = id
         self.model = model
         self.group = group
         self.susceptibility = susceptibility
         self.logger = logger
 
-        self.infected = None
+        self.infected = infected
+        self.recovered = recovered
         self.quarantined = None
         self.n_infectee = 0
 
@@ -205,9 +207,10 @@ class Individual(object):
         return evts
 
     def infect(self, time, **kwargs):
-        if self.infected is not None:
+        if self.infected is True:
+            by_id = kwargs["by"].id if "by" in kwargs else 'None'
             self.logger.write(
-                f'{self.logger.id}\t{time:.2f}\t{EventType.INFECTION_IGNORED.name}\t{self.id}\tby={kwargs["by"].id}\n'
+                f'{self.logger.id}\t{time:.2f}\t{EventType.INFECTION_IGNORED.name}\t{self.id}\tby={by_id}\n'
             )
             return []
 
@@ -341,6 +344,54 @@ class Simulator(object):
         # collection of individuals
         population = {}
         idx = 0
+
+        # population prevalence and incidence rate
+        ir = {'': 0.0}
+        if self.simu_args.initial_incidence_rate:
+            # the first number must be float
+            try:
+                ir[''] = float(self.simu_args.initial_incidence_rate[0])
+            except Exception as e:
+                raise ValueError(
+                    f'The first parameter of --initial-incidence-rate should be a float number "{self.simu_args.initial_incidence_rate[0]}" provided: {e}'
+                )
+            for multiplier in self.simu_args.initial_incidence_rate[1:]:
+                if '=' not in multiplier:
+                    raise ValueError(
+                        f'The non-first parameter of --initial-incidence-rate should be a float number "{multiplier}" provided.'
+                    )
+                name, value = multiplier.split('=', 1)
+                try:
+                    value = float(value)
+                except Exception:
+                    raise ValueError(
+                        f'Multiplier should have format name=float_value: {multiplier} provided'
+                    )
+                ir[name] = value * ir['']
+        #
+        isp = {'': 0.0}
+        if self.simu_args.initial_seroprevalence:
+            # the first number must be float
+            try:
+                isp[''] = float(self.simu_args.initial_seroprevalence[0])
+            except Exception as e:
+                raise ValueError(
+                    f'The first parameter of --initial-seroprevalence should be a float number "{self.simu_args.initial_incidence_rate[0]}" provided: {e}'
+                )
+            for multiplier in self.simu_args.initial_seroprevalence[1:]:
+                if '=' not in multiplier:
+                    raise ValueError(
+                        f'The non-first parameter of --initial-incidence-rate should be a float number "{multiplier}" provided.'
+                    )
+                name, value = multiplier.split('=', 1)
+                try:
+                    value = float(value)
+                except Exception:
+                    raise ValueError(
+                        f'Multiplier should have format name=float_value: {multiplier} provided'
+                    )
+                isp[name] = value * ir['']
+
         for ps in self.simu_args.popsize:
             if '=' in ps:
                 # this is named population size
@@ -354,6 +405,21 @@ class Simulator(object):
             except Exception:
                 raise ValueError(
                     f'Named population size should be name=int: {ps} provided')
+            pop_ir = ir.get(name, '')
+            n_ir = np.random.binomial(sz, pop_ir, 1)[0]
+
+            pop_isp = isp.get(name, '')
+            if pop_isp == 0.0:
+                n_recovered = 0
+            elif pop_isp < pop_ir:
+                raise ValueError(
+                    'Seroprevalence, if specified, should be greater than or equal to incidence rate.'
+                )
+            else:
+                n_recovered = np.random.binomial(sz, pop_isp - pop_ir, 1)[0]
+            pop_status = [1] * n_ir + [2] * n_recovered + [0] * (
+                sz - n_ir - n_recovered)
+            random.shuffle(pop_status)
 
             population.update({
                 name + str(idx): Individual(
@@ -362,12 +428,26 @@ class Simulator(object):
                     susceptibility=getattr(self.model.params,
                                            f'susceptibility_multiplier_{name}',
                                            1),
+                    infected=sts == 1,
+                    recovered=sts == 2,
                     model=self.model,
-                    logger=self.logger) for idx in range(idx, idx + sz)
+                    logger=self.logger)
+                for idx, sts in zip(range(idx, idx + sz), pop_status)
             })
 
         events = defaultdict(list)
         self.logger.id = id
+
+        if self.simu_args.initial_incidence_rate:
+            for id, ind in population.items():
+                if ind.infected:
+                    events[0].append(
+                        Event(
+                            0,
+                            EventType.INFECTION,
+                            target=id,
+                            logger=self.logger))
+                    ind.infected = False
 
         # quanrantine the first person if args.pre-quarantine > 0
         if self.simu_args.pre_quarantine:

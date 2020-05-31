@@ -335,6 +335,23 @@ def parse_args(args=None):
             groups, you will need to append the IDs to the parameter (e.g.
             --pre-quarantine day nurse1 nurse2''')
     parser.add_argument(
+        '--initial-incidence-rate',
+        nargs='*',
+        help='''Incidence rate of the population (default to zero), which should be
+        the probability that any individual is currently affected with the virus (not
+        necessarily show any symptom). Multipliers can be specified to set incidence
+        rate of for particular groups (e.g. --initial-incidence-rate 0.1 docter=1.2
+        will set incidence rate to 0.12 for doctors).''')
+    parser.add_argument(
+        '--initial-seroprevalence',
+        nargs='*',
+        help='''Seroprevalence of the population (default to zero). The seroprevalence
+        should always be greater than or euqal to initial incidence rate. The difference
+        between seroprevalence and incidence rate will determine the "recovered" rate of
+        the population. Multipliers can be specified to set incidence rate of
+        for particular groups (e.g. --initial-incidence-rate 0.1 docter=1.2 will set
+        incidence rate to 0.12 for doctors).''')
+    parser.add_argument(
         '--infectors',
         nargs='*',
         help='''Infectees to introduce to the population, default to '0'. If you
@@ -391,7 +408,10 @@ def main(args=None):
         if not args.jobs:
             args.jobs = multiprocessing.cpu_count()
 
-        workers = [Worker(tasks, results, args) for i in range(args.jobs)]
+        workers = [
+            Worker(tasks, results, args)
+            for i in range(min(args.jobs, args.repeats))
+        ]
         for worker in workers:
             worker.start()
 
