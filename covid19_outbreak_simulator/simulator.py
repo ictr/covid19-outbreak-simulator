@@ -361,9 +361,10 @@ class Event(object):
                 ])
                 stat[f'n_{name}popsize'] = len(
                     [x for x, ind in population.items() if ind.group == group])
-                stat[f'n_seroprevalence'] = (
-                    stat[f'n_{name}recovered'] +
-                    stat[f'n_{name}infected']) / stat[f'n_{name}popsize']
+                stat[f'n_seroprevalence'] = 0 if stat[
+                    f'n_{name}popsize'] == 0 else ((stat[f'n_{name}recovered'] +
+                                                    stat[f'n_{name}infected']) /
+                                                   stat[f'n_{name}popsize'])
                 stat[f'n_seroprevalence'] = f"{stat[f'n_seroprevalence']:0.3f}"
             param = ','.join(f'{k}={v}' for k, v in stat.items())
             self.logger.write(

@@ -360,6 +360,8 @@ multiple replicated simulations. The output contains the following keys and thei
 | 'n_YYY_infected_XXX' | Number of infected individuals in group YYY at time `XXX` |
 | 'n_recovered_XXX' | Number of recovered individuals at time `XXX` |
 | 'n_YYY_recovered_XXX' | Number of recovered individuals in group YYY at time `XXX` |
+| 'seroprevalence_XXX' | Seroprevalence (infected + recovered)/popsize) at time `XXX` |
+| 'YYY_seroprevalence_XXX' | Seroprevalence in group YYY at time `XXX` |
 
 ## Data analysis tools
 
