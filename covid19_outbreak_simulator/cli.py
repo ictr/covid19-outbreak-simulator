@@ -276,7 +276,7 @@ def summarize_simulations(args):
         for time, value in timed_value.items():
             print(f'{item}_{time}\t{value.strip()}')
     for item, timed_value in customized_stats.items():
-        for time, value in customized_stats.items():
+        for time, value in timed_value.items():
             print(f'{item}_{time}\t{value.strip()}')
 
 
@@ -443,7 +443,10 @@ def parse_args(args=None):
         type=float,
         help='''Interval for statistics to be calculated, default to 1. No STAT event
             will happen it it is set to 0.''')
-    return parser.parse_args(args)
+    if '--plugins' in (sys.argv if args is None else args):
+        return parser.parse_known_args(args)[0]
+    else:
+        return parser.parse_args(args)
 
 
 def main(args=None):

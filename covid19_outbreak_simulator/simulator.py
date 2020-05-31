@@ -426,7 +426,7 @@ class Simulator(object):
             # if there is a parser
             if hasattr(obj, 'get_parser'):
                 parser = obj.get_parser()
-                args = parser.parse_known_args()
+                args = parser.parse_known_args()[0]
             else:
                 args = None
             #
