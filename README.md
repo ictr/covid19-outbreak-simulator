@@ -259,6 +259,7 @@ Currently the following events are tracked
 | `INFECTION_IGNORED` | Infect an infected individual, which does not change anything.                          |
 | `SHOW_SYMPTOM`      | Show symptom.                                                                           |
 | `REMOVAL`           | Remove from population.                                                                 |
+| `RECOVER`           | Recovered, no longer infectious                                                                 |
 | `QUANTINE`          | Quarantine someone till specified time.                                                 |
 | `REINTEGRATION`     | Reintroduce the quarantined individual to group.                                        |
 | `ABORT`             | If the first carrier show sympton during quarantine.                                    |

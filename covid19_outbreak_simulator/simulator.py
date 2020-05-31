@@ -118,6 +118,12 @@ class Individual(object):
                         logger=self.logger,
                         by=self))
 
+        evts.append(
+            Event(
+                time + x_grid[-1] - lead_time,
+                EventType.RECOVER,
+                self,
+                logger=self.logger))
         if by:
             by.n_infectee += 1
             params = [f'by={by.id}']
@@ -188,7 +194,9 @@ class Individual(object):
                         None,
                         logger=self.logger,
                         by=self))
-
+        evts.append(
+            Event(
+                time + x_grid[-1], EventType.RECOVER, self, logger=self.logger))
         if by:
             by.n_infectee += 1
             params = [f'by={by.id}']
@@ -207,7 +215,7 @@ class Individual(object):
         return evts
 
     def infect(self, time, **kwargs):
-        if self.infected is True:
+        if self.infected is True or self.recovered is True:
             by_id = kwargs["by"].id if "by" in kwargs else 'None'
             self.logger.write(
                 f'{self.logger.id}\t{time:.2f}\t{EventType.INFECTION_IGNORED.name}\t{self.id}\tby={by_id}\n'
@@ -229,19 +237,22 @@ class EventType(Enum):
     INFECTION_AVOIDED = 3
     # infection event happens to an infected individual
     INFECTION_IGNORED = 4
+    # recover (no longer infectious)
+    RECOVER = 5
 
     # removal of individual showing symptom
-    SHOW_SYMPTOM = 5
-    REMOVAL = 6
+    SHOW_SYMPTOM = 6
+    REMOVAL = 7
     # quarantine individual given a specified time
-    QUARANTINE = 7
+    QUARANTINE = 8
     # reintegrate individual to the population (release from quarantine)
-    REINTEGRATION = 8
-
+    REINTEGRATION = 9
+    # population statistics
+    STAT = 10
     # abort simulation, right now due to infector showing symptoms during quarantine
-    ABORT = 9
+    ABORT = 11
     # end of simulation
-    END = 10
+    END = 12
 
 
 class Event(object):
@@ -317,6 +328,14 @@ class Event(object):
             population.pop(self.target.id)
             self.logger.write(
                 f'{self.logger.id}\t{self.time:.2f}\t{EventType.REMOVAL.name}\t{self.target.id}\tpopsize={len(population)}\n'
+            )
+            return []
+        elif self.action == EventType.RECOVER:
+            population[self.target.id].recovered = True
+            n_recovered = len(
+                [x for x, ind in population.items() if ind.recovered is True])
+            self.logger.write(
+                f'{self.logger.id}\t{self.time:.2f}\t{EventType.RECOVER.name}\t{self.target.id}\trecovered={n_recovered},popsize={len(population)}\n'
             )
             return []
         else:

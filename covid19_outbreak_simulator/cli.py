@@ -19,6 +19,7 @@ def summarize_simulations(args):
     total_infection_ignored = 0
     total_show_symptom = 0
     total_removal = 0
+    total_recover = 0
     total_quarantine = 0
     total_reintegration = 0
     total_abort = 0
@@ -117,6 +118,8 @@ def summarize_simulations(args):
                         int(time - float(args.pre_quarantine[0])) + 1] += 1
                 if target == total_popsize and id not in first_symptom_day_per_sim:
                     n_no_outbreak += 1
+            elif event == 'RECOVER':
+                total_recover += 1
             else:
                 raise ValueError(f'Unrecognized event {event}')
     # summarize
@@ -200,6 +203,7 @@ def summarize_simulations(args):
     print(f'total_infection_ignored\t{total_infection_ignored}')
     print(f'total_show_symptom\t{total_show_symptom}')
     print(f'total_removal\t{total_removal}')
+    print(f'total_recover\t{total_recover}')
     print(f'total_quarantine\t{total_quarantine}')
     print(f'total_reintegration\t{total_reintegration}')
     print(f'total_abort\t{total_abort}')
