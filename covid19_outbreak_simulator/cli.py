@@ -41,6 +41,8 @@ def summarize_simulations(args):
     n_second_symptom_on_day = defaultdict(int)
     n_third_symptom_on_day = defaultdict(int)
     #
+    timed_stats = defaultdict(dict)
+    #
     with open(args.logfile) as lines:
         infection_from_seed_per_sim = defaultdict(int)
         infection_time_from_seed_per_sim = defaultdict(int)
@@ -120,6 +122,12 @@ def summarize_simulations(args):
                     n_no_outbreak += 1
             elif event == 'RECOVER':
                 total_recover += 1
+            elif event == 'STAT':
+                id, time, event, target, params = line.split('\t')
+                params = params.split(',')
+                for param in params:
+                    key, value = param.split('=')
+                    timed_stats[key][time] = value
             else:
                 raise ValueError(f'Unrecognized event {event}')
     # summarize
@@ -251,6 +259,9 @@ def summarize_simulations(args):
     print(f'n_third_symptom\t{n_third_symptom}')
     for day in sorted(n_third_symptom_on_day.keys()):
         print(f'n_third_symptom_on_day_{day}\t{n_third_symptom_on_day[day]}')
+    for item, timed_value in timed_stats.items():
+        for time, value in timed_value.items():
+            print(f'{item}_{time}\t{value.strip()}')
 
 
 class Worker(multiprocessing.Process):
@@ -399,6 +410,13 @@ def parse_args(args=None):
         type=int,
         help='Number of process to use for simulation. Default to number of CPU cores.'
     )
+    parser.add_argument(
+        '-s',
+        '--stat-interval',
+        default=1,
+        type=float,
+        help='''Interval for statistics to be calculated, default to 1. No STAT event
+            will happen it it is set to 0.''')
     return parser.parse_args(args)
 
 

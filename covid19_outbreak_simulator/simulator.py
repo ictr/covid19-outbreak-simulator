@@ -331,11 +331,39 @@ class Event(object):
             )
             return []
         elif self.action == EventType.RECOVER:
-            population[self.target.id].recovered = True
-            n_recovered = len(
-                [x for x, ind in population.items() if ind.recovered is True])
+            population[self.target.id].recovered = self.time
+            n_recovered = len([
+                x for x, ind in population.items() if ind.recovered is not False
+            ])
+            n_infected = len([
+                x for x, ind in population.items()
+                if ind.infected not in (False, None)
+            ])
             self.logger.write(
-                f'{self.logger.id}\t{self.time:.2f}\t{EventType.RECOVER.name}\t{self.target.id}\trecovered={n_recovered},popsize={len(population)}\n'
+                f'{self.logger.id}\t{self.time:.2f}\t{EventType.RECOVER.name}\t{self.target.id}\trecovered={n_recovered},infected={n_infected},popsize={len(population)}\n'
+            )
+            return []
+        elif self.action == EventType.STAT:
+            stat = {}
+            groups = set([x.group for x in population.values()])
+            for group in groups:
+                if group == '':
+                    name = ''
+                else:
+                    name = group + '_'
+                stat[f'n_{name}recovered'] = len([
+                    x for x, ind in population.items()
+                    if ind.recovered is True and ind.group == group
+                ])
+                stat[f'n_{name}infected'] = len([
+                    x for x, ind in population.items()
+                    if ind.infected not in (False, None) and ind.group == group
+                ])
+                stat[f'n_{name}popsize'] = len(
+                    [x for x, ind in population.items() if ind.group == group])
+            param = ','.join(f'{k}={v}' for k, v in stat.items())
+            self.logger.write(
+                f'{self.logger.id}\t{self.time:.2f}\t{EventType.STAT.name}\t.\t{param}\n'
             )
             return []
         else:
@@ -424,10 +452,10 @@ class Simulator(object):
             except Exception:
                 raise ValueError(
                     f'Named population size should be name=int: {ps} provided')
-            pop_ir = ir.get(name, '')
+            pop_ir = ir.get(name if name in ir else '', 0.0)
             n_ir = np.random.binomial(sz, pop_ir, 1)[0]
 
-            pop_isp = isp.get(name, '')
+            pop_isp = isp.get(name if name in isp else '', 0.0)
             if pop_isp == 0.0:
                 n_recovered = 0
             elif pop_isp < pop_ir:
@@ -491,7 +519,7 @@ class Simulator(object):
 
         infectors = [
             '0'
-        ] if not self.simu_args.infectors else self.simu_args.infectors
+        ] if self.simu_args.infectors is None else self.simu_args.infectors
         for infector in infectors:
             if infector not in population:
                 raise ValueError(f'Invalid ID for carrier {infector}')
@@ -501,9 +529,21 @@ class Simulator(object):
                     0, EventType.INFECTION, target=infector,
                     logger=self.logger))
 
+        last_stat = None
         while True:
             # find the latest event
-            time = min(events.keys())
+            if not events:
+                time = 0
+                max_time = 0
+            else:
+                time = min(events.keys())
+                max_time = max(events.keys())
+
+            if self.simu_args.stat_interval > 0 and last_stat is None or max_time - last_stat > self.simu_args.stat_interval:
+                while last_stat is None or last_stat <= max_time:
+                    last_stat = 0 if last_stat is None else last_stat + self.simu_args.stat_interval
+                    events[last_stat].append(
+                        Event(last_stat, EventType.STAT, logger=self.logger))
 
             if self.simu_args.stop_if is not None:
                 if self.simu_args.stop_if[0].startswith('t>'):

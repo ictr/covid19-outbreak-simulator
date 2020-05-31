@@ -259,9 +259,10 @@ Currently the following events are tracked
 | `INFECTION_IGNORED` | Infect an infected individual, which does not change anything.                          |
 | `SHOW_SYMPTOM`      | Show symptom.                                                                           |
 | `REMOVAL`           | Remove from population.                                                                 |
-| `RECOVER`           | Recovered, no longer infectious                                                                 |
+| `RECOVER`           | Recovered, no longer infectious                                                         |
 | `QUANTINE`          | Quarantine someone till specified time.                                                 |
 | `REINTEGRATION`     | Reintroduce the quarantined individual to group.                                        |
+| `STAT`              | Report population stats at specified intervals.                                         |
 | `ABORT`             | If the first carrier show sympton during quarantine.                                    |
 | `END`               | Simulation ends.                                                                        |
 
@@ -353,6 +354,12 @@ multiple replicated simulations. The output contains the following keys and thei
 | `n_second_symptom_on_day_XXX`         | Number of simulations when the second symptom appear at day `XXX` **after the first symptom**                                                                                             |
 | `n_third_symptom`                     | Number of simulations when there are a third symptomatic case symtom                                                                                                                      |
 | `n_third_symptom_on_day_XXX`          | Number of simulations when the first symptom appear at day `XXX` **after the second symptom**                                                                                             |
+| 'n_popsize_XXX' | Population size at time `XXX` |
+| 'n_YYY_popsize_XXX' | Population size of group YYY at time `XXX` |
+| 'n_infected_XXX' | Number of infected individuals at time `XXX` |
+| 'n_YYY_infected_XXX' | Number of infected individuals in group YYY at time `XXX` |
+| 'n_recovered_XXX' | Number of recovered individuals at time `XXX` |
+| 'n_YYY_recovered_XXX' | Number of recovered individuals in group YYY at time `XXX` |
 
 ## Data analysis tools
 
