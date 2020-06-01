@@ -328,13 +328,22 @@ class Event(object):
             )
             return []
         elif self.action == EventType.REMOVAL:
-            population.pop(self.target.id)
-            self.logger.write(
-                f'{self.logger.id}\t{self.time:.2f}\t{EventType.REMOVAL.name}\t{self.target.id}\tpopsize={len(population)}\n'
-            )
+            if self.target.id in population:
+                population.pop(self.target.id)
+                self.logger.write(
+                    f'{self.logger.id}\t{self.time:.2f}\t{EventType.REMOVAL.name}\t{self.target.id}\tpopsize={len(population)}\n'
+                )
+            else:
+                self.logger.write(
+                    f'{self.logger.id}\t{self.time:.2f}\t{EventType.REMOVAL.name}\t{self.target.id}\tpopsize={len(population)},already_removed=True\n'
+                )
             return []
         elif self.action == EventType.RECOVER:
-            population[self.target.id].recovered = self.time
+            removed = self.target.id not in population
+
+            if not removed:
+                population[self.target.id].recovered = self.time
+
             n_recovered = len([
                 x for x, ind in population.items() if ind.recovered is not False
             ])
@@ -342,8 +351,15 @@ class Event(object):
                 x for x, ind in population.items()
                 if ind.infected not in (False, None)
             ])
+            params = dict(
+                recovered=n_recovered,
+                infected=n_infected,
+                popsize=len(population))
+            if removed:
+                params[removed] = True
+            param = ','.join(f'{x}={y}' for x, y in params.items())
             self.logger.write(
-                f'{self.logger.id}\t{self.time:.2f}\t{EventType.RECOVER.name}\t{self.target.id}\trecovered={n_recovered},infected={n_infected},popsize={len(population)}\n'
+                f'{self.logger.id}\t{self.time:.2f}\t{EventType.RECOVER.name}\t{self.target.id}\t{param}\n'
             )
             return []
         elif self.action == EventType.STAT:
