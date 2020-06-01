@@ -49,6 +49,7 @@ class Individual(object):
             lead_time = np.random.uniform(0, self.incubation_period)
         else:
             lead_time = 0
+        self.infected = -lead_time
 
         keep_symptomatic = kwargs.get('keep_symptomatic', False)
 
@@ -146,7 +147,6 @@ class Individual(object):
         return evts
 
     def asymptomatic_infect(self, time, **kwargs):
-        self.infected = time
         self.r0 = self.model.draw_random_r0(symptomatic=False)
         self.incubation_period = -1
 
@@ -158,6 +158,8 @@ class Individual(object):
             lead_time = np.random.uniform(0, 10)
         else:
             lead_time = 0
+
+        self.infected = -lead_time
 
         # REMOVAL ...
         evts = []
@@ -353,8 +355,11 @@ class Event(object):
                 if ind.infected not in (False, None)
             ])
             stat[f'n_popsize'] = len([x for x, ind in population.items()])
-            stat[f'n_seroprevalence'] = '0' if stat[
-                f'n_popsize'] == 0 else '{:.3f}'.format(
+            stat[f'incidence_rate'] = '0' if stat[
+                f'n_popsize'] == 0 else '{:.4f}'.format(stat[f'n_infected'] /
+                                                        stat[f'n_popsize'])
+            stat[f'seroprevalence'] = '0' if stat[
+                f'n_popsize'] == 0 else '{:.4f}'.format(
                     (stat[f'n_recovered'] + stat[f'n_infected']) /
                     stat[f'n_popsize'])
 
@@ -372,7 +377,11 @@ class Event(object):
                 ])
                 stat[f'n_{group}_popsize'] = len(
                     [x for x, ind in population.items() if ind.group == group])
-                stat[f'n_{group}_seroprevalence'] = 0 if stat[
+                stat[f'{group}_incidence_rate'] = 0 if stat[
+                    f'n_{group}_popsize'] == '0' else '{:.3f}'.format(
+                        stat[f'n_{group}_infected'] /
+                        stat[f'n_{group}_popsize'])
+                stat[f'{group}_seroprevalence'] = 0 if stat[
                     f'n_{group}_popsize'] == '0' else '{:.3f}'.format(
                         (stat[f'n_{group}_recovered'] +
                          stat[f'n_{group}_infected']) /

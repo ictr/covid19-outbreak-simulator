@@ -129,7 +129,10 @@ def summarize_simulations(args):
                 for param in params:
                     try:
                         key, value = param.split('=')
-                        timed_stats[key][time] = value
+                        if time in timed_stats[key]:
+                            timed_stats[key][time] += ', ' + value.strip()
+                        else:
+                            timed_stats[key][time] = value.strip()
                     except Exception:
                         pass
             else:
@@ -139,7 +142,12 @@ def summarize_simulations(args):
                 for param in params:
                     try:
                         key, value = param.split('=')
-                        customized_stats[f'{event.lower()}_{key}'][time] = value
+                        if time in customized_stats[f'{event.lower()}_{key}']:
+                            customized_stats[f'{event.lower()}_{key}'][
+                                time] += ', ' + value.strip()
+                        else:
+                            customized_stats[f'{event.lower()}_{key}'][
+                                time] = value.strip()
                     except Exception:
                         pass
 
@@ -274,10 +282,36 @@ def summarize_simulations(args):
         print(f'n_third_symptom_on_day_{day}\t{n_third_symptom_on_day[day]}')
     for item, timed_value in timed_stats.items():
         for time, value in timed_value.items():
-            print(f'{item}_{time}\t{value.strip()}')
+            values = [x.strip() for x in value.split(',')]
+            if len(set(values)) == 1:
+                value = f'[{values[0]}] * {len(values)}'
+                print(f'{item}_{time}\t{value}')
+            else:
+                print(f'{item}_{time}\t{value.strip()}')
+        for time, value in timed_value.items():
+            try:
+                value = eval(value)
+                if len(value) > 1:
+                    value = '{:.3f}'.format(sum(value) / len(value))
+                    print(f'avg_{item}_{time}\t{value}')
+            except:
+                pass
     for item, timed_value in customized_stats.items():
         for time, value in timed_value.items():
-            print(f'{item}_{time}\t{value.strip()}')
+            values = [x.strip() for x in value.split(',')]
+            if len(set(values)) == 1:
+                value = f'[{values[0]}] * {len(values)}'
+                print(f'{item}_{time}\t{value}')
+            else:
+                print(f'{item}_{time}\t{value.strip()}')
+        for time, value in timed_value.items():
+            try:
+                value = eval(value)
+                if len(value) > 1:
+                    value = '{:.3f}'.format(sum(value) / len(value))
+                    print(f'avg_{item}_{time}\t{value}')
+            except:
+                pass
 
 
 class Worker(multiprocessing.Process):

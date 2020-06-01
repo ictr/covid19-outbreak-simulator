@@ -53,20 +53,22 @@ class RandomSampler(BasePlugin):
         samples = [1] * sz + [0] * (len(self.population) - sz)
         random.shuffle(samples)
 
-        stat[f'n_recovered'] = len([
+        stat['n_recovered'] = len([
             x for s, (x, ind) in zip(samples, self.population.items())
             if ind.recovered is True and s
         ])
-        stat[f'n_infected'] = len([
+        stat['n_infected'] = len([
             x for s, (x, ind) in zip(samples, self.population.items())
             if ind.infected not in (False, None) and s
         ])
-        stat[f'n_popsize'] = len(
-            [x for s, (x, ind) in zip(samples, self.population.items())])
-        stat[f'n_seroprevalence'] = '0' if stat[
-            f'n_popsize'] == 0 else '{:.3f}'.format(
-                (stat[f'n_recovered'] + stat[f'n_infected']) /
-                stat[f'n_popsize'])
+        stat['n_popsize'] = len(
+            [x for s, (x, ind) in zip(samples, self.population.items()) if s])
+        stat['incidence_rate'] = '0' if stat[
+            'n_popsize'] == 0 else '{:.4f}'.format(
+                (stat['n_infected']) / stat['n_popsize'])
+        stat['seroprevalence'] = '0' if stat[
+            'n_popsize'] == 0 else '{:.4f}'.format(
+                (stat['n_recovered'] + stat['n_infected']) / stat['n_popsize'])
         param = ','.join(f'{k}={v}' for k, v in stat.items())
         self.logger.write(f'{self.logger.id}\t{time:.2f}\tSAMPLE\t.\t{param}\n')
         return []

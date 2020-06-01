@@ -388,15 +388,28 @@ multiple replicated simulations. The output contains the following keys and thei
 | `n_second_symptom_on_day_XXX`         | Number of simulations when the second symptom appear at day `XXX` **after the first symptom**                                                                                             |
 | `n_third_symptom`                     | Number of simulations when there are a third symptomatic case symtom                                                                                                                      |
 | `n_third_symptom_on_day_XXX`          | Number of simulations when the first symptom appear at day `XXX` **after the second symptom**                                                                                             |
-| 'n_popsize_XXX' | Population size at time `XXX` |
-| 'n_YYY_popsize_XXX' | Population size of group YYY at time `XXX` |
-| 'n_infected_XXX' | Number of infected individuals at time `XXX` |
-| 'n_YYY_infected_XXX' | Number of infected individuals in group YYY at time `XXX` |
-| 'n_recovered_XXX' | Number of recovered individuals at time `XXX` |
-| 'n_YYY_recovered_XXX' | Number of recovered individuals in group YYY at time `XXX` |
-| 'seroprevalence_XXX' | Seroprevalence (infected + recovered)/popsize) at time `XXX` |
-| 'YYY_seroprevalence_XXX' | Seroprevalence in group YYY at time `XXX` |
-| 'EVENT_STAT_XXX' | Reported statistics `STAT` for customized event `EVENT` at time `XXX` |
+| 'n_popsize_XXX' | Population size at time `XXX`, a list if multiple replicates |
+| 'n_YYY_popsize_XXX' | Population size of group YYY at time `XXX` a list if multiple replicates |
+| 'n_infected_XXX' | Number of infected individuals at time `XXX` a list if multiple replicates |
+| 'n_YYY_infected_XXX' | Number of infected individuals in group YYY at time `XXX` a list if multiple replicates |
+| 'n_recovered_XXX' | Number of recovered individuals at time `XXX` a list if multiple replicates |
+| 'n_YYY_recovered_XXX' | Number of recovered individuals in group YYY at time `XXX` a list if multiple replicates |
+| 'incidence_rate_XXX' | Incidence rate (infected/popsize) at time `XXX` a list if multiple replicates |
+| 'YYY_incidence_rate_XXX' | Incidence rate in group YYY at time `XXX` a list if multiple replicates |
+| 'seroprevalence_XXX' | Seroprevalence (infected + recovered)/popsize) at time `XXX` a list if multiple replicates |
+| 'YYY_seroprevalence_XXX' | Seroprevalence in group YYY at time `XXX` a list if multiple replicates |
+| 'avg_n_popsize_XXX' | Average population size at time `XXX`  if there are multiple replicates |
+| 'avg_n_YYY_popsize_XXX' | Average population size of group YYY at time `XXX`  if there are multiple replicates |
+| 'avg_n_infected_XXX' | Average number of infected individuals at time `XXX`  if there are multiple replicates |
+| 'avg_n_YYY_infected_XXX' | Average number of infected individuals in group YYY at time `XXX` if there are multiple replicates |
+| 'avg_n_recovered_XXX' | Average number of recovered individuals at time `XXX` if there are multiple replicates |
+| 'avg_n_YYY_recovered_XXX' | Average number of recovered individuals in group YYY at time `XXX` if there are multiple replicates |
+| 'avg_incidence_rate_XXX' | Average incidence rate (infected/popsize) at time `XXX` if there are multiple replicates |
+| 'avg_YYY_incidence_rate_XXX' | Average incidence rate in group YYY at time `XXX` if there are multiple replicates |
+| 'avg_seroprevalence_XXX' | Average neroprevalence (infected + recovered)/popsize) at time `XXX` if there are multiple replicates |
+| 'avg_YYY_seroprevalence_XXX' | Average seroprevalence in group YYY at time `XXX` if there are multiple replicates |
+| 'EVENT_STAT_XXX' | Reported statistics `STAT` for customized event `EVENT` at time `XXX` a list if multiple replicates |
+| 'avg_EVENT_STAT_XXX' | Average reported statistics `STAT` for customized event `EVENT` at time `XXX` if there are multiple replicates |
 
 ## Data analysis tools
 
