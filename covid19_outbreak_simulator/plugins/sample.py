@@ -14,6 +14,7 @@ class RandomSampler(BasePlugin):
     def __init__(self, *args, **kwargs):
         # this will set self.population, self.simualtor, self.logger
         super(RandomSampler, self).__init__(*args, **kwargs)
+        self.last_sampled = None
 
     def get_parser(self):
         parser = argparse.ArgumentParser(
@@ -27,9 +28,18 @@ class RandomSampler(BasePlugin):
             '--sample-size',
             type=int,
             help='''Number of individuals to sample.''')
+        parser.add_argument(
+            '--sample-interval',
+            default=1,
+            type=float,
+            help='''Sampling interval, default to 1.''')
         return parser
 
     def apply(self, time, args=None):
+        if self.last_sampled is not None and time - self.last_sampled < args.sample_interval:
+            return []
+
+        self.last_sampled = time
         stat = {}
 
         if args.sample_proportion:
