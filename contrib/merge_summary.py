@@ -7,7 +7,7 @@ def merge_results(files, output_file):
     keys = [
         'logfile',
         'popsize',
-        'keep_symptomatic',
+        'handle_symptomatic',
         'prop_asym_carriers',
         'pre_quarantine',
         'allow_lead_time',

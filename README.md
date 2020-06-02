@@ -127,7 +127,7 @@ usage: outbreak_simulator [-h] [--popsize POPSIZE [POPSIZE ...]]
                           [--symptomatic-r0 SYMPTOMATIC_R0 [SYMPTOMATIC_R0 ...]]
                           [--asymptomatic-r0 ASYMPTOMATIC_R0 [ASYMPTOMATIC_R0 ...]]
                           [--incubation-period INCUBATION_PERIOD [INCUBATION_PERIOD ...]] [--repeats REPEATS]
-                          [--keep-symptomatic] [--pre-quarantine [PRE_QUARANTINE [PRE_QUARANTINE ...]]]
+                          [--handle-symptomatic] [--pre-quarantine [PRE_QUARANTINE [PRE_QUARANTINE ...]]]
                           [--initial-incidence-rate [INITIAL_INCIDENCE_RATE [INITIAL_INCIDENCE_RATE ...]]]
                           [--initial-seroprevalence [INITIAL_SEROPREVALENCE [INITIAL_SEROPREVALENCE ...]]]
                           [--infectors [INFECTORS [INFECTORS ...]]] [--interval INTERVAL] [--logfile LOGFILE]
@@ -162,7 +162,7 @@ optional arguments:
                         groups. Default to "lognormal 1.621 0.418"
   --repeats REPEATS     Number of replicates to simulate. An ID starting from 1 will be assinged to each
                         replicate and as the first columns in the log file.
-  --keep-symptomatic    Keep affected individuals in the population
+  --handle-symptomatic    Keep affected individuals in the population
   --pre-quarantine [PRE_QUARANTINE [PRE_QUARANTINE ...]]
                         Days of self-quarantine before introducing infector to the group. The simulation will be
                         aborted if the infector shows symptom before introduction. If you quarantine multiple
@@ -365,7 +365,7 @@ multiple replicated simulations. The output contains the following keys and thei
 | ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `logfile`                             | Log file of the simulation with all the events                                                                                                                                            |
 | `popsize`                             | Initial population size                                                                                                                                                                   |
-| `keep_symptomatic`                    | If asymptomatic infectees are kept                                                                                                                                                        |
+| `handle_symptomatic`                    | If asymptomatic infectees are kept, removed, or quarantined, at what percentage.                                                                                                                                                        |
 | `prop_asym_carriers`                  | Proportion of asymptomatic carriers, also the probability of infectee who do not show any symptom                                                                                         |
 | `pre_quarantine`                      | If the first carrier is pre-quarantined, if so, for how many days                                                                                                                         |
 | `interval`                            | Interval of time events (1/24 for hours)                                                                                                                                                  |

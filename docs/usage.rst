@@ -38,7 +38,7 @@ Command line options
                           [--symptomatic-r0 SYMPTOMATIC_R0 [SYMPTOMATIC_R0 ...]]
                           [--asymptomatic-r0 ASYMPTOMATIC_R0 [ASYMPTOMATIC_R0 ...]]
                           [--incubation-period INCUBATION_PERIOD [INCUBATION_PERIOD ...]]
-                          [--repeats REPEATS] [--keep-symptomatic]
+                          [--repeats REPEATS] [--handle-symptomatic]
                           [--pre-quarantine [PRE_QUARANTINE [PRE_QUARANTINE ...]]]
                           [--infectors [INFECTORS [INFECTORS ...]]]
                           [--interval INTERVAL] [--logfile LOGFILE]
@@ -83,7 +83,7 @@ Command line options
      --repeats REPEATS     Number of replicates to simulate. An ID starting from
                            1 will be assinged to each replicate and as the first
                            columns in the log file.
-     --keep-symptomatic    Keep affected individuals in the population
+     --handle-symptomatic    Keep affected individuals in the population
      --pre-quarantine [PRE_QUARANTINE [PRE_QUARANTINE ...]]
                            Days of self-quarantine before introducing infector to
                            the group. The simulation will be aborted if the
@@ -296,7 +296,7 @@ multiple replicated simulations. The output contains the following keys and thei
      - Log file of the simulation with all the events
    * - ``popsize``
      - Initial population size
-   * - ``keep_symptomatic``
+   * - ``handle_symptomatic``
      - If asymptomatic infectees are kept
    * - ``prop_asym_carriers``
      - Proportion of asymptomatic carriers, also the probability of infectee who do not show any symptom

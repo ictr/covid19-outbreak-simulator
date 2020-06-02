@@ -196,7 +196,7 @@ def summarize_simulations(args):
     # print
     print(f'logfile\t{args.logfile}')
     print(f'popsize\t{" ".join(args.popsize)}')
-    print(f'keep_symptomatic\t{"yes" if args.keep_symptomatic else "no"}')
+    print(f'handle_symptomatic\t{" ".join(args.handle_symptomatic)}')
     if args.symptomatic_r0:
         print(f'symptomatic_r0\t{" - ".join(args.symptomatic_r0)}')
     if args.asymptomatic_r0:
@@ -388,9 +388,13 @@ def parse_args(args=None):
               1 will be assinged to each replicate and as the first columns
               in the log file.''')
     parser.add_argument(
-        '--keep-symptomatic',
-        action='store_true',
-        help='Keep affected individuals in the population')
+        '--handle-symptomatic',
+        nargs='*',
+        help='''How to handle individuals who show symptom, which should be "keep" (stay in
+            population), "remove" (remove from population), and "quarantine" (put aside until
+            it recovers). all options can be followed by a "proportion", and quarantine can
+            be specified as "quarantine_7" etc to specify duration of quarantine.'''
+    )
     parser.add_argument(
         '--pre-quarantine',
         nargs='*',
