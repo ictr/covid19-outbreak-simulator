@@ -408,7 +408,8 @@ class Event(object):
                 population[self.target.id].recovered = self.time
 
             n_recovered = len([
-                x for x, ind in population.items() if ind.recovered is not False
+                x for x, ind in population.items()
+                if ind.recovered not in (False, None)
             ])
             n_infected = len([
                 x for x, ind in population.items()
@@ -427,8 +428,10 @@ class Event(object):
             return []
         elif self.action == EventType.STAT:
             stat = {}
-            stat[f'n_recovered'] = len(
-                [x for x, ind in population.items() if ind.recovered is True])
+            stat[f'n_recovered'] = len([
+                x for x, ind in population.items()
+                if ind.recovered not in (None, False)
+            ])
             stat[f'n_infected'] = len([
                 x for x, ind in population.items()
                 if ind.infected not in (False, None)

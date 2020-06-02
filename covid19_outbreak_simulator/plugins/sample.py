@@ -55,7 +55,7 @@ class RandomSampler(BasePlugin):
 
         stat['n_recovered'] = len([
             x for s, (x, ind) in zip(samples, self.population.items())
-            if ind.recovered is True and s
+            if ind.recovered not in (None, False) and s
         ])
         stat['n_infected'] = len([
             x for s, (x, ind) in zip(samples, self.population.items())
