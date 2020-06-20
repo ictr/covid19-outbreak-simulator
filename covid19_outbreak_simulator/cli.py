@@ -1,16 +1,20 @@
 """Console script for covid19_outbreak_simulator."""
 import argparse
 import sys
+import shlex
+import subprocess
 import multiprocessing
 import numpy as np
 from io import StringIO
 from tqdm import tqdm
 from collections import defaultdict
+from datetime import datetime
+
 from .simulator import Simulator
 from .model import Params
 
 
-def summarize_simulations(args):
+def summarize_simulations(logfile):
     # write some summary information into standard output
     n_simulation = 0
     total_infection = 0
@@ -44,7 +48,7 @@ def summarize_simulations(args):
     timed_stats = defaultdict(dict)
     customized_stats = defaultdict(dict)
     #
-    with open(args.logfile) as lines:
+    with open(logfile) as lines:
         infection_from_seed_per_sim = defaultdict(int)
         infection_time_from_seed_per_sim = defaultdict(int)
         first_infection_day_per_sim = defaultdict(int)
@@ -52,13 +56,18 @@ def summarize_simulations(args):
         second_symptom_per_sim = defaultdict(int)
         third_symptom_per_sim = defaultdict(int)
 
-        if args.infectors:
-            infectors = args.infectors
-        else:
-            infectors = ['0']
+        total_popsize = 0
+        infectors = ['0']
 
-        total_popsize = sum(int(x.split('=')[-1]) for x in args.popsize)
         for line in lines:
+            if line.startswith('#'):
+                if line.startswith('# CMD:'):
+                    args = parse_args(shlex.split(line[6:]))
+                    if args.infectors:
+                        infectors = args.infectors
+                    total_popsize = sum(
+                        int(x.split('=')[-1]) for x in args.popsize)
+                continue
             id, time, event, target, params = line.split('\t')
             if id == 'id':
                 # skip header
@@ -482,9 +491,9 @@ def parse_args(args=None):
     return parser.parse_args(args)
 
 
-def main(args=None):
+def main(argv=None):
     """Console script for covid19_outbreak_simulator."""
-    args = parse_args(args)
+    args = parse_args(argv)
     if not args.analyze_existing_logfile:
         tasks = multiprocessing.JoinableQueue()
         results = multiprocessing.Queue()
@@ -500,6 +509,11 @@ def main(args=None):
             worker.start()
 
         with open(args.logfile, 'w') as logger:
+            logger.write(
+                f'# CMD: {subprocess.list2cmdline(argv if argv else sys.argv[1:])}\n'
+            )
+            logger.write(
+                f'# START: {datetime.now().strftime("%m/%d/%Y, %H:%M:%S")}\n')
             logger.write('id\ttime\tevent\ttarget\tparams\n')
             for i in range(args.repeats):
                 tasks.put(i + 1)
@@ -509,8 +523,10 @@ def main(args=None):
             for i in tqdm(range(args.repeats)):
                 result = results.get()
                 logger.write(result)
+            logger.write(
+                f'# START: {datetime.now().strftime("%m/%d/%Y, %H:%M:%S")}\n')
 
-    summarize_simulations(args)
+    summarize_simulations(args.logfile)
     return 0
 
 
