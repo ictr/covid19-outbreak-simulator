@@ -460,15 +460,6 @@ def parse_args(args=None):
         help='''Analyze an existing logfile, useful for updating the summarization
             procedure or uncaptured output. ''')
     parser.add_argument(
-        '--plugins',
-        nargs='*',
-        help='''One or more name of Python modules that will be used by the simulator.
-            The module should define classes derived from outbreak_simulator.plugin.BasePlugin.
-            Plugins should be provided in the format of 'module1.plugin1` where `module` is
-            name of the module and `plugin` is the name of the class. The plugins will be
-            triggered by specific event, or once at each time epoc when any other events happen.
-            ''')
-    parser.add_argument(
         '-j',
         '--jobs',
         type=int,

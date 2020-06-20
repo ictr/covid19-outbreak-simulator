@@ -4,6 +4,35 @@
 [![Build Status](https://travis-ci.org/ictr/covid19-outbreak-simulator.svg?branch=master)](https://travis-ci.org/ictr/covid19-outbreak-simulator)
 [![Coverage Status](https://coveralls.io/repos/github/ictr/covid19-outbreak-simulator/badge.svg?branch=master&service=github)](https://coveralls.io/github/ictr/covid19-outbreak-simulator?branch=master)
 
+<!--ts-->
+   * [COVID-19 Outbreak Simulator](#covid-19-outbreak-simulator)
+      * [Background](#background)
+      * [Modeling the outbreak of COVID-19](#modeling-the-outbreak-of-covid-19)
+      * [Installation and basic usage](#installation-and-basic-usage)
+      * [Command line options of the core simulator](#command-line-options-of-the-core-simulator)
+         * [Homogeneous and heterogeneous populations](#homogeneous-and-heterogeneous-populations)
+         * [Change number of infectors](#change-number-of-infectors)
+         * [Changing model parameters](#changing-model-parameters)
+         * [Specigy group-specific parameters](#specigy-group-specific-parameters)
+      * [Plug-in system (advanced usages)](#plug-in-system-advanced-usages)
+         * [Specify one or more plugins from command line](#specify-one-or-more-plugins-from-command-line)
+         * [List of plugins](#list-of-plugins)
+         * [Plugin dynamic-r0](#plugin-dynamic-r0)
+         * [Plugin sampling](#plugin-sampling)
+         * [Implementation of plugins](#implementation-of-plugins)
+      * [Output from the simulator](#output-from-the-simulator)
+         * [Events tracked during the simulation](#events-tracked-during-the-simulation)
+         * [Summary report from multiple replicates](#summary-report-from-multiple-replicates)
+      * [Data analysis tools](#data-analysis-tools)
+         * [time_vs_size.R](#time_vs_sizer)
+         * [merge_summary.py](#merge_summarypy)
+      * [Acknowledgements](#acknowledgements)
+
+<!-- Added by: bpeng, at: Sat Jun 20 11:50:42 CDT 2020 -->
+
+<!--te-->
+
+
 # COVID-19 Outbreak Simulator
 
 The COVID-19 outbreak simulator simulates the outbreak of COVID-19 in a population. It was first designed to simulate
@@ -22,12 +51,14 @@ This simulator simulates the scenario in which
 -   The population can be divided into multiple subgroups with different parameters.
 -   One or more virus carriers are introduced to the population, potentially after a fixed
     days of self-quarantine.
--   Infectees are by default removed from from the population (or separated, or
-    quarantined, as long as he or she can no longer infect others) after they
+-   Infectees are by default removed from from the population (separated, quarantined,
+    hospitalized, or deceased, as long as he or she can no longer infect others) after they
     displayed symptoms, but options are provided to act otherwise.
 -   The simulation is by default stopped after the population is free of virus (all
     infected individuals have been removed), or everyone is infected, or after
     a pre-specified time (e.g. after 10 days).
+-   More complex simulation scenarios are provided by a plugin system where actions such as
+    contact tracing, sampling can be simulated.
 
 The simulator simulates the epidemic of the population with the introduction of
 infectors. Detailed statistics are captured from the simulations to answer questions
@@ -58,10 +89,10 @@ The statistical models and related references are available at
 
 The models will continuously be updated as we learn more about the virus.
 
-## How to use the simulator
+## Installation and basic usage
 
-This simulator is programmed using Python >= 3.6 with `numpy` and `scipy`.
-A conda environment is recommended. After the set up of the environment,
+This simulator is programmed using Python >= 3.6 with `numpy` and `scipy`. A conda environment is
+recommended. After setting up a conda environment with Python >= 3.6 and these two packages,
 please run
 
 ```
@@ -74,7 +105,7 @@ to install required packages, and then
 pip install covid19-outbreak-simulator
 ```
 
-to install the package.
+to install the simulator.
 
 You can then use command
 
@@ -82,43 +113,19 @@ You can then use command
 outbreak_simulator -h
 ```
 
-to check the usage information.
-
-## Plug-in system (advanced usages)
-
-It is very likely that for complex simulations you would have scenarios that are
-not provided by the core simulator. This simulator has a plug-in system that allows
-you to define your own functions that would be called by the simulator at specified
-intervals or events. The simulator will even pass command line arguments
-to the plugins so that the plugins can be customized through command line arguments.
-
-The plugins should be written as Python classes that
-
-1. Drive from `outbreak_simulator.BasePlugin` and calls its `__init__` function. This will point `self.simulator`, `self.population`, and `self.logger` of the plugin to the simulator, population, and logger of the simulator. `simulator` has properties such as `simu_args`, `params`, and `model` so you can access command line simulator arguments, model parameters, and change simulation model (e.g. parameters).
-
-2. Provide as class attributes:
-
-  * `version` (optional): version of plugin and tells the simulator how to handle it
-  * `events` (optional): a set of events that triggers the plugin, default to no event.
-
-3. Provide as member function:
-
-  * `get_parser()` (optional): a function that returns a parser defined through Python `argparse` module. It will be used to parse command line using `parse_known_args` function.
-
-  * `apply(time, args)` (required): A function that accepts parameters `time` (time when the plugin is called) and `args` (plugin args).
-
-If `events` are provided, the plugin will be triggered whenever one of the `events` is trigged. Otherwise the plugin will be triggered at each time point when any event happens. The plugin can change the status of the population or simulation parameters, write to system log `simulator.logger` or write to its own output files. It should return a list of events that can happen at a later time, or an empty list indicating no future event is triggered.
-
-The plugins should be triggered by
+to check the usage information of the basic simulator,
 
 ```
-outbreak_simulator --plugins modulename.plugin_name modulename1.plugin_name1
+outbreak_simualtor --plugin -h
 ```
-where `modulename` is the name of the python module and `plugin_name` is the name of the class that defines the plugin.
+to get decription of common parameters for plugins and a list of system plugins, and
 
-Please check the [plugins directory](https://github.com/ictr/covid19-outbreak-simulator/tree/master/covid19_outbreak_simulator/plugins) for examples on how to write plugins for the simulator.
+```
+outbreak_simulator --plugin plugin_name -h
+```
+to get the usage information of a particular plugin.
 
-## Command line options
+## Command line options of the core simulator
 
 ```
 $ outbreak_simulator -h
@@ -133,7 +140,7 @@ usage: outbreak_simulator [-h] [--popsize POPSIZE [POPSIZE ...]]
                           [--infectors [INFECTORS [INFECTORS ...]]] [--interval INTERVAL] [--logfile LOGFILE]
                           [--prop-asym-carriers [PROP_ASYM_CARRIERS [PROP_ASYM_CARRIERS ...]]]
                           [--stop-if [STOP_IF [STOP_IF ...]]] [--allow-lead-time] [--analyze-existing-logfile]
-                          [--plugins [PLUGINS [PLUGINS ...]]] [-j JOBS] [-s STAT_INTERVAL]
+                          [--plugin [PLUGINS [PLUGINS ...]]] [-j JOBS] [-s STAT_INTERVAL]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -274,7 +281,77 @@ outbreak_simulator --popsize nurse=10 patient=100 \
     --infector patient0 patient1
 ```
 
+## Plug-in system (advanced usages)
+
+It is very likely that for complex simulations you would have scenarios that are
+not provided by the core simulator. This simulator has a plug-in system that allows
+you to define your own functions that would be called by the simulator at specified
+intervals or events.
+
+
+### Specify one or more plugins from command line
+
+To use plugins for a simulation, they should be specified as:
+
+```bash
+outbreak_simulator \
+   # regular parameters
+   -j 4 \
+   # first system plugin
+   --plugin contact_tracing --succ-rate 0.8  \
+   # second (customied) plugin
+   --plugin modulename1.plugin_name1 --start 10 --par2 val2 --par3
+```
+where
+
+1. Each plugin is defined after a `--plugin` parameter and before another `--plugin` or the end of command line arguments.
+2. A plugin can be a system plugin that is located under the `plugins` directory, or a cutomized plugin that you have defined.
+3. A plugin can be specified by `modulename` if it is the name of the python module and the name of the plugin class, or `modulename.plugin_name` if the class has a different name.
+4. Plugins accept a common set of parameters (e.g. `--start`, `--end`) to define when the plugin will be triggered.
+5. The rest of the plugin parameters will be parsed by the plugin
+
+
+### List of plugins
+
+```
+outbreak_simulator --plugin -h
+```
+
+### Plugin `dynamic-r0`
+
+```
+outbreak_simulator --plugin dynamic-r0
+```
+
+
+### Plugin `sampling`
+
+```
+outbreak_simulator --plugin sampling
+```
+
+
+### Implementation of plugins
+
+Implementation wise, the plugins should be written as Python classes that
+
+1. Drive from `outbreak_simulator.BasePlugin` and calls its `__init__` function. This will point `self.simulator`, `self.population`, and `self.logger` of the plugin to the simulator, population, and logger of the simulator. `simulator` has properties such as `simu_args`, `params`, and `model` so you can access command line simulator arguments, model parameters, and change simulation model (e.g. parameters).
+
+2. Provide as member function:
+
+  * `get_parser()` (optional): a function that returns a parser defined through Python `argparse` module. It will be used to parse command line using `parse_known_args` function.
+
+  * `apply(time, args)` (required): A function that accepts parameters `time` (time when the plugin is called) and `args` (plugin args).
+
+The plugin can change the status of the population or simulation parameters, write to system log `simulator.logger` or write to its own output files. It should return a list of events that can happen at a later time, or an empty list indicating no future event is triggered.
+
+Please check the [plugins directory](https://github.com/ictr/covid19-outbreak-simulator/tree/master/covid19_outbreak_simulator/plugins) for examples on how to write plugins for the simulator.
+
+
+
 ## Output from the simulator
+
+### Events tracked during the simulation
 
 The output file contains events that happens during the simulations.
 For example, for command
@@ -356,7 +433,7 @@ which I assume would be pretty self-explanatory. Note that **the simulation IDs
 are not ordered because the they are run in parallel but you can expect all events
 belong to the same simulation are recorded together.**.
 
-## Summary report from multiple replicates
+### Summary report from multiple replicates
 
 At the end of each command, a report will be given to summarize key statistics from
 multiple replicated simulations. The output contains the following keys and their values
