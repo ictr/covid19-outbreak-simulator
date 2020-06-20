@@ -4,6 +4,7 @@ import random
 import numpy as np
 from numpy.random import choice
 from collections import defaultdict
+from itertools import groupby
 
 from .model import Model
 from importlib import import_module
@@ -26,6 +27,9 @@ class Individual(object):
 
         self.r0 = None
         self.incubation_period = None
+
+    def __str__(self):
+        return self.id
 
     def quarantine(self, **kwargs):
         if 'till' in kwargs:
@@ -346,7 +350,7 @@ class Event(object):
 
                 if not ids:
                     self.logger.write(
-                        f'{self.logger.id}\t{self.time:.2f}\t{EventType.INFECTION_FAILED.name}\t{self.target.id}\tby={self.kwargs["by"].id}\n'
+                        f'{self.logger.id}\t{self.time:.2f}\t{EventType.INFECTION_FAILED.name}\t{self.target}\tby={self.kwargs["by"]}\n'
                     )
                     return []
                 weights = np.array([x[1] for x in ids])
@@ -361,7 +365,7 @@ class Event(object):
                 ]
                 if not ids:
                     self.logger.write(
-                        f'{self.logger.id}\t{self.time:.2f}\t{EventType.INFECTION_FAILED.name}\t{self.target.id}\tby={self.kwargs["by"].id}\n'
+                        f'{self.logger.id}\t{self.time:.2f}\t{EventType.INFECTION_FAILED.name}\t{self.target}\tby={self.kwargs["by"]}\n'
                     )
                     return []
                 selected = random.choice(ids)
@@ -372,33 +376,33 @@ class Event(object):
                 **self.kwargs)
         elif self.action == EventType.QUARANTINE:
             self.logger.write(
-                f'{self.logger.id}\t{self.time:.2f}\t{EventType.QUARANTINE.name}\t{self.target.id}\ttill={self.kwargs["till"]:.2f}\n'
+                f'{self.logger.id}\t{self.time:.2f}\t{EventType.QUARANTINE.name}\t{self.target}\ttill={self.kwargs["till"]:.2f}\n'
             )
             return population[self.target.id].quarantine(**self.kwargs)
         elif self.action == EventType.REINTEGRATION:
             self.logger.write(
-                f'{self.logger.id}\t{self.time:.2f}\t{EventType.REINTEGRATION.name}\t{self.target.id}\t.\n'
+                f'{self.logger.id}\t{self.time:.2f}\t{EventType.REINTEGRATION.name}\t{self.target}\t.\n'
             )
             return population[self.target.id].reintegrate(**self.kwargs)
         elif self.action == EventType.INFECTION_AVOIDED:
             self.logger.write(
-                f'{self.logger.id}\t{self.time:.2f}\t{EventType.INFECTION_AVOIDED.name}\t.\tby={self.kwargs["by"].id}\n'
+                f'{self.logger.id}\t{self.time:.2f}\t{EventType.INFECTION_AVOIDED.name}\t.\tby={self.kwargs["by"]}\n'
             )
             return []
         elif self.action == EventType.SHOW_SYMPTOM:
             self.logger.write(
-                f'{self.logger.id}\t{self.time:.2f}\t{EventType.SHOW_SYMPTOM.name}\t{self.target.id}\t.\n'
+                f'{self.logger.id}\t{self.time:.2f}\t{EventType.SHOW_SYMPTOM.name}\t{self.target}\t.\n'
             )
             return []
         elif self.action == EventType.REMOVAL:
             if self.target.id in population:
                 population.pop(self.target.id)
                 self.logger.write(
-                    f'{self.logger.id}\t{self.time:.2f}\t{EventType.REMOVAL.name}\t{self.target.id}\tpopsize={len(population)}\n'
+                    f'{self.logger.id}\t{self.time:.2f}\t{EventType.REMOVAL.name}\t{self.target}\tpopsize={len(population)}\n'
                 )
             else:
                 self.logger.write(
-                    f'{self.logger.id}\t{self.time:.2f}\t{EventType.REMOVAL.name}\t{self.target.id}\tpopsize={len(population)},already_removed=True\n'
+                    f'{self.logger.id}\t{self.time:.2f}\t{EventType.REMOVAL.name}\t{self.target}\tpopsize={len(population)},already_removed=True\n'
                 )
             return []
         elif self.action == EventType.RECOVER:
@@ -423,7 +427,7 @@ class Event(object):
                 params[removed] = True
             param = ','.join(f'{x}={y}' for x, y in params.items())
             self.logger.write(
-                f'{self.logger.id}\t{self.time:.2f}\t{EventType.RECOVER.name}\t{self.target.id}\t{param}\n'
+                f'{self.logger.id}\t{self.time:.2f}\t{EventType.RECOVER.name}\t{self.target}\t{param}\n'
             )
             return []
         elif self.action == EventType.STAT:
@@ -490,14 +494,19 @@ class Simulator(object):
         self.plugins = {}
 
     def load_plugins(self, population):
-        if not self.simu_args.plugins:
+        if not self.simu_args.plugin:
             return
-        for plugin in self.simu_args.plugins:
+        # split by '--plugin'
+        groups = [
+            list(group) for k, group in groupby(
+                self.simu_args.plugin, lambda x: x == '--plugin') if not k
+        ]
+        for group in groups:
+            plugin = group[0]
             if '.' not in plugin:
-                raise ValueError(
-                    f'Plugins have to be specified as modulename.pluginname: {plugin} provided'
-                )
-            module_name, plugin_name = plugin.rsplit('.', 1)
+                module_name, plugin_name = plugin, plugin
+            else:
+                module_name, plugin_name = plugin.rsplit('.', 1)
             try:
                 mod = import_module(module_name)
             except Exception as e:
@@ -517,7 +526,7 @@ class Simulator(object):
             # if there is a parser
             if hasattr(obj, 'get_parser'):
                 parser = obj.get_parser()
-                args = parser.parse_known_args()[0]
+                args = parser.parse_args(group[1:])
             else:
                 args = None
             #

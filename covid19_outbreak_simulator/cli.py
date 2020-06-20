@@ -390,6 +390,7 @@ def parse_args(args=None):
     parser.add_argument(
         '--handle-symptomatic',
         nargs='*',
+        default=['remove'],
         help='''How to handle individuals who show symptom, which should be "keep" (stay in
             population), "remove" (remove from population), and "quarantine" (put aside until
             it recovers). all options can be followed by a "proportion", and quarantine can
@@ -460,6 +461,12 @@ def parse_args(args=None):
         help='''Analyze an existing logfile, useful for updating the summarization
             procedure or uncaptured output. ''')
     parser.add_argument(
+        '--plugin',
+        nargs=argparse.REMAINDER,
+        help='''One or more of "--plugin MODULE.PLUGIN [args]" to specify one or more
+            plugins. FLUGIN will be assumed to be MODULE name if left unspecified. Each
+            plugin has its own parser and can parse its own args.''')
+    parser.add_argument(
         '-j',
         '--jobs',
         type=int,
@@ -472,10 +479,7 @@ def parse_args(args=None):
         type=float,
         help='''Interval for statistics to be calculated, default to 1. No STAT event
             will happen it it is set to 0.''')
-    if '--plugins' in (sys.argv if args is None else args):
-        return parser.parse_known_args(args)[0]
-    else:
-        return parser.parse_args(args)
+    return parser.parse_args(args)
 
 
 def main(args=None):

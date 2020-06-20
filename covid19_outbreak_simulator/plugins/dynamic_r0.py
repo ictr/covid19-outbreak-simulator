@@ -6,7 +6,7 @@ import random
 #
 # This plugin changes R0 at certain time
 #
-class DynamicR(BasePlugin):
+class dynamic_r0(BasePlugin):
 
     # events that will trigger this plugin
     events = set()
@@ -17,6 +17,9 @@ class DynamicR(BasePlugin):
         self.applied = False
 
     def get_parser(self):
+        parser = super(DynamicR, self).get_parser()
+        parser.description = 'Draw random sample from the population'
+
         parser = argparse.ArgumentParser(
             'Draw random sample from the population'
             '')

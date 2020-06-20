@@ -6,7 +6,7 @@ import random
 #
 # This plugin take random samples from the population during evolution.
 #
-class RandomSampler(BasePlugin):
+class sample(BasePlugin):
 
     # events that will trigger this plugin
     events = set()
@@ -17,9 +17,8 @@ class RandomSampler(BasePlugin):
         self.last_sampled = None
 
     def get_parser(self):
-        parser = argparse.ArgumentParser(
-            'Draw random sample from the population'
-            '')
+        parser = super(RandomSampler, self).get_parser()
+        parser.description = 'Draw random sample from the population'
         parser.add_argument(
             '--sample-proportion',
             type=float,
