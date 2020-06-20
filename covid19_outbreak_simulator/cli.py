@@ -58,6 +58,7 @@ def summarize_simulations(logfile):
 
         total_popsize = 0
         infectors = ['0']
+        args = None
 
         for line in lines:
             if line.startswith('#'):
@@ -465,11 +466,6 @@ def parse_args(args=None):
             of incurbation time. If allow lead time is set to True, the carrier will
             be anywhere in his or her incubation period.''')
     parser.add_argument(
-        '--analyze-existing-logfile',
-        action='store_true',
-        help='''Analyze an existing logfile, useful for updating the summarization
-            procedure or uncaptured output. ''')
-    parser.add_argument(
         '--plugin',
         nargs=argparse.REMAINDER,
         help='''One or more of "--plugin MODULE.PLUGIN [args]" to specify one or more
@@ -494,37 +490,36 @@ def parse_args(args=None):
 def main(argv=None):
     """Console script for covid19_outbreak_simulator."""
     args = parse_args(argv)
-    if not args.analyze_existing_logfile:
-        tasks = multiprocessing.JoinableQueue()
-        results = multiprocessing.Queue()
+    tasks = multiprocessing.JoinableQueue()
+    results = multiprocessing.Queue()
 
-        if not args.jobs:
-            args.jobs = multiprocessing.cpu_count()
+    if not args.jobs:
+        args.jobs = multiprocessing.cpu_count()
 
-        workers = [
-            Worker(tasks, results, args)
-            for i in range(min(args.jobs, args.repeats))
-        ]
-        for worker in workers:
-            worker.start()
+    workers = [
+        Worker(tasks, results, args)
+        for i in range(min(args.jobs, args.repeats))
+    ]
+    for worker in workers:
+        worker.start()
 
-        with open(args.logfile, 'w') as logger:
-            logger.write(
-                f'# CMD: {subprocess.list2cmdline(argv if argv else sys.argv[1:])}\n'
-            )
-            logger.write(
-                f'# START: {datetime.now().strftime("%m/%d/%Y, %H:%M:%S")}\n')
-            logger.write('id\ttime\tevent\ttarget\tparams\n')
-            for i in range(args.repeats):
-                tasks.put(i + 1)
-            for i in range(args.jobs):
-                tasks.put(None)
-            #
-            for i in tqdm(range(args.repeats)):
-                result = results.get()
-                logger.write(result)
-            logger.write(
-                f'# START: {datetime.now().strftime("%m/%d/%Y, %H:%M:%S")}\n')
+    with open(args.logfile, 'w') as logger:
+        logger.write(
+            f'# CMD: {subprocess.list2cmdline(argv if argv else sys.argv[1:])}\n'
+        )
+        logger.write(
+            f'# START: {datetime.now().strftime("%m/%d/%Y, %H:%M:%S")}\n')
+        logger.write('id\ttime\tevent\ttarget\tparams\n')
+        for i in range(args.repeats):
+            tasks.put(i + 1)
+        for i in range(args.jobs):
+            tasks.put(None)
+        #
+        for i in tqdm(range(args.repeats)):
+            result = results.get()
+            logger.write(result)
+        logger.write(
+            f'# START: {datetime.now().strftime("%m/%d/%Y, %H:%M:%S")}\n')
 
     summarize_simulations(args.logfile)
     return 0
