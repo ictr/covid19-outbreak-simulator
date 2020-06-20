@@ -5,9 +5,10 @@ Welcome to COVID-19 Outbreak Simulator's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-   README
+   background
    installation
-   usage
+   plugins
+   output
    contributing
    history
 
