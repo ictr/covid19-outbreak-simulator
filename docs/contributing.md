@@ -1,5 +1,3 @@
-.. highlight:: shell
-
 ============
 Contributing
 ============
@@ -62,13 +60,17 @@ Ready to contribute? Here's how to set up `covid19_outbreak_simulator` for local
 1. Fork the `covid19_outbreak_simulator` repo on GitHub.
 2. Clone your fork locally::
 
+    ```sh
     $ git clone git@github.com:your_name_here/covid19_outbreak_simulator.git
+    ```
 
 3. Install your local copy into a virtualenv. Assuming you have virtualenvwrapper installed, this is how you set up your fork for local development::
 
+    ```sh
     $ mkvirtualenv covid19_outbreak_simulator
     $ cd covid19_outbreak_simulator/
     $ python setup.py develop
+    ```
 
 4. Create a branch for local development::
 
@@ -79,17 +81,21 @@ Ready to contribute? Here's how to set up `covid19_outbreak_simulator` for local
 5. When you're done making changes, check that your changes pass flake8 and the
    tests, including testing other Python versions with tox::
 
+    ```sh
     $ flake8 covid19_outbreak_simulator tests
     $ python setup.py test or pytest
     $ tox
+    ```
 
    To get flake8 and tox, just pip install them into your virtualenv.
 
 6. Commit your changes and push your branch to GitHub::
 
+    ```
     $ git add .
     $ git commit -m "Your detailed description of your changes."
     $ git push origin name-of-your-bugfix-or-feature
+    ```
 
 7. Submit a pull request through the GitHub website.
 
