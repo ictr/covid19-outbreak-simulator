@@ -15,34 +15,45 @@ offloading vessel) but has since been expanded to simulate much larger populatio
 This README file contains all essential information but you can also visit our [documentation](https://covid19-outbreak-simulator.readthedocs.io/en/latest/?badge=latest) for more details. Please feel free to [contact us](https://github.com/ictr/covid19-outbreak-simulator/issues) if you would like to simulate any particular environment.
 
 <!--ts-->
-   * [COVID-19 Outbreak Simulator](#covid-19-outbreak-simulator)
-      * [Background](#background)
-      * [Modeling the outbreak of COVID-19](#modeling-the-outbreak-of-covid-19)
-      * [Installation and basic usage](#installation-and-basic-usage)
+   * [Background](#background)
+      * [Basic assumptions](#basic-assumptions)
+      * [Statistical models](#statistical-models)
+      * [Simulation method](#simulation-method)
+      * [Limitation of the simulator](#limitation-of-the-simulator)
+   * [Installation and basic usage](#installation-and-basic-usage)
+      * [Installation](#installation)
+      * [Getting help](#getting-help)
       * [Command line options of the core simulator](#command-line-options-of-the-core-simulator)
+      * [Example usages](#example-usages)
          * [Homogeneous and heterogeneous populations](#homogeneous-and-heterogeneous-populations)
          * [Change number of infectors](#change-number-of-infectors)
          * [Changing model parameters](#changing-model-parameters)
          * [Specigy group-specific parameters](#specigy-group-specific-parameters)
-      * [Plug-in system (advanced usages)](#plug-in-system-advanced-usages)
-         * [Specify one or more plugins from command line](#specify-one-or-more-plugins-from-command-line)
-         * [List of plugins](#list-of-plugins)
+   * [Plug-in system (advanced usages)](#plug-in-system-advanced-usages)
+      * [Specify one or more plugins from command line](#specify-one-or-more-plugins-from-command-line)
+      * [System plugins](#system-plugins)
+         * [Common paramters and list of plugins](#common-paramters-and-list-of-plugins)
          * [Plugin dynamic-r0](#plugin-dynamic-r0)
-         * [Plugin sampling](#plugin-sampling)
-         * [Implementation of plugins](#implementation-of-plugins)
-      * [Output from the simulator](#output-from-the-simulator)
-         * [Events tracked during the simulation](#events-tracked-during-the-simulation)
-         * [Summary report from multiple replicates](#summary-report-from-multiple-replicates)
+         * [Plugin sample](#plugin-sample)
+         * [Plugin contact_tracing](#plugin-contact_tracing)
+         * [Plugin rapid_test](#plugin-rapid_test)
+         * [Plugin pcr_test](#plugin-pcr_test)
+      * [Implementation of plugins](#implementation-of-plugins)
+   * [Output from the simulator](#output-from-the-simulator)
+      * [Events tracked during the simulation](#events-tracked-during-the-simulation)
+      * [Summary report from multiple replicates](#summary-report-from-multiple-replicates)
       * [Data analysis tools](#data-analysis-tools)
          * [time_vs_size.R](#time_vs_sizer)
          * [merge_summary.py](#merge_summarypy)
-      * [Acknowledgements](#acknowledgements)
+   * [Acknowledgements](#acknowledgements)
 
-<!-- Added by: bpeng, at: Sat Jun 20 11:50:42 CDT 2020 -->
+<!-- Added by: bpeng, at: Sat Jun 20 12:13:15 CDT 2020 -->
 
 <!--te-->
 
 # Background
+
+## Basic assumptions
 
 This simulator simulates the scenario in which
 
@@ -75,7 +86,7 @@ The simulator uses the latest knowledge about the spread of COVID-19 and is
 validated against public data. This project will be contantly updated with our
 deepening knowledge on this virus.
 
-## Modeling the outbreak of COVID-19
+## Statistical models
 
 We developed multiple statistical models to model the incubation time, serial interval,
 generation time, proportion of asymptomatic transmissions, using results from
@@ -90,7 +101,35 @@ The statistical models and related references are available at
 
 The models will continuously be updated as we learn more about the virus.
 
+## Simulation method
+
+This simulator simulations individuals in a population using an event-based model. Briefly
+speaking,
+
+1. The simulator creates an initial population with a set of initial `events` (see later section for details)
+
+2. The events will happen at a pre-specified time and will trigger further events. For example,
+  an `INFECTION` event will cause someone to be infected with the virus. The individual will be marked as `infected` and according to individualized parameters of the infectivity of the infected individual, the `INFECTION` event may trigger a series of events such as `INFECTION` to other
+  individuals, `SHOW_SYMPTIOM` if he or she is symptomatic and will show symptom after an incubation
+  period, `REMOVAL` or `QUARANTINE` after symptoms are detected.
+
+3. After processing all events at a time point, the simulator will call specified plugins, which
+  can perform a variety of operations to the population.
+
+4. The simulator processes and logs the events and stops after pre-specified exit condition.
+
+
+## Limitation of the simulator
+
+* The simulator assumes a "mixed" population. Although some groups might be more suscepticle
+  to the virus, people in the same group will be equally likely to be infected.
+
+* The simulator does not simulate "contact" or "geographic locations", so it is not yet possible
+  to similate scenarios such as "contact centers" such as supermarkets and subways.
+
 # Installation and basic usage
+
+## Installation
 
 This simulator is programmed using Python >= 3.6 with `numpy` and `scipy`. A conda environment is
 recommended. After setting up a conda environment with Python >= 3.6 and these two packages,
@@ -107,6 +146,8 @@ pip install covid19-outbreak-simulator
 ```
 
 to install the simulator.
+
+## Getting help
 
 You can then use command
 
@@ -222,6 +263,8 @@ optional arguments:
 
 ```
 
+## Example usages
+
 ### Homogeneous and heterogeneous populations
 
 ```
@@ -312,25 +355,43 @@ where
 5. The rest of the plugin parameters will be parsed by the plugin
 
 
-## List of plugins
+## System plugins
+
+### Common paramters and list of plugins
 
 ```
 outbreak_simulator --plugin -h
 ```
 
-## Plugin `dynamic-r0`
+### Plugin `dynamic-r0`
 
 ```
 outbreak_simulator --plugin dynamic-r0
 ```
 
-
-## Plugin `sampling`
+### Plugin `sample`
 
 ```
-outbreak_simulator --plugin sampling
+outbreak_simulator --plugin sample -h
 ```
 
+### Plugin `contact_tracing`
+
+```
+outbreak_simulator --plugin sample -h
+```
+
+### Plugin `rapid_test`
+
+```
+outbreak_simulator --plugin sample -h
+```
+
+### Plugin `pcr_test`
+
+```
+outbreak_simulator --plugin sample -h
+```
 
 ## Implementation of plugins
 
@@ -382,7 +443,7 @@ Currently the following events are tracked
 | `SHOW_SYMPTOM`      | Show symptom.                                                                           |
 | `REMOVAL`           | Remove from population.                                                                 |
 | `RECOVER`           | Recovered, no longer infectious                                                         |
-| `QUANTINE`          | Quarantine someone till specified time.                                                 |
+| `QUARANTINE`          | Quarantine someone till specified time.                                                 |
 | `REINTEGRATION`     | Reintroduce the quarantined individual to group.                                        |
 | `STAT`              | Report population stats at specified intervals.                                         |
 | `ABORT`             | If the first carrier show sympton during quarantine.                                    |
@@ -499,14 +560,14 @@ multiple replicated simulations. The output contains the following keys and thei
 | `EVENT_STAT_XXX` | Reported statistics `STAT` for customized event `EVENT` at time `XXX` a list if multiple replicates |
 | `avg_EVENT_STAT_XXX` | Average reported statistics `STAT` for customized event `EVENT` at time `XXX` if there are multiple replicates |
 
-# Data analysis tools
+## Data analysis tools
 
 Because all the events have been recorded in the log files, it should not be too difficult for
 you to write your own script (e.g. in R) to analyze them and produce nice figures. We however
 made a small number of tools available. Please feel free to submit or own script for inclusion in the `contrib`
 library.
 
-## `time_vs_size.R`
+### `time_vs_size.R`
 
 The [`contrib/time_vs_size.R`](https://github.com/ictr/covid19-outbreak-simulator/blob/master/contrib/time_vs_size.R) script provides an example on how to process the data and produce
 a figure. It can be used as follows:
@@ -519,7 +580,7 @@ and produces a figure
 
 ![time_vs_size.png](https://raw.githubusercontent.com/ictr/covid19-outbreak-simulator/master/contrib/time_vs_size.png)
 
-## `merge_summary.py`
+### `merge_summary.py`
 
 [`contrib/merge_summary.py`](https://github.com/ictr/covid19-outbreak-simulator/blob/master/contrib/merge_summary.py) is a script to merge summary stats from multiple simulation runs.
 
