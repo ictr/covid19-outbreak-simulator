@@ -5,7 +5,6 @@
 [![Coverage Status](https://coveralls.io/repos/github/ictr/covid19-outbreak-simulator/badge.svg?branch=master&service=github)](https://coveralls.io/github/ictr/covid19-outbreak-simulator?branch=master)
 
 <!--ts-->
-   * [COVID-19 Outbreak Simulator](#covid-19-outbreak-simulator)
       * [Background](#background)
       * [Modeling the outbreak of COVID-19](#modeling-the-outbreak-of-covid-19)
       * [Installation and basic usage](#installation-and-basic-usage)
@@ -28,12 +27,10 @@
          * [merge_summary.py](#merge_summarypy)
       * [Acknowledgements](#acknowledgements)
 
-<!-- Added by: bpeng, at: Sat Jun 20 11:50:42 CDT 2020 -->
+<!-- Added by: bpeng, at: Sat Jun 20 11:51:59 CDT 2020 -->
 
 <!--te-->
 
-
-# COVID-19 Outbreak Simulator
 
 The COVID-19 outbreak simulator simulates the outbreak of COVID-19 in a population. It was first designed to simulate
 the outbreak of COVID-19 in small populations in enclosed environments, such as a FPSO (floating production storage and
