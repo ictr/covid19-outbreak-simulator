@@ -45,7 +45,6 @@ class Individual(object):
         return []
 
     def symptomatic_infect(self, time, **kwargs):
-        self.infected = time
         self.r0 = self.model.draw_random_r0(symptomatic=True, group=self.group)
         self.incubation_period = self.model.draw_random_incubation_period(
             group=self.group)
@@ -58,7 +57,7 @@ class Individual(object):
             lead_time = np.random.uniform(0, self.incubation_period)
         else:
             lead_time = 0
-        self.infected = -lead_time
+        self.infected = time - lead_time
 
         handle_symptomatic = kwargs.get('handle_symptomatic', ['remove', 1])
 
@@ -226,7 +225,7 @@ class Individual(object):
         else:
             lead_time = 0
 
-        self.infected = -lead_time
+        self.infected = time - lead_time
 
         # REMOVAL ...
         evts = []
@@ -285,7 +284,8 @@ class Individual(object):
         return evts
 
     def infect(self, time, **kwargs):
-        if self.infected is True or self.recovered is True:
+        if self.infected not in (False, None) or self.recovered not in (False,
+                                                                        None):
             by_id = kwargs["by"].id if "by" in kwargs else 'None'
             self.logger.write(
                 f'{self.logger.id}\t{time:.2f}\t{EventType.INFECTION_IGNORED.name}\t{self.id}\tby={by_id}\n'

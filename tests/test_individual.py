@@ -4,7 +4,7 @@ from covid19_outbreak_simulator.simulator import Individual, EventType
 
 
 def test_individual(default_model, logger):
-    ind = Individual(0, 'group 1', 1.2, default_model, logger)
+    ind = Individual(0, 'group 1', 1.2, None, None, default_model, logger)
 
     assert ind.infected is None
     assert ind.quarantined is None
@@ -46,7 +46,7 @@ def test_infect_infected(individual_factory):
 
 
 @pytest.mark.parametrize('by, handle_symptomatic, quarantined',
-                         product([None, 1], ['keep', 'remove', 'quanrantine'],
+                         product([None, 1], ['keep', 'remove', 'quarantine'],
                                  [True, False]))
 def test_symptomatic_infect(individual_factory, by, handle_symptomatic,
                             quarantined):
@@ -55,12 +55,12 @@ def test_symptomatic_infect(individual_factory, by, handle_symptomatic,
 
     ind1.model.draw_prop_asym_carriers()
     if quarantined:
-        ind2.quarantine(20)
+        ind2.quarantine(till=20)
     #
     res = ind1.symptomatic_infect(
         5.0,
         by=None if by is None else ind2,
-        handle_symptomatic=handle_symptomatic)
+        handle_symptomatic=[handle_symptomatic])
 
     assert ind1.infected == 5.0
     assert ind1.r0 is not None
@@ -77,7 +77,7 @@ def test_asymptomatic_infect(individual_factory, by, handle_symptomatic,
 
     ind1.model.draw_prop_asym_carriers()
     if quarantined:
-        ind2.quarantine(20)
+        ind2.quarantine(till=20)
     #
     res = ind1.asymptomatic_infect(
         5.0,
