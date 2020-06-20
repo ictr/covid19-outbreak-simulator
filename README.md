@@ -4,7 +4,18 @@
 [![Build Status](https://travis-ci.org/ictr/covid19-outbreak-simulator.svg?branch=master)](https://travis-ci.org/ictr/covid19-outbreak-simulator)
 [![Coverage Status](https://coveralls.io/repos/github/ictr/covid19-outbreak-simulator/badge.svg?branch=master&service=github)](https://coveralls.io/github/ictr/covid19-outbreak-simulator?branch=master)
 
+
+
+
+
+The COVID-19 outbreak simulator simulates the outbreak of COVID-19 in a population. It was first designed to simulate
+the outbreak of COVID-19 in small populations in enclosed environments, such as a FPSO (floating production storage and
+offloading vessel) but has since been expanded to simulate much larger populations with dynamic parameters.
+
+This README file contains all essential information but you can also visit our [documentation](https://covid19-outbreak-simulator.readthedocs.io/en/latest/?badge=latest) for more details. Please feel free to [contact us](https://github.com/ictr/covid19-outbreak-simulator/issues) if you would like to simulate any particular environment.
+
 <!--ts-->
+   * [COVID-19 Outbreak Simulator](#covid-19-outbreak-simulator)
       * [Background](#background)
       * [Modeling the outbreak of COVID-19](#modeling-the-outbreak-of-covid-19)
       * [Installation and basic usage](#installation-and-basic-usage)
@@ -27,18 +38,11 @@
          * [merge_summary.py](#merge_summarypy)
       * [Acknowledgements](#acknowledgements)
 
-<!-- Added by: bpeng, at: Sat Jun 20 11:51:59 CDT 2020 -->
+<!-- Added by: bpeng, at: Sat Jun 20 11:50:42 CDT 2020 -->
 
 <!--te-->
 
-
-The COVID-19 outbreak simulator simulates the outbreak of COVID-19 in a population. It was first designed to simulate
-the outbreak of COVID-19 in small populations in enclosed environments, such as a FPSO (floating production storage and
-offloading vessel) but has since been expanded to simulate much larger populations with dynamic parameters.
-
-This README file contains all essential information but you can also visit our [documentation](https://covid19-outbreak-simulator.readthedocs.io/en/latest/?badge=latest) for more details. Please feel free to [contact us](https://github.com/ictr/covid19-outbreak-simulator/issues) if you would like to simulate any particular environment.
-
-## Background
+# Background
 
 This simulator simulates the scenario in which
 
@@ -86,7 +90,7 @@ The statistical models and related references are available at
 
 The models will continuously be updated as we learn more about the virus.
 
-## Installation and basic usage
+# Installation and basic usage
 
 This simulator is programmed using Python >= 3.6 with `numpy` and `scipy`. A conda environment is
 recommended. After setting up a conda environment with Python >= 3.6 and these two packages,
@@ -278,7 +282,7 @@ outbreak_simulator --popsize nurse=10 patient=100 \
     --infector patient0 patient1
 ```
 
-## Plug-in system (advanced usages)
+# Plug-in system (advanced usages)
 
 It is very likely that for complex simulations you would have scenarios that are
 not provided by the core simulator. This simulator has a plug-in system that allows
@@ -286,7 +290,7 @@ you to define your own functions that would be called by the simulator at specif
 intervals or events.
 
 
-### Specify one or more plugins from command line
+## Specify one or more plugins from command line
 
 To use plugins for a simulation, they should be specified as:
 
@@ -308,27 +312,27 @@ where
 5. The rest of the plugin parameters will be parsed by the plugin
 
 
-### List of plugins
+## List of plugins
 
 ```
 outbreak_simulator --plugin -h
 ```
 
-### Plugin `dynamic-r0`
+## Plugin `dynamic-r0`
 
 ```
 outbreak_simulator --plugin dynamic-r0
 ```
 
 
-### Plugin `sampling`
+## Plugin `sampling`
 
 ```
 outbreak_simulator --plugin sampling
 ```
 
 
-### Implementation of plugins
+## Implementation of plugins
 
 Implementation wise, the plugins should be written as Python classes that
 
@@ -346,9 +350,9 @@ Please check the [plugins directory](https://github.com/ictr/covid19-outbreak-si
 
 
 
-## Output from the simulator
+# Output from the simulator
 
-### Events tracked during the simulation
+## Events tracked during the simulation
 
 The output file contains events that happens during the simulations.
 For example, for command
@@ -430,7 +434,7 @@ which I assume would be pretty self-explanatory. Note that **the simulation IDs
 are not ordered because the they are run in parallel but you can expect all events
 belong to the same simulation are recorded together.**.
 
-### Summary report from multiple replicates
+## Summary report from multiple replicates
 
 At the end of each command, a report will be given to summarize key statistics from
 multiple replicated simulations. The output contains the following keys and their values
@@ -495,14 +499,14 @@ multiple replicated simulations. The output contains the following keys and thei
 | `EVENT_STAT_XXX` | Reported statistics `STAT` for customized event `EVENT` at time `XXX` a list if multiple replicates |
 | `avg_EVENT_STAT_XXX` | Average reported statistics `STAT` for customized event `EVENT` at time `XXX` if there are multiple replicates |
 
-## Data analysis tools
+# Data analysis tools
 
 Because all the events have been recorded in the log files, it should not be too difficult for
 you to write your own script (e.g. in R) to analyze them and produce nice figures. We however
 made a small number of tools available. Please feel free to submit or own script for inclusion in the `contrib`
 library.
 
-### `time_vs_size.R`
+## `time_vs_size.R`
 
 The [`contrib/time_vs_size.R`](https://github.com/ictr/covid19-outbreak-simulator/blob/master/contrib/time_vs_size.R) script provides an example on how to process the data and produce
 a figure. It can be used as follows:
@@ -515,11 +519,11 @@ and produces a figure
 
 ![time_vs_size.png](https://raw.githubusercontent.com/ictr/covid19-outbreak-simulator/master/contrib/time_vs_size.png)
 
-### `merge_summary.py`
+## `merge_summary.py`
 
 [`contrib/merge_summary.py`](https://github.com/ictr/covid19-outbreak-simulator/blob/master/contrib/merge_summary.py) is a script to merge summary stats from multiple simulation runs.
 
-## Acknowledgements
+# Acknowledgements
 
 This tool has been developed and maintained by Dr. Bo Peng, associate professor at the Baylor College of Medicine, with guidance from Dr. Christopher Amos, from the [Institute for Clinical and Translational Research, Baylor College of Medicine](https://www.bcm.edu/research/office-of-research/clinical-and-translational-research). Contributions to this project are welcome. Please refer to the [LICENSE](https://github.com/ictr/outbreak_simulator/blob/master/LICENSE) file for proper use and distribution of this tool.
 
