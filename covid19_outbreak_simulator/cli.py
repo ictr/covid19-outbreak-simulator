@@ -536,7 +536,7 @@ def main(argv=None):
 
     with open(args.logfile, 'w') as logger:
         logger.write(
-            f'# CMD: outbreak_simulator.py {subprocess.list2cmdline(argv if argv else sys.argv[1:])}\n'
+            f'# CMD: outbreak_simulator {subprocess.list2cmdline(argv if argv else sys.argv[1:])}\n'
         )
         logger.write(
             f'# START: {datetime.now().strftime("%m/%d/%Y, %H:%M:%S")}\n')

@@ -399,9 +399,27 @@ optional arguments:
 
 ```
 
-### Plugin `sample`
+### Plugin `stat`
+
+```sh
+% outbreak_simulator --plugin stat -h
+
+usage: --plugin stat [-h] [--start START] [--end END] [--at AT [AT ...]] [--interval INTERVAL]
+
+Print STAT information
+
+optional arguments:
+  -h, --help           show this help message and exit
+  --start START        Start time, default to 0
+  --end END            End time, default to none
+  --at AT [AT ...]     Specific time at which the plugin is applied
+  --interval INTERVAL  Interval at which plugin is applied
 
 ```
+
+### Plugin `sample`
+
+```sh
 % outbreak_simulator --plugin sample -h
 
 usage: --plugin sample [-h] [--start START] [--end END] [--at AT [AT ...]] [--interval INTERVAL]
@@ -485,36 +503,40 @@ Currently the following events are tracked
 The log file of a typical simulation would look like the following:
 
 ```
-# CMD: outbreak_simulator.py --rep 3 --plugin stat --interval 1
-# START: 06/20/2020, 23:59:20
+# CMD: outbreak_simulator --rep 3 --plugin stat --interval 1
+# START: 06/21/2020, 00:02:06
 id      time    event   target  params
-2       0.00    INFECTION       0       leadtime=3.00,r0=0.49,r=1,r_asym=1
+2       0.00    INFECTION       0       leadtime=2.26,r0=1.94,r=0,r_presym=0,r_sym=0,incu=3.07
 2       0.00    STAT    .       n_recovered=0,n_infected=1,n_popsize=64,incidence_rate=0.0156,seroprevalence=0.0156
-2       2.72    INFECTION       47      by=0,r0=1.98,r=0,r_presym=0,r_sym=0,incu=6.87
-2       9.03    RECOVER 0       recovered=1,infected=2,popsize=64
-2       9.58    SHOW_SYMPTOM    47      .
-2       9.58    REMOVAL 47      popsize=63
-2       15.29   RECOVER 47      recovered=1,infected=1,popsize=63,True=True
-2       15.29   END     63      popsize=63,prop_asym=0.140
-3       0.00    INFECTION       0       leadtime=5.32,r0=1.77,r=0,r_presym=0,r_sym=0,incu=6.03
+2       0.81    SHOW_SYMPTOM    0       .
+2       0.81    REMOVAL 0       popsize=63
+2       7.79    RECOVER 0       recovered=0,infected=0,popsize=63,True=True
+2       7.79    END     63      popsize=63,prop_asym=0.288
+3       0.00    INFECTION       0       leadtime=4.82,r0=2.20,r=0,r_presym=0,r_sym=0,incu=4.82
 3       0.00    STAT    .       n_recovered=0,n_infected=1,n_popsize=64,incidence_rate=0.0156,seroprevalence=0.0156
-3       0.71    SHOW_SYMPTOM    0       .
-3       0.71    REMOVAL 0       popsize=63
-3       6.70    RECOVER 0       recovered=0,infected=0,popsize=63,True=True
-3       6.70    END     63      popsize=63,prop_asym=0.251
-1       0.00    INFECTION       0       leadtime=0.79,r0=2.76,r=3,r_presym=3,r_sym=0,incu=6.25
+3       0.00    SHOW_SYMPTOM    0       .
+3       0.00    REMOVAL 0       popsize=63
+3       6.40    RECOVER 0       recovered=0,infected=0,popsize=63,True=True
+3       6.40    END     63      popsize=63,prop_asym=0.260
+1       0.00    INFECTION       0       leadtime=0.16,r0=2.49,r=1,r_presym=1,r_sym=0,incu=2.38
 1       0.00    STAT    .       n_recovered=0,n_infected=1,n_popsize=64,incidence_rate=0.0156,seroprevalence=0.0156
-1       1.34    INFECTION       1       by=0,r0=0.50,r=1,r_asym=1
-1       3.57    INFECTION       32      by=0,r0=0.38,r=0,r_asym=0
-1       4.07    INFECTION       5       by=0,r0=2.49,r=1,r_presym=1,r_sym=0,incu=6.57
-1       5.46    SHOW_SYMPTOM    0       .
-1       5.46    REMOVAL 0       popsize=63
-1       6.83    INFECTION       29      by=5,r0=1.59,r=4,r_presym=4,r_sym=0,incu=3.33
-1       8.41    INFECTION       8       by=1,r0=1.71,r=1,r_presym=1,r_sym=0,incu=5.63
-1       8.59    INFECTION       55      by=29,r0=0.42,r=1,r_asym=1
-1       8.92    INFECTION       24      by=29,r0=2.41,r=1,r_presym=1,r_sym=0,incu=4.76
-1       9.09    INFECTION       7       by=29,r0=0.52,r=1,r_asym=1
-1       9.63    INFECTION       15      by=29,r0=2.01,r=2,r_presym=2,r_sym=0,incu=13.22
+1       2.14    INFECTION       20      by=0,r0=0.45,r=1,r_asym=1
+1       2.22    SHOW_SYMPTOM    0       .
+1       2.22    REMOVAL 0       popsize=63
+1       6.61    INFECTION       36      by=20,r0=1.69,r=1,r_presym=1,r_sym=0,incu=7.04
+1       9.43    RECOVER 0       recovered=0,infected=2,popsize=63,True=True
+1       10.55   INFECTION       19      by=36,r0=0.49,r=1,r_asym=1
+1       13.39   INFECTION       62      by=19,r0=1.44,r=0,r_presym=0,r_sym=0,incu=3.65
+1       13.65   SHOW_SYMPTOM    36      .
+1       13.65   REMOVAL 36      popsize=62
+1       14.14   RECOVER 20      recovered=1,infected=3,popsize=62
+1       17.04   SHOW_SYMPTOM    62      .
+1       17.04   REMOVAL 62      popsize=61
+1       19.30   RECOVER 36      recovered=1,infected=2,popsize=61,True=True
+1       22.55   RECOVER 19      recovered=2,infected=2,popsize=61
+1       23.83   RECOVER 62      recovered=2,infected=2,popsize=61,True=True
+1       23.83   END     61      popsize=61,prop_asym=0.092
+# START: 06/21/2020, 00:02:07
 ```
 
 which I assume would be pretty self-explanatory. Note that **the simulation IDs
