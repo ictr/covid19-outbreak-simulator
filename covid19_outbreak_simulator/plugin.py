@@ -43,8 +43,6 @@ class BasePlugin(object):
                 self.applied_at.add(time)
                 self.last_applied = time
                 return True
-            else:
-                return False
 
         if args.interval is not None:
             if time - self.last_applied >= args.interval:
