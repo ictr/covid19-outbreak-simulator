@@ -470,6 +470,7 @@ class Simulator(object):
                 self.simu_args.plugin, lambda x: x == '--plugin') if not k
         ]
 
+        trigger_events = []
         initial_events = []
         for group in groups:
             plugin = group[0]
@@ -502,7 +503,11 @@ class Simulator(object):
             if not hasattr(obj, 'apply'):
                 raise ValueError('No "apply" function is defined for plugin')
             initial_events.extend(obj.get_plugin_events(args))
-        return initial_events
+            trigger_events.extend(obj.get_trigger_events(args))
+        trigger_events_dict = defaultdict(list)
+        for te in trigger_events:
+            trigger_events_dict[te.trigger_event].append(te)
+        return initial_events, trigger_events_dict
 
     def simulate(self, id):
         #
@@ -555,7 +560,8 @@ class Simulator(object):
                     logger=self.logger))
 
         # load the plugins
-        for evt in self.get_plugin_events():
+        init_events, trigger_events = self.get_plugin_events()
+        for evt in init_events:
             events[evt.time].append(evt)
 
         last_stat = None
@@ -601,6 +607,11 @@ class Simulator(object):
                     aborted = True
                     break
                 res = evt.apply(population, self.simu_args)
+                if evt.action in trigger_events:
+                    for x in trigger_events[evt.action]:
+                        x.time = time
+                        res.append(x)
+
                 for x in res:
                     if x.time == time:
                         if x.priority:

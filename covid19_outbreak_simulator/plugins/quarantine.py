@@ -19,15 +19,28 @@ class quarantine(BasePlugin):
         parser.add_argument(
             'IDs', nargs='*', help='IDs of individuals to quarantine.')
         parser.add_argument(
-            '--duration', type=float, help='''Days of quarantine''')
+            '--proportion',
+            type=float,
+            default=1.0,
+            help='''Proportion of affected individuals to quarantine. Default to
+            all, but can be set to a lower value to indicate incomplete quarantine.
+            This option does not apply to cases when IDs are explicitly specified.''',
+        )
+        parser.add_argument(
+            '--duration', type=float, default=14, help='''Days of quarantine''')
         return parser
 
     def apply(self, time, population, args=None, simu_args=None):
-        print(f'RAISE {args}')
+        if args.IDs:
+            IDs = args.IDs
+        else:
+            IDs = [
+                x for x, y in population.items()
+                if isinstance(y.infected, float)
+            ]
+            if args.proportion != 1.0:
+                IDs = IDs[:int(len(IDs) * args.proportion)]
 
-        IDs = args.IDs if args.IDs else [
-            x for x, y in population.items() if isinstance(y.infected, float)
-        ]
         events = []
 
         for ID in IDs:

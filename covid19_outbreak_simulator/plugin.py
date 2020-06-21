@@ -4,12 +4,13 @@ from covid19_outbreak_simulator.simulator import Event, EventType
 
 class PlugInEvent(object):
 
-    def __init__(self, time, plugin, args, priority=False):
+    def __init__(self, time, plugin, args, priority=False, trigger_event=None):
         self.time = time
         self.plugin = plugin
         self.args = args
         self.priority = priority
         self.action = EventType.PLUGIN
+        self.trigger_event = trigger_event
 
     def apply(self, population, simu_args):
         return self.plugin.apply_plugin(self.time, population, self.args,
@@ -21,6 +22,14 @@ class PlugInEvent(object):
 
 class BasePlugin(object):
 
+    # this option can be
+    #
+    #  after_core_events:
+    #       applied after core events at specified time
+    #
+    #  before_core_events:
+    #       applied before core events at specified time
+    #
     apply_at = 'after_core_events'
 
     def __init__(self, simulator, *args, **kwargs):
@@ -54,6 +63,10 @@ class BasePlugin(object):
             type=float,
             help='''Interval at which plugin is applied, it will assume
              a 0 starting time if --start is left unspecified.''')
+        parser.add_argument(
+            '--trigger-by',
+            nargs='*',
+            help='''Events that triggers this plug in.''')
         return parser
 
     def get_plugin_events(self, args):
@@ -83,7 +96,7 @@ class BasePlugin(object):
                         args=args,
                         priority=self.apply_at == 'before_core_events'))
 
-        if not events:
+        if not events and not args.trigger_by:
             events.append(
                 PlugInEvent(
                     time=0,
@@ -91,6 +104,18 @@ class BasePlugin(object):
                     args=args,
                     priority=self.apply_at == 'before_core_events'))
         return events
+
+    def get_trigger_events(self, args):
+        if args.trigger_by:
+            return [
+                PlugInEvent(
+                    time=0,
+                    plugin=self,
+                    args=args,
+                    priority=self.apply_at == 'before_core_events',
+                    trigger_event=EventType[x]) for x in args.trigger_by
+            ]
+        return []
 
     def apply(self, time, population, args=None, simu_args=None):
         # redefined by subclassed

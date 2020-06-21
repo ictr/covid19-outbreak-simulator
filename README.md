@@ -362,16 +362,16 @@ where
 ```sh
 % outbreak_simulator --plugin -h
 
-usage: --plugin [-h] [--start START] [--end END] [--at AT [AT ...]] [--interval INTERVAL]
-
 A plugin for covid19-outbreak-simulator
 
 optional arguments:
-  -h, --help           show this help message and exit
-  --start START        Start time. Default to 0 no parameter is defined so the plugin will be called once at the beginning.
-  --end END            End time, default to none, meaning there is no end time.
-  --at AT [AT ...]     Specific time at which the plugin is applied.
-  --interval INTERVAL  Interval at which plugin is applied, it will assume a 0 starting time if --start is left unspecified.
+  -h, --help            show this help message and exit
+  --start START         Start time. Default to 0 no parameter is defined so the plugin will be called once at the beginning.
+  --end END             End time, default to none, meaning there is no end time.
+  --at AT [AT ...]      Specific time at which the plugin is applied.
+  --interval INTERVAL   Interval at which plugin is applied, it will assume a 0 starting time if --start is left unspecified.
+  --trigger-by [TRIGGER_BY [TRIGGER_BY ...]]
+                        Events that triggers this plug in.
 
 ```
 
@@ -379,8 +379,10 @@ optional arguments:
 
 ```sh
 % outbreak_simulator --plugin init -h
+
 usage: --plugin init [-h] [--start START] [--end END] [--at AT [AT ...]] [--interval INTERVAL]
-                     [--incidence-rate [INCIDENCE_RATE [INCIDENCE_RATE ...]]] [--seroprevalence [SEROPREVALENCE [SEROPREVALENCE ...]]]
+                     [--trigger-by [TRIGGER_BY [TRIGGER_BY ...]]] [--incidence-rate [INCIDENCE_RATE [INCIDENCE_RATE ...]]]
+                     [--seroprevalence [SEROPREVALENCE [SEROPREVALENCE ...]]]
 
 Initialize population with initial prevalence and seroprevalence
 
@@ -390,6 +392,8 @@ optional arguments:
   --end END             End time, default to none, meaning there is no end time.
   --at AT [AT ...]      Specific time at which the plugin is applied.
   --interval INTERVAL   Interval at which plugin is applied, it will assume a 0 starting time if --start is left unspecified.
+  --trigger-by [TRIGGER_BY [TRIGGER_BY ...]]
+                        Events that triggers this plug in.
   --incidence-rate [INCIDENCE_RATE [INCIDENCE_RATE ...]]
                         Incidence rate of the population (default to zero), which should be the probability that any individual is
                         currently affected with the virus (not necessarily show any symptom). Multipliers can be specified to set
@@ -406,7 +410,9 @@ optional arguments:
 
 ```
 % outbreak_simulator --plugin dynamic-r0 -h
+
 usage: --plugin dynamic_r0 [-h] [--start START] [--end END] [--at AT [AT ...]] [--interval INTERVAL]
+                           [--trigger-by [TRIGGER_BY [TRIGGER_BY ...]]]
                            [--new-symptomatic-r0 NEW_SYMPTOMATIC_R0 [NEW_SYMPTOMATIC_R0 ...]]
                            [--new-asymptomatic-r0 NEW_ASYMPTOMATIC_R0 [NEW_ASYMPTOMATIC_R0 ...]]
 
@@ -414,19 +420,19 @@ Change multiplier number at specific time.
 
 optional arguments:
   -h, --help            show this help message and exit
-  --start START         Start time, default to 0
-  --end END             End time, default to none
-  --at AT [AT ...]      Specific time at which the plugin is applied
-  --interval INTERVAL   Interval at which plugin is applied
+  --start START         Start time. Default to 0 no parameter is defined so the plugin will be called once at the beginning.
+  --end END             End time, default to none, meaning there is no end time.
+  --at AT [AT ...]      Specific time at which the plugin is applied.
+  --interval INTERVAL   Interval at which plugin is applied, it will assume a 0 starting time if --start is left unspecified.
+  --trigger-by [TRIGGER_BY [TRIGGER_BY ...]]
+                        Events that triggers this plug in.
   --new-symptomatic-r0 NEW_SYMPTOMATIC_R0 [NEW_SYMPTOMATIC_R0 ...]
-                        Updated production number of symptomatic infectors, should be specified as a
-                        single fixed number, or a range, and/or multipliers for different groups
-                        such as A=1.2. For example "--symptomatic-r0 1.4 2.8 nurse=1.2" means a
-                        general R0 ranging from 1.4 to 2.8, while nursed has a range from 1.4*1.2
-                        and 2.8*1.2.
+                        Updated production number of symptomatic infectors, should be specified as a single fixed number, or a range,
+                        and/or multipliers for different groups such as A=1.2. For example "--symptomatic-r0 1.4 2.8 nurse=1.2" means
+                        a general R0 ranging from 1.4 to 2.8, while nursed has a range from 1.4*1.2 and 2.8*1.2.
   --new-asymptomatic-r0 NEW_ASYMPTOMATIC_R0 [NEW_ASYMPTOMATIC_R0 ...]
-                        Updated production number of asymptomatic infectors, should be specified as
-                        a single fixed number, or a range and/or multipliers for different groups
+                        Updated production number of asymptomatic infectors, should be specified as a single fixed number, or a range
+                        and/or multipliers for different groups
 
 ```
 
@@ -436,15 +442,18 @@ optional arguments:
 % outbreak_simulator --plugin stat -h
 
 usage: --plugin stat [-h] [--start START] [--end END] [--at AT [AT ...]] [--interval INTERVAL]
+                     [--trigger-by [TRIGGER_BY [TRIGGER_BY ...]]]
 
 Print STAT information
 
 optional arguments:
-  -h, --help           show this help message and exit
-  --start START        Start time, default to 0
-  --end END            End time, default to none
-  --at AT [AT ...]     Specific time at which the plugin is applied
-  --interval INTERVAL  Interval at which plugin is applied
+  -h, --help            show this help message and exit
+  --start START         Start time. Default to 0 no parameter is defined so the plugin will be called once at the beginning.
+  --end END             End time, default to none, meaning there is no end time.
+  --at AT [AT ...]      Specific time at which the plugin is applied.
+  --interval INTERVAL   Interval at which plugin is applied, it will assume a 0 starting time if --start is left unspecified.
+  --trigger-by [TRIGGER_BY [TRIGGER_BY ...]]
+                        Events that triggers this plug in.
 
 ```
 
@@ -454,23 +463,21 @@ optional arguments:
 % outbreak_simulator --plugin sample -h
 
 usage: --plugin sample [-h] [--start START] [--end END] [--at AT [AT ...]] [--interval INTERVAL]
-                       [--sample-proportion SAMPLE_PROPORTION] [--sample-size SAMPLE_SIZE]
-                       [--sample-interval SAMPLE_INTERVAL]
+                       [--trigger-by [TRIGGER_BY [TRIGGER_BY ...]]] (--proportion PROPORTION | --size SIZE)
 
 Draw random sample from the population
 
 optional arguments:
   -h, --help            show this help message and exit
-  --start START         Start time, default to 0
-  --end END             End time, default to none
-  --at AT [AT ...]      Specific time at which the plugin is applied
-  --interval INTERVAL   Interval at which plugin is applied
-  --sample-proportion SAMPLE_PROPORTION
+  --start START         Start time. Default to 0 no parameter is defined so the plugin will be called once at the beginning.
+  --end END             End time, default to none, meaning there is no end time.
+  --at AT [AT ...]      Specific time at which the plugin is applied.
+  --interval INTERVAL   Interval at which plugin is applied, it will assume a 0 starting time if --start is left unspecified.
+  --trigger-by [TRIGGER_BY [TRIGGER_BY ...]]
+                        Events that triggers this plug in.
+  --proportion PROPORTION
                         Proprotion of the population to sample.
-  --sample-size SAMPLE_SIZE
-                        Number of individuals to sample.
-  --sample-interval SAMPLE_INTERVAL
-                        Sampling interval, default to 1
+  --size SIZE           Number of individuals to sample.
 
 ```
 
@@ -480,20 +487,27 @@ optional arguments:
 ```sh
 % outbreak_simulator --plugin quarantine -h
 
-usage: --plugin quarantine [-h] [--start START] [--end END] [--at AT [AT ...]] [--interval INTERVAL] [--duration DURATION] [IDs [IDs ...]]
+usage: --plugin quarantine [-h] [--start START] [--end END] [--at AT [AT ...]] [--interval INTERVAL]
+                           [--trigger-by [TRIGGER_BY [TRIGGER_BY ...]]] [--proportion PROPORTION] [--duration DURATION]
+                           [IDs [IDs ...]]
 
 Quarantine specified or all infected individuals for specified durations.
 
 positional arguments:
-  IDs                  IDs of individuals to quarantine.
+  IDs                   IDs of individuals to quarantine.
 
 optional arguments:
-  -h, --help           show this help message and exit
-  --start START        Start time, default to 0
-  --end END            End time, default to none
-  --at AT [AT ...]     Specific time at which the plugin is applied
-  --interval INTERVAL  Interval at which plugin is applied
-  --duration DURATION  Days of quarantine
+  -h, --help            show this help message and exit
+  --start START         Start time. Default to 0 no parameter is defined so the plugin will be called once at the beginning.
+  --end END             End time, default to none, meaning there is no end time.
+  --at AT [AT ...]      Specific time at which the plugin is applied.
+  --interval INTERVAL   Interval at which plugin is applied, it will assume a 0 starting time if --start is left unspecified.
+  --trigger-by [TRIGGER_BY [TRIGGER_BY ...]]
+                        Events that triggers this plug in.
+  --proportion PROPORTION
+                        Proportion of affected individuals to quarantine. Default to all, but can be set to a lower value to indicate
+                        incomplete quarantine. This option does not apply to cases when IDs are explicitly specified.
+  --duration DURATION   Days of quarantine
 ```
 
 
@@ -511,7 +525,8 @@ Implementation wise, the plugins should be written as Python classes that
 
 The plugin can change the status of the population or simulation parameters, write to system log `simulator.logger` or write to its own output files. It should return a list of events that can happen at a later time, or an empty list indicating no future event is triggered.
 
-Please check the [plugins directory](https://github.com/ictr/covid19-outbreak-simulator/tree/master/covid19_outbreak_simulator/plugins) for examples on how to write plugins for the simulator.
+The base class will handle the logics when the plugin will be executed (parameters `--start`, `--end`, `--interval`
+`--at` and `--trigger-by`). Please check the [plugins directory](https://github.com/ictr/covid19-outbreak-simulator/tree/master/covid19_outbreak_simulator/plugins) for examples on how to write plugins for the simulator.
 
 
 
