@@ -485,7 +485,11 @@ class Simulator(object):
             # if there is a parser
             if hasattr(obj, 'get_parser'):
                 parser = obj.get_parser()
-                args = parser.parse_args(group[1:])
+                try:
+                    args = parser.parse_args(group[1:])
+                except SystemExit as e:
+                    raise ValueError(
+                        f'Failed to parse argument for plugin {plugin}.')
             else:
                 args = None
             #
