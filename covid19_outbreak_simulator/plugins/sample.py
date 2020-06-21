@@ -12,7 +12,7 @@ class sample(BasePlugin):
     events = set()
 
     def __init__(self, *args, **kwargs):
-        # this will set self.population, self.simualtor, self.logger
+        # this will set self.simualtor, self.logger
         super(sample, self).__init__(*args, **kwargs)
 
     def get_parser(self):
@@ -28,34 +28,31 @@ class sample(BasePlugin):
             '--size', type=int, help='''Number of individuals to sample.''')
         return parser
 
-    def apply(self, time, args=None):
-        if not super(sample, self).can_apply(time, args):
-            return []
-
+    def apply(self, time, population, args=None, simu_args=None):
         self.last_sampled = time
         stat = {}
 
         if args.proportion:
-            sz = int(args.proportion * len(self.population))
+            sz = int(args.proportion * len(population))
             stat['proportion'] = '{:.3f}'.format(args.proportion)
         elif args.size:
-            sz = min(args.size, len(self.population))
+            sz = min(args.size, len(population))
             stat['size'] = args.size
         #
         # draw a random sample
-        samples = [1] * sz + [0] * (len(self.population) - sz)
+        samples = [1] * sz + [0] * (len(population) - sz)
         random.shuffle(samples)
 
         stat['n_recovered'] = len([
-            x for s, (x, ind) in zip(samples, self.population.items())
+            x for s, (x, ind) in zip(samples, population.items())
             if ind.recovered not in (None, False) and s
         ])
         stat['n_infected'] = len([
-            x for s, (x, ind) in zip(samples, self.population.items())
+            x for s, (x, ind) in zip(samples, population.items())
             if ind.infected not in (False, None) and s
         ])
         stat['n_popsize'] = len(
-            [x for s, (x, ind) in zip(samples, self.population.items()) if s])
+            [x for s, (x, ind) in zip(samples, population.items()) if s])
         stat['incidence_rate'] = '0' if stat[
             'n_popsize'] == 0 else '{:.4f}'.format(
                 (stat['n_infected']) / stat['n_popsize'])

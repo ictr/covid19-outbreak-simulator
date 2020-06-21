@@ -14,7 +14,7 @@ class quarantine(BasePlugin):
     events = set()
 
     def __init__(self, *args, **kwargs):
-        # this will set self.population, self.simualtor, self.logger
+        # this will set self.simualtor, self.logger
         super(quarantine, self).__init__(*args, **kwargs)
 
     def get_parser(self):
@@ -28,24 +28,22 @@ class quarantine(BasePlugin):
             '--duration', type=float, help='''Days of quarantine''')
         return parser
 
-    def apply(self, time, args=None):
-        if not super(quarantine, self).can_apply(time, args):
-            return []
+    def apply(self, time, population, args=None, simu_args=None):
+        print(f'RAISE {args}')
 
         IDs = args.IDs if args.IDs else [
-            x for x, y in self.population.items()
-            if y.infected not in (None, False)
+            x for x, y in population.items() if y.infected not in (None, False)
         ]
         events = []
 
         for ID in IDs:
-            if ID not in self.population:
+            if ID not in population:
                 raise ValueError(f'Invalid ID to quanrantine {ID}')
             events.append(
                 Event(
                     time,
                     EventType.QUARANTINE,
-                    self.population[ID],
+                    population[ID],
                     logger=self.logger,
                     till=time + args.duration))
         return events

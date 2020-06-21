@@ -12,7 +12,7 @@ class dynamic_r0(BasePlugin):
     events = set()
 
     def __init__(self, *args, **kwargs):
-        # this will set self.population, self.simualtor, self.logger
+        # this will set self.simualtor, self.logger
         super(dynamic_r0, self).__init__(*args, **kwargs)
 
     def get_parser(self):
@@ -35,10 +35,7 @@ class dynamic_r0(BasePlugin):
         )
         return parser
 
-    def apply(self, time, args=None):
-        if not super(dynamic_r0, self).can_apply(time, args):
-            return []
-
+    def apply(self, time, population, args=None, simu_args=None):
         # change parameter
         self.simulator.model.params.set_symptomatic_r0(args.new_symptomatic_r0)
         self.simulator.model.params.set_asymptomatic_r0(

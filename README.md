@@ -473,13 +473,13 @@ optional arguments:
 
 Implementation wise, the plugins should be written as Python classes that
 
-1. Drive from `outbreak_simulator.BasePlugin` and calls its `__init__` function. This will point `self.simulator`, `self.population`, and `self.logger` of the plugin to the simulator, population, and logger of the simulator. `simulator` has properties such as `simu_args`, `params`, and `model` so you can access command line simulator arguments, model parameters, and change simulation model (e.g. parameters).
+1. Drive from `outbreak_simulator.BasePlugin` and calls its `__init__` function. This will point `self.simulator`, and `self.logger` of the plugin to the simulator, population, and logger of the simulator. `simulator` has properties such as `simu_args`, `params`, and `model` so you can access command line simulator arguments, model parameters, and change simulation model (e.g. parameters).
 
 2. Provide as member function:
 
-  * `get_parser()` (optional): a function that returns a parser defined through Python `argparse` module. It will be used to parse command line using `parse_known_args` function.
+  * `get_parser()` (optional): a function that extends the base parser to add plugin specific arguments.
 
-  * `apply(time, args)` (required): A function that accepts parameters `time` (time when the plugin is called) and `args` (plugin args).
+  * `apply(time, population, args)` (required): A function that accepts parameters `time` (time when the plugin is called) and `args` (plugin args).
 
 The plugin can change the status of the population or simulation parameters, write to system log `simulator.logger` or write to its own output files. It should return a list of events that can happen at a later time, or an empty list indicating no future event is triggered.
 

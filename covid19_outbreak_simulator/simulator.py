@@ -325,6 +325,7 @@ class EventType(Enum):
     END = 12
     # ERROR
     ERROR = 13
+    PLUGIN = 14
 
 
 class Event(object):
@@ -451,15 +452,16 @@ class Simulator(object):
         self.model = None
         self.plugins = {}
 
-    def load_plugins(self, population):
+    def get_plugin_events(self):
         if not self.simu_args.plugin:
-            return
+            return []
         # split by '--plugin'
         groups = [
             list(group) for k, group in groupby(
                 self.simu_args.plugin, lambda x: x == '--plugin') if not k
         ]
 
+        initial_events = []
         for group in groups:
             plugin = group[0]
             if '.' not in plugin:
@@ -476,8 +478,7 @@ class Simulator(object):
                     raise ValueError(
                         f'Failed to import module {module_name}: {e}')
             try:
-                obj = getattr(mod, plugin_name)(
-                    simulator=self, population=population)
+                obj = getattr(mod, plugin_name)(simulator=self)
             except Exception as e:
                 raise ValueError(
                     f'Failed to retrieve plugin {plugin_name} from module {module_name}: {e}'
@@ -495,13 +496,8 @@ class Simulator(object):
             #
             if not hasattr(obj, 'apply'):
                 raise ValueError('No "apply" function is defined for plugin')
-            self.plugins[obj] = args
-
-    def call_plugins(self, time, population):
-        events = []
-        for plugin, args in self.plugins.items():
-            events.extend(plugin.apply(time=time, args=args))
-        return events
+            initial_events.extend(obj.get_plugin_events(args))
+        return initial_events
 
     def simulate(self, id):
         #
@@ -513,8 +509,6 @@ class Simulator(object):
         # collection of individuals
         population = {}
         idx = 0
-
-        self.load_plugins(population=population)
 
         # population prevalence and incidence rate
         ir = {'': 0.0}
@@ -632,6 +626,10 @@ class Simulator(object):
                     0, EventType.INFECTION, target=infector,
                     logger=self.logger))
 
+        # load the plugins
+        for evt in self.get_plugin_events():
+            events[evt.time].append(evt)
+
         last_stat = None
         while True:
             # find the latest event
@@ -671,16 +669,17 @@ class Simulator(object):
                 # event triggers new event
                 new_events.extend(evt.apply(population, self.simu_args))
 
-            #
-            new_events.extend(
-                self.call_plugins(time=time, population=population))
             events.pop(time)
-            #
+            # if there is no other events, and all new ones are plugin generated
+            # (through --interval, it is time to stop
+            all_plugin = not events
             for evt in new_events:
                 # print(f'ADDING\t{evt}')
                 events[evt.time].append(evt)
+                if isinstance(evt, Event):
+                    all_plugin = False
 
-            if not events or aborted:
+            if not events or aborted or all_plugin:
                 break
             # if self.simu_args.handle_symptomatic and all(
             #         x.infected for x in population.values()):
