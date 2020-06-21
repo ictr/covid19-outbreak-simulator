@@ -13,11 +13,12 @@ class sample(BasePlugin):
 
     def __init__(self, *args, **kwargs):
         # this will set self.population, self.simualtor, self.logger
-        super(RandomSampler, self).__init__(*args, **kwargs)
+        super(sample, self).__init__(*args, **kwargs)
         self.last_sampled = None
 
     def get_parser(self):
-        parser = super(RandomSampler, self).get_parser()
+        parser = super(sample, self).get_parser()
+        parser.prog = '--plugin sample'
         parser.description = 'Draw random sample from the population'
         parser.add_argument(
             '--sample-proportion',

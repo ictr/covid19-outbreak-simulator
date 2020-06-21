@@ -501,6 +501,7 @@ class Simulator(object):
             list(group) for k, group in groupby(
                 self.simu_args.plugin, lambda x: x == '--plugin') if not k
         ]
+
         for group in groups:
             plugin = group[0]
             if '.' not in plugin:

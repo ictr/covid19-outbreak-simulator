@@ -9,6 +9,7 @@ from io import StringIO
 from tqdm import tqdm
 from collections import defaultdict
 from datetime import datetime
+from importlib import import_module
 
 from .simulator import Simulator
 from .model import Params
@@ -492,6 +493,43 @@ def main(argv=None):
     args = parse_args(argv)
     tasks = multiprocessing.JoinableQueue()
     results = multiprocessing.Queue()
+
+    if '-h' in args.plugin:
+        if args.plugin[0] == '-h':
+            # list all plugins
+            from covid19_outbreak_simulator.plugin import BasePlugin
+            bp = BasePlugin(simulator=None, population=None)
+            parser = bp.get_parser()
+            parser.parse_args(['-h'])
+        elif args.plugin[0].startswith('-'):
+            # it has to be -h
+            raise ValueError(
+                f'Plugin name should not start with a dash (-): "{plugin}" provided.'
+            )
+        else:
+            plugin = args.plugin[0]
+            if '.' not in plugin:
+                module_name, plugin_name = plugin, plugin
+            else:
+                module_name, plugin_name = plugin.rsplit('.', 1)
+            try:
+                mod = import_module(module_name)
+            except Exception as e:
+                try:
+                    mod = import_module(
+                        f'covid19_outbreak_simulator.plugins.{module_name}')
+                except Exception as e:
+                    raise ValueError(
+                        f'Failed to import module {module_name}: {e}')
+            try:
+                obj = getattr(mod, plugin_name)(simulator=None, population=None)
+            except Exception as e:
+                raise ValueError(
+                    f'Failed to retrieve plugin {plugin_name} from module {module_name}'
+                )
+            # if there is a parser
+            parser = obj.get_parser()
+            parser.parse_args(['-h'])
 
     if not args.jobs:
         args.jobs = multiprocessing.cpu_count()

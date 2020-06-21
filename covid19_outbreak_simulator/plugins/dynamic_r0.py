@@ -13,16 +13,13 @@ class dynamic_r0(BasePlugin):
 
     def __init__(self, *args, **kwargs):
         # this will set self.population, self.simualtor, self.logger
-        super(DynamicR, self).__init__(*args, **kwargs)
+        super(dynamic_r0, self).__init__(*args, **kwargs)
         self.applied = False
 
     def get_parser(self):
-        parser = super(DynamicR, self).get_parser()
-        parser.description = 'Draw random sample from the population'
-
-        parser = argparse.ArgumentParser(
-            'Draw random sample from the population'
-            '')
+        parser = super(dynamic_r0, self).get_parser()
+        parser.description = 'Change multiplier number at specific time.'
+        parser.prog = '--plugin dynamic_r0'
         parser.add_argument(
             '--change-at', type=float, help='''Change at specified time.''')
         parser.add_argument(

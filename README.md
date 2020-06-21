@@ -162,7 +162,7 @@ to check the usage information of the basic simulator,
 ```
 outbreak_simualtor --plugin -h
 ```
-to get decription of common parameters for plugins and a list of system plugins, and
+to get decription of common parameters for plugins, and
 
 ```
 outbreak_simulator --plugin plugin_name -h
@@ -178,42 +178,46 @@ usage: outbreak_simulator [-h] [--popsize POPSIZE [POPSIZE ...]]
                           [--symptomatic-r0 SYMPTOMATIC_R0 [SYMPTOMATIC_R0 ...]]
                           [--asymptomatic-r0 ASYMPTOMATIC_R0 [ASYMPTOMATIC_R0 ...]]
                           [--incubation-period INCUBATION_PERIOD [INCUBATION_PERIOD ...]] [--repeats REPEATS]
-                          [--handle-symptomatic] [--pre-quarantine [PRE_QUARANTINE [PRE_QUARANTINE ...]]]
+                          [--handle-symptomatic [HANDLE_SYMPTOMATIC [HANDLE_SYMPTOMATIC ...]]]
+                          [--pre-quarantine [PRE_QUARANTINE [PRE_QUARANTINE ...]]]
                           [--initial-incidence-rate [INITIAL_INCIDENCE_RATE [INITIAL_INCIDENCE_RATE ...]]]
                           [--initial-seroprevalence [INITIAL_SEROPREVALENCE [INITIAL_SEROPREVALENCE ...]]]
                           [--infectors [INFECTORS [INFECTORS ...]]] [--interval INTERVAL] [--logfile LOGFILE]
                           [--prop-asym-carriers [PROP_ASYM_CARRIERS [PROP_ASYM_CARRIERS ...]]]
-                          [--stop-if [STOP_IF [STOP_IF ...]]] [--allow-lead-time] [--analyze-existing-logfile]
-                          [--plugin [PLUGINS [PLUGINS ...]]] [-j JOBS] [-s STAT_INTERVAL]
+                          [--stop-if [STOP_IF [STOP_IF ...]]] [--allow-lead-time] [--plugin ...] [-j JOBS]
+                          [-s STAT_INTERVAL]
 
 optional arguments:
   -h, --help            show this help message and exit
   --popsize POPSIZE [POPSIZE ...]
-                        Size of the population, including the infector that will be introduced at the beginning
-                        of the simulation. It should be specified as a single number, or a serial of name=size
-                        values for different groups. For example "--popsize nurse=10 patient=100". The names
-                        will be used for setting group specific parameters. The IDs of these individuals will be
-                        nurse0, nurse1 etc.
+                        Size of the population, including the infector that will be introduced at the beginning of
+                        the simulation. It should be specified as a single number, or a serial of name=size values
+                        for different groups. For example "--popsize nurse=10 patient=100". The names will be used
+                        for setting group specific parameters. The IDs of these individuals will be nurse0, nurse1
+                        etc.
   --susceptibility SUSCEPTIBILITY [SUSCEPTIBILITY ...]
-                        Weight of susceptibility. The default value is 1, meaning everyone is equally
-                        susceptible. With options such as "--susceptibility nurse=1.2 patients=0.8" you can give
-                        weights to different groups of people so that they have higher or lower probabilities to
-                        be infected.
+                        Weight of susceptibility. The default value is 1, meaning everyone is equally susceptible.
+                        With options such as "--susceptibility nurse=1.2 patients=0.8" you can give weights to
+                        different groups of people so that they have higher or lower probabilities to be infected.
   --symptomatic-r0 SYMPTOMATIC_R0 [SYMPTOMATIC_R0 ...]
-                        Production number of symptomatic infectors, should be specified as a single fixed
-                        number, or a range, and/or multipliers for different groups such as A=1.2. For example "
-                        --symptomatic-r0 1.4 2.8 nurse=1.2" means a general R0 ranging from 1.4 to 2.8, while
-                        nursed has a range from 1.4*1.2 and 2.8*1.2.
+                        Production number of symptomatic infectors, should be specified as a single fixed number,
+                        or a range, and/or multipliers for different groups such as A=1.2. For example "--
+                        symptomatic-r0 1.4 2.8 nurse=1.2" means a general R0 ranging from 1.4 to 2.8, while nursed
+                        has a range from 1.4*1.2 and 2.8*1.2.
   --asymptomatic-r0 ASYMPTOMATIC_R0 [ASYMPTOMATIC_R0 ...]
-                        Production number of asymptomatic infectors, should be specified as a single fixed
-                        number, or a range and/or multipliers for different groups
+                        Production number of asymptomatic infectors, should be specified as a single fixed number,
+                        or a range and/or multipliers for different groups
   --incubation-period INCUBATION_PERIOD [INCUBATION_PERIOD ...]
                         Incubation period period, should be specified as "lognormal" followed by two numbers as
                         mean and sigma, or "normal" followed by mean and sd, and/or multipliers for different
                         groups. Default to "lognormal 1.621 0.418"
-  --repeats REPEATS     Number of replicates to simulate. An ID starting from 1 will be assinged to each
-                        replicate and as the first columns in the log file.
-  --handle-symptomatic    Keep affected individuals in the population
+  --repeats REPEATS     Number of replicates to simulate. An ID starting from 1 will be assinged to each replicate
+                        and as the first columns in the log file.
+  --handle-symptomatic [HANDLE_SYMPTOMATIC [HANDLE_SYMPTOMATIC ...]]
+                        How to handle individuals who show symptom, which should be "keep" (stay in population),
+                        "remove" (remove from population), and "quarantine" (put aside until it recovers). all
+                        options can be followed by a "proportion", and quarantine can be specified as
+                        "quarantine_7" etc to specify duration of quarantine.
   --pre-quarantine [PRE_QUARANTINE [PRE_QUARANTINE ...]]
                         Days of self-quarantine before introducing infector to the group. The simulation will be
                         aborted if the infector shows symptom before introduction. If you quarantine multiple
@@ -226,42 +230,36 @@ optional arguments:
                         --initial-incidence-rate 0.1 docter=1.2 will set incidence rate to 0.12 for doctors).
   --initial-seroprevalence [INITIAL_SEROPREVALENCE [INITIAL_SEROPREVALENCE ...]]
                         Seroprevalence of the population (default to zero). The seroprevalence should always be
-                        greater than or euqal to initial incidence rate. The difference between seroprevalence
-                        and incidence rate will determine the "recovered" rate of the population. Multipliers
-                        can be specified to set incidence rate of for particular groups (e.g. --initial-
-                        incidence-rate 0.1 docter=1.2 will set incidence rate to 0.12 for doctors).
+                        greater than or euqal to initial incidence rate. The difference between seroprevalence and
+                        incidence rate will determine the "recovered" rate of the population. Multipliers can be
+                        specified to set incidence rate of for particular groups (e.g. --initial-incidence-rate 0.1
+                        docter=1.2 will set incidence rate to 0.12 for doctors).
   --infectors [INFECTORS [INFECTORS ...]]
                         Infectees to introduce to the population, default to '0'. If you would like to introduce
-                        multiple infectees to the population, or if you have named groups, you will have to
-                        specify the IDs of carrier such as --infectors nurse1 nurse2. Specifying this parameter
-                        without value will not introduce any infector.
+                        multiple infectees to the population, or if you have named groups, you will have to specify
+                        the IDs of carrier such as --infectors nurse1 nurse2. Specifying this parameter without
+                        value will not introduce any infector.
   --interval INTERVAL   Interval of simulation, default to 1/24, by hour
   --logfile LOGFILE     logfile
   --prop-asym-carriers [PROP_ASYM_CARRIERS [PROP_ASYM_CARRIERS ...]]
-                        Proportion of asymptomatic cases. You can specify a fix number, or two numbers as the
-                        lower and higher CI (95%) of the proportion. Default to 0.10 to 0.40. Multipliers can be
+                        Proportion of asymptomatic cases. You can specify a fix number, or two numbers as the lower
+                        and higher CI (95%) of the proportion. Default to 0.10 to 0.40. Multipliers can be
                         specified to set proportion of asymptomatic carriers for particular groups.
   --stop-if [STOP_IF [STOP_IF ...]]
                         Condition at which the simulation will end. By default the simulation stops when all
-                        individuals are affected or all infected individuals are removed. Current you can
-                        specify a time after which the simulation will stop in the format of `--stop-if "t>10"'
-                        (for 10 days).
-  --allow-lead-time     The seed carrier will be asumptomatic but always be at the beginning of incurbation
-                        time. If allow lead time is set to True, the carrier will be anywhere in his or her
-                        incubation period.
-  --analyze-existing-logfile
-                        Analyze an existing logfile, useful for updating the summarization procedure or
-                        uncaptured output.
-  --plugins [PLUGINS [PLUGINS ...]]
-                        One or more name of Python modules that will be used by the simulator. The module should
-                        define classes derived from outbreak_simulator.plugin.BasePlugin. Plugins should be
-                        provided in the format of 'module1.plugin1` where `module` is name of the module and
-                        `plugin` is the name of the class. The plugins will be triggered by specific event, or
-                        once at each time epoc when any other events happen.
+                        individuals are affected or all infected individuals are removed. Current you can specify a
+                        time after which the simulation will stop in the format of `--stop-if "t>10"' (for 10
+                        days).
+  --allow-lead-time     The seed carrier will be asumptomatic but always be at the beginning of incurbation time.
+                        If allow lead time is set to True, the carrier will be anywhere in his or her incubation
+                        period.
+  --plugin ...          One or more of "--plugin MODULE.PLUGIN [args]" to specify one or more plugins. FLUGIN will
+                        be assumed to be MODULE name if left unspecified. Each plugin has its own parser and can
+                        parse its own args.
   -j JOBS, --jobs JOBS  Number of process to use for simulation. Default to number of CPU cores.
   -s STAT_INTERVAL, --stat-interval STAT_INTERVAL
-                        Interval for statistics to be calculated, default to 1. No STAT event will happen it it
-                        is set to 0.
+                        Interval for statistics to be calculated, default to 1. No STAT event will happen it it is
+                        set to 0.
 
 ```
 
@@ -359,41 +357,71 @@ where
 
 ## System plugins
 
-### Common paramters and list of plugins
+### Common paramters of plugins
 
-```
-outbreak_simulator --plugin -h
+```sh
+% outbreak_simulator --plugin -h
+usage: --plugin [-h] [--start START] [--end END]
+
+A plugin for covid19-outbreak-simulator
+
+optional arguments:
+  -h, --help     show this help message and exit
+  --start START  Start time, default to 0
+  --end END      End time, default to none
+
 ```
 
 ### Plugin `dynamic-r0`
 
 ```
-outbreak_simulator --plugin dynamic-r0
+% outbreak_simulator --plugin dynamic-r0 -h
+usage: --plugin dynamic_r0 [-h] [--start START] [--end END] [--change-at CHANGE_AT]
+                           [--new-symptomatic-r0 NEW_SYMPTOMATIC_R0 [NEW_SYMPTOMATIC_R0 ...]]
+                           [--new-asymptomatic-r0 NEW_ASYMPTOMATIC_R0 [NEW_ASYMPTOMATIC_R0 ...]]
+
+Change multiplier number at specific time.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --start START         Start time, default to 0
+  --end END             End time, default to none
+  --change-at CHANGE_AT
+                        Change at specified time.
+  --new-symptomatic-r0 NEW_SYMPTOMATIC_R0 [NEW_SYMPTOMATIC_R0 ...]
+                        Updated production number of symptomatic infectors, should be specified as a single fixed
+                        number, or a range, and/or multipliers for different groups such as A=1.2. For example "--
+                        symptomatic-r0 1.4 2.8 nurse=1.2" means a general R0 ranging from 1.4 to 2.8, while nursed
+                        has a range from 1.4*1.2 and 2.8*1.2.
+  --new-asymptomatic-r0 NEW_ASYMPTOMATIC_R0 [NEW_ASYMPTOMATIC_R0 ...]
+                        Updated production number of asymptomatic infectors, should be specified as a single fixed
+                        number, or a range and/or multipliers for different groups
+
 ```
 
 ### Plugin `sample`
 
 ```
-outbreak_simulator --plugin sample -h
+% outbreak_simulator --plugin sample -h
+
+usage: --plugin sample [-h] [--start START] [--end END] [--sample-proportion SAMPLE_PROPORTION]
+                       [--sample-size SAMPLE_SIZE] [--sample-interval SAMPLE_INTERVAL]
+
+Draw random sample from the population
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --start START         Start time, default to 0
+  --end END             End time, default to none
+  --sample-proportion SAMPLE_PROPORTION
+                        Proprotion of the population to sample.
+  --sample-size SAMPLE_SIZE
+                        Number of individuals to sample.
+  --sample-interval SAMPLE_INTERVAL
+                        Sampling interval, default to 1.
+
 ```
 
-### Plugin `contact_tracing`
-
-```
-outbreak_simulator --plugin sample -h
-```
-
-### Plugin `rapid_test`
-
-```
-outbreak_simulator --plugin sample -h
-```
-
-### Plugin `pcr_test`
-
-```
-outbreak_simulator --plugin sample -h
-```
 
 ## Implementation of plugins
 
