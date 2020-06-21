@@ -14,7 +14,6 @@ class sample(BasePlugin):
     def __init__(self, *args, **kwargs):
         # this will set self.population, self.simualtor, self.logger
         super(sample, self).__init__(*args, **kwargs)
-        self.last_sampled = None
 
     def get_parser(self):
         parser = super(sample, self).get_parser()
@@ -28,15 +27,10 @@ class sample(BasePlugin):
             '--sample-size',
             type=int,
             help='''Number of individuals to sample.''')
-        parser.add_argument(
-            '--sample-interval',
-            default=1,
-            type=float,
-            help='''Sampling interval, default to 1.''')
         return parser
 
     def apply(self, time, args=None):
-        if self.last_sampled is not None and time - self.last_sampled < args.sample_interval:
+        if not super(sample, self).can_apply(time, args):
             return []
 
         self.last_sampled = time

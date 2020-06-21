@@ -64,7 +64,7 @@ def summarize_simulations(logfile):
         for line in lines:
             if line.startswith('#'):
                 if line.startswith('# CMD:'):
-                    args = parse_args(shlex.split(line[6:]))
+                    args = parse_args(shlex.split(line[6:])[1:])
                     if args.infectors:
                         infectors = args.infectors
                     total_popsize = sum(
@@ -478,13 +478,6 @@ def parse_args(args=None):
         type=int,
         help='Number of process to use for simulation. Default to number of CPU cores.'
     )
-    parser.add_argument(
-        '-s',
-        '--stat-interval',
-        default=1,
-        type=float,
-        help='''Interval for statistics to be calculated, default to 1. No STAT event
-            will happen it it is set to 0.''')
     return parser.parse_args(args)
 
 
@@ -494,7 +487,7 @@ def main(argv=None):
     tasks = multiprocessing.JoinableQueue()
     results = multiprocessing.Queue()
 
-    if '-h' in args.plugin:
+    if args.plugin and '-h' in args.plugin:
         if args.plugin[0] == '-h':
             # list all plugins
             from covid19_outbreak_simulator.plugin import BasePlugin
@@ -513,11 +506,11 @@ def main(argv=None):
             else:
                 module_name, plugin_name = plugin.rsplit('.', 1)
             try:
-                mod = import_module(module_name)
+                mod = import_module(
+                    f'covid19_outbreak_simulator.plugins.{module_name}')
             except Exception as e:
                 try:
-                    mod = import_module(
-                        f'covid19_outbreak_simulator.plugins.{module_name}')
+                    mod = import_module(module_name)
                 except Exception as e:
                     raise ValueError(
                         f'Failed to import module {module_name}: {e}')
@@ -525,7 +518,7 @@ def main(argv=None):
                 obj = getattr(mod, plugin_name)(simulator=None, population=None)
             except Exception as e:
                 raise ValueError(
-                    f'Failed to retrieve plugin {plugin_name} from module {module_name}'
+                    f'Failed to retrieve plugin {plugin_name} from module {module_name}: {e}'
                 )
             # if there is a parser
             parser = obj.get_parser()
@@ -543,7 +536,7 @@ def main(argv=None):
 
     with open(args.logfile, 'w') as logger:
         logger.write(
-            f'# CMD: {subprocess.list2cmdline(argv if argv else sys.argv[1:])}\n'
+            f'# CMD: outbreak_simulator.py {subprocess.list2cmdline(argv if argv else sys.argv[1:])}\n'
         )
         logger.write(
             f'# START: {datetime.now().strftime("%m/%d/%Y, %H:%M:%S")}\n')

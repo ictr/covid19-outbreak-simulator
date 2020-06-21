@@ -14,14 +14,11 @@ class dynamic_r0(BasePlugin):
     def __init__(self, *args, **kwargs):
         # this will set self.population, self.simualtor, self.logger
         super(dynamic_r0, self).__init__(*args, **kwargs)
-        self.applied = False
 
     def get_parser(self):
         parser = super(dynamic_r0, self).get_parser()
         parser.description = 'Change multiplier number at specific time.'
         parser.prog = '--plugin dynamic_r0'
-        parser.add_argument(
-            '--change-at', type=float, help='''Change at specified time.''')
         parser.add_argument(
             '--new-symptomatic-r0',
             nargs='+',
@@ -39,10 +36,9 @@ class dynamic_r0(BasePlugin):
         return parser
 
     def apply(self, time, args=None):
-        if self.applied or time < args.change_at:
+        if not super(dynamic_r0, self).can_apply(time, args):
             return []
 
-        self.applied = True
         # change parameter
         self.simulator.model.params.set_symptomatic_r0(args.new_symptomatic_r0)
         self.simulator.model.params.set_asymptomatic_r0(

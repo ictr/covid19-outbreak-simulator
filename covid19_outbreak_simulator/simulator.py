@@ -430,53 +430,6 @@ class Event(object):
                 f'{self.logger.id}\t{self.time:.2f}\t{EventType.RECOVER.name}\t{self.target}\t{param}\n'
             )
             return []
-        elif self.action == EventType.STAT:
-            stat = {}
-            stat[f'n_recovered'] = len([
-                x for x, ind in population.items()
-                if ind.recovered not in (None, False)
-            ])
-            stat[f'n_infected'] = len([
-                x for x, ind in population.items()
-                if ind.infected not in (False, None)
-            ])
-            stat[f'n_popsize'] = len([x for x, ind in population.items()])
-            stat[f'incidence_rate'] = '0' if stat[
-                f'n_popsize'] == 0 else '{:.4f}'.format(stat[f'n_infected'] /
-                                                        stat[f'n_popsize'])
-            stat[f'seroprevalence'] = '0' if stat[
-                f'n_popsize'] == 0 else '{:.4f}'.format(
-                    (stat[f'n_recovered'] + stat[f'n_infected']) /
-                    stat[f'n_popsize'])
-
-            groups = set([x.group for x in population.values()])
-            for group in groups:
-                if group == '':
-                    continue
-                stat[f'n_{group}_recovered'] = len([
-                    x for x, ind in population.items()
-                    if ind.recovered is True and ind.group == group
-                ])
-                stat[f'n_{group}_infected'] = len([
-                    x for x, ind in population.items()
-                    if ind.infected not in (False, None) and ind.group == group
-                ])
-                stat[f'n_{group}_popsize'] = len(
-                    [x for x, ind in population.items() if ind.group == group])
-                stat[f'{group}_incidence_rate'] = 0 if stat[
-                    f'n_{group}_popsize'] == '0' else '{:.3f}'.format(
-                        stat[f'n_{group}_infected'] /
-                        stat[f'n_{group}_popsize'])
-                stat[f'{group}_seroprevalence'] = 0 if stat[
-                    f'n_{group}_popsize'] == '0' else '{:.3f}'.format(
-                        (stat[f'n_{group}_recovered'] +
-                         stat[f'n_{group}_infected']) /
-                        stat[f'n_{group}_popsize'])
-            param = ','.join(f'{k}={v}' for k, v in stat.items())
-            self.logger.write(
-                f'{self.logger.id}\t{self.time:.2f}\t{EventType.STAT.name}\t.\t{param}\n'
-            )
-            return []
         else:
             raise RuntimeError(f'Unrecognized action {self.action}')
 
@@ -509,11 +462,11 @@ class Simulator(object):
             else:
                 module_name, plugin_name = plugin.rsplit('.', 1)
             try:
-                mod = import_module(module_name)
+                mod = import_module(
+                    f'covid19_outbreak_simulator.plugins.{module_name}')
             except Exception as e:
                 try:
-                    mod = import_module(
-                        f'covid19_outbreak_simulator.plugins.{module_name}')
+                    mod = import_module(module_name)
                 except Exception as e:
                     raise ValueError(
                         f'Failed to import module {module_name}: {e}')
@@ -522,7 +475,7 @@ class Simulator(object):
                     simulator=self, population=population)
             except Exception as e:
                 raise ValueError(
-                    f'Failed to retrieve plugin {plugin_name} from module {module_name}'
+                    f'Failed to retrieve plugin {plugin_name} from module {module_name}: {e}'
                 )
             # if there is a parser
             if hasattr(obj, 'get_parser'):
@@ -700,12 +653,6 @@ class Simulator(object):
             else:
                 time = min(events.keys())
                 max_time = max(events.keys())
-
-            if self.simu_args.stat_interval > 0 and last_stat is None or max_time - last_stat > self.simu_args.stat_interval:
-                while last_stat is None or last_stat <= max_time:
-                    last_stat = 0 if last_stat is None else last_stat + self.simu_args.stat_interval
-                    events[last_stat].append(
-                        Event(last_stat, EventType.STAT, logger=self.logger))
 
             if self.simu_args.stop_if is not None:
                 if self.simu_args.stop_if[0].startswith('t>'):

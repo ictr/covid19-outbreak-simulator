@@ -357,14 +357,17 @@ where
 
 ```sh
 % outbreak_simulator --plugin -h
-usage: --plugin [-h] [--start START] [--end END]
+
+usage: --plugin [-h] [--start START] [--end END] [--at AT [AT ...]] [--interval INTERVAL]
 
 A plugin for covid19-outbreak-simulator
 
 optional arguments:
-  -h, --help     show this help message and exit
-  --start START  Start time, default to 0
-  --end END      End time, default to none
+  -h, --help           show this help message and exit
+  --start START        Start time, default to 0
+  --end END            End time, default to none
+  --at AT [AT ...]     Specific time at which the plugin is applied
+  --interval INTERVAL  Interval at which plugin is applied
 
 ```
 
@@ -372,7 +375,7 @@ optional arguments:
 
 ```
 % outbreak_simulator --plugin dynamic-r0 -h
-usage: --plugin dynamic_r0 [-h] [--start START] [--end END] [--change-at CHANGE_AT]
+usage: --plugin dynamic_r0 [-h] [--start START] [--end END] [--at AT [AT ...]] [--interval INTERVAL]
                            [--new-symptomatic-r0 NEW_SYMPTOMATIC_R0 [NEW_SYMPTOMATIC_R0 ...]]
                            [--new-asymptomatic-r0 NEW_ASYMPTOMATIC_R0 [NEW_ASYMPTOMATIC_R0 ...]]
 
@@ -382,16 +385,17 @@ optional arguments:
   -h, --help            show this help message and exit
   --start START         Start time, default to 0
   --end END             End time, default to none
-  --change-at CHANGE_AT
-                        Change at specified time.
+  --at AT [AT ...]      Specific time at which the plugin is applied
+  --interval INTERVAL   Interval at which plugin is applied
   --new-symptomatic-r0 NEW_SYMPTOMATIC_R0 [NEW_SYMPTOMATIC_R0 ...]
-                        Updated production number of symptomatic infectors, should be specified as a single fixed
-                        number, or a range, and/or multipliers for different groups such as A=1.2. For example "--
-                        symptomatic-r0 1.4 2.8 nurse=1.2" means a general R0 ranging from 1.4 to 2.8, while nursed
-                        has a range from 1.4*1.2 and 2.8*1.2.
+                        Updated production number of symptomatic infectors, should be specified as a
+                        single fixed number, or a range, and/or multipliers for different groups
+                        such as A=1.2. For example "--symptomatic-r0 1.4 2.8 nurse=1.2" means a
+                        general R0 ranging from 1.4 to 2.8, while nursed has a range from 1.4*1.2
+                        and 2.8*1.2.
   --new-asymptomatic-r0 NEW_ASYMPTOMATIC_R0 [NEW_ASYMPTOMATIC_R0 ...]
-                        Updated production number of asymptomatic infectors, should be specified as a single fixed
-                        number, or a range and/or multipliers for different groups
+                        Updated production number of asymptomatic infectors, should be specified as
+                        a single fixed number, or a range and/or multipliers for different groups
 
 ```
 
@@ -400,8 +404,9 @@ optional arguments:
 ```
 % outbreak_simulator --plugin sample -h
 
-usage: --plugin sample [-h] [--start START] [--end END] [--sample-proportion SAMPLE_PROPORTION]
-                       [--sample-size SAMPLE_SIZE] [--sample-interval SAMPLE_INTERVAL]
+usage: --plugin sample [-h] [--start START] [--end END] [--at AT [AT ...]] [--interval INTERVAL]
+                       [--sample-proportion SAMPLE_PROPORTION] [--sample-size SAMPLE_SIZE]
+                       [--sample-interval SAMPLE_INTERVAL]
 
 Draw random sample from the population
 
@@ -409,12 +414,14 @@ optional arguments:
   -h, --help            show this help message and exit
   --start START         Start time, default to 0
   --end END             End time, default to none
+  --at AT [AT ...]      Specific time at which the plugin is applied
+  --interval INTERVAL   Interval at which plugin is applied
   --sample-proportion SAMPLE_PROPORTION
                         Proprotion of the population to sample.
   --sample-size SAMPLE_SIZE
                         Number of individuals to sample.
   --sample-interval SAMPLE_INTERVAL
-                        Sampling interval, default to 1.
+                        Sampling interval, default to 1
 
 ```
 
@@ -478,43 +485,36 @@ Currently the following events are tracked
 The log file of a typical simulation would look like the following:
 
 ```
+# CMD: outbreak_simulator.py --rep 3 --plugin stat --interval 1
+# START: 06/20/2020, 23:59:20
 id      time    event   target  params
-5       0.00    INFECTION       0       r0=0.53,r=0,r_asym=0
-5       0.00    END     64      popsize=64,prop_asym=0.276
-2       0.00    INFECTION       0       r0=2.42,r=1,r_presym=1,r_sym=0,incu=5.51
-2       4.10    INFECTION       62      by=0,r0=1.60,r=2,r_presym=2,r_sym=0,incu=5.84
-2       5.51    SHOW_SYMPTOM    0       .
-2       5.51    REMOVAL 0       popsize=63
-2       9.59    INFECTION       9       by=62,r0=2.13,r=2,r_presym=2,r_sym=0,incu=3.34
-2       9.84    INFECTION_IGNORED       9       by=62
-2       9.94    SHOW_SYMPTOM    62      .
-2       9.94    REMOVAL 62      popsize=62
-2       10.76   INFECTION       30      by=9,r0=1.96,r=2,r_presym=2,r_sym=0,incu=4.85
-2       11.64   INFECTION       57      by=9,r0=0.39,r=0,r_asym=0
-2       12.23   INFECTION       56      by=30,r0=1.65,r=1,r_presym=1,r_sym=0,incu=4.26
-2       12.93   SHOW_SYMPTOM    9       .
-2       12.93   REMOVAL 9       popsize=61
-2       14.37   INFECTION       6       by=30,r0=1.60,r=0,r_presym=0,r_sym=0,incu=2.63
-2       15.61   SHOW_SYMPTOM    30      .
-2       15.61   REMOVAL 30      popsize=60
-2       16.37   INFECTION       1       by=56,r0=1.57,r=1,r_presym=1,r_sym=0,incu=5.14
-2       16.49   SHOW_SYMPTOM    56      .
-2       16.49   REMOVAL 56      popsize=59
-2       16.99   SHOW_SYMPTOM    6       .
-2       16.99   REMOVAL 6       popsize=58
-2       18.42   INFECTION       8       by=1,r0=2.45,r=1,r_presym=1,r_sym=0,incu=3.74
-2       20.35   INFECTION       44      by=8,r0=2.37,r=1,r_presym=1,r_sym=0,incu=3.92
-2       21.51   SHOW_SYMPTOM    1       .
-2       21.51   REMOVAL 1       popsize=57
-2       22.16   SHOW_SYMPTOM    8       .
-2       22.16   REMOVAL 8       popsize=56
-2       22.62   INFECTION       42      by=44,r0=1.49,r=0,r_presym=0,r_sym=0,incu=4.30
-2       24.27   SHOW_SYMPTOM    44      .
-2       24.27   REMOVAL 44      popsize=55
-2       26.92   SHOW_SYMPTOM    42      .
-2       26.92   REMOVAL 42      popsize=54
-2       26.92   END     54      popsize=54,prop_asym=0.216
-1       0.00    INFECTION       0       r0=2.00,r=2,r_presym=2,r_sym=0,incu=4.19
+2       0.00    INFECTION       0       leadtime=3.00,r0=0.49,r=1,r_asym=1
+2       0.00    STAT    .       n_recovered=0,n_infected=1,n_popsize=64,incidence_rate=0.0156,seroprevalence=0.0156
+2       2.72    INFECTION       47      by=0,r0=1.98,r=0,r_presym=0,r_sym=0,incu=6.87
+2       9.03    RECOVER 0       recovered=1,infected=2,popsize=64
+2       9.58    SHOW_SYMPTOM    47      .
+2       9.58    REMOVAL 47      popsize=63
+2       15.29   RECOVER 47      recovered=1,infected=1,popsize=63,True=True
+2       15.29   END     63      popsize=63,prop_asym=0.140
+3       0.00    INFECTION       0       leadtime=5.32,r0=1.77,r=0,r_presym=0,r_sym=0,incu=6.03
+3       0.00    STAT    .       n_recovered=0,n_infected=1,n_popsize=64,incidence_rate=0.0156,seroprevalence=0.0156
+3       0.71    SHOW_SYMPTOM    0       .
+3       0.71    REMOVAL 0       popsize=63
+3       6.70    RECOVER 0       recovered=0,infected=0,popsize=63,True=True
+3       6.70    END     63      popsize=63,prop_asym=0.251
+1       0.00    INFECTION       0       leadtime=0.79,r0=2.76,r=3,r_presym=3,r_sym=0,incu=6.25
+1       0.00    STAT    .       n_recovered=0,n_infected=1,n_popsize=64,incidence_rate=0.0156,seroprevalence=0.0156
+1       1.34    INFECTION       1       by=0,r0=0.50,r=1,r_asym=1
+1       3.57    INFECTION       32      by=0,r0=0.38,r=0,r_asym=0
+1       4.07    INFECTION       5       by=0,r0=2.49,r=1,r_presym=1,r_sym=0,incu=6.57
+1       5.46    SHOW_SYMPTOM    0       .
+1       5.46    REMOVAL 0       popsize=63
+1       6.83    INFECTION       29      by=5,r0=1.59,r=4,r_presym=4,r_sym=0,incu=3.33
+1       8.41    INFECTION       8       by=1,r0=1.71,r=1,r_presym=1,r_sym=0,incu=5.63
+1       8.59    INFECTION       55      by=29,r0=0.42,r=1,r_asym=1
+1       8.92    INFECTION       24      by=29,r0=2.41,r=1,r_presym=1,r_sym=0,incu=4.76
+1       9.09    INFECTION       7       by=29,r0=0.52,r=1,r_asym=1
+1       9.63    INFECTION       15      by=29,r0=2.01,r=2,r_presym=2,r_sym=0,incu=13.22
 ```
 
 which I assume would be pretty self-explanatory. Note that **the simulation IDs
