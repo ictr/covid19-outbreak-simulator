@@ -380,10 +380,13 @@ class Event(object):
             )
             return population[self.target.id].quarantine(**self.kwargs)
         elif self.action == EventType.REINTEGRATION:
-            self.logger.write(
-                f'{self.logger.id}\t{self.time:.2f}\t{EventType.REINTEGRATION.name}\t{self.target}\t.\n'
-            )
-            return population[self.target.id].reintegrate(**self.kwargs)
+            if self.target.id not in population:
+                return []
+            else:
+                self.logger.write(
+                    f'{self.logger.id}\t{self.time:.2f}\t{EventType.REINTEGRATION.name}\t{self.target}\tsucc=True\n'
+                )
+                return population[self.target.id].reintegrate(**self.kwargs)
         elif self.action == EventType.INFECTION_AVOIDED:
             self.logger.write(
                 f'{self.logger.id}\t{self.time:.2f}\t{EventType.INFECTION_AVOIDED.name}\t.\tby={self.kwargs["by"]}\n'
@@ -458,7 +461,7 @@ class Simulator(object):
         for group in groups:
             plugin = group[0]
             if '.' not in plugin:
-                module_name, plugin_name = plugin, plugin
+                module_name, plugin_name = plugin, plugin.replace('-', '_')
             else:
                 module_name, plugin_name = plugin.rsplit('.', 1)
             try:
@@ -610,27 +613,6 @@ class Simulator(object):
                             target=id,
                             logger=self.logger))
                     ind.infected = False
-
-        # quanrantine the first person if args.pre-quarantine > 0
-        if self.simu_args.pre_quarantine:
-            try:
-                till = float(self.simu_args.pre_quarantine[0])
-            except Exception:
-                raise ValueError(
-                    f'The first value of pre_quarantine should be days (a float number): {self.simu_args.pre_quarantine[0]} provided'
-                )
-            IDs = ['0'] if len(self.simu_args.pre_quarantine
-                              ) == 1 else self.simu_args.pre_quarantine[1:]
-            for ID in IDs:
-                if ID not in population:
-                    raise ValueError(f'Invalid ID to quanrantine {ID}')
-                events[0].append(
-                    Event(
-                        0,
-                        EventType.QUARANTINE,
-                        population[ID],
-                        logger=self.logger,
-                        till=till))
 
         infectors = [
             '0'

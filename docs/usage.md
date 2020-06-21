@@ -300,8 +300,6 @@ multiple replicated simulations. The output contains the following keys and thei
      - If asymptomatic infectees are kept
    * - ``prop_asym_carriers``
      - Proportion of asymptomatic carriers, also the probability of infectee who do not show any symptom
-   * - ``pre_quarantine``
-     - If the first carrier is pre-quarantined, if so, for how many days
    * - ``interval``
      - Interval of time events (1/24 for hours)
    * - ``n_simulation``

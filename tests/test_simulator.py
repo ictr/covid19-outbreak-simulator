@@ -199,41 +199,6 @@ def test_option_inclubation_period():
         params = Params(args)
 
 
-def test_option_pre_quarantine():
-    args = parse_args(['--pre-quarantine', '10'])
-    params = Params(args)
-
-    args = parse_args(
-        ['--popsize', 'A=10', 'B=10', '--pre-quarantine', '10', 'A1', 'B2'])
-    params = Params(args)
-
-    with pytest.raises(ValueError):
-        args = parse_args(
-            ['--popsize', 'A=10', 'B=10', '--pre-quarantine', '10', '1'])
-        params = Params(args)
-
-    # index out of range
-    with pytest.raises(ValueError):
-        args = parse_args(
-            ['--popsize', 'A=10', 'B=10', '--pre-quarantine', '10', 'C1', 'C2'])
-        params = Params(args)
-
-    # missing quarantine time
-    with pytest.raises(ValueError):
-        args = parse_args(
-            ['--popsize', 'A=10', 'B=10', '--pre-quarantine', 'A1', 'A2'])
-        params = Params(args)
-
-    with pytest.raises(ValueError):
-        args = parse_args(['--popsize', '100', '--pre-quarantine', '10', '101'])
-        params = Params(args)
-
-    with pytest.raises(ValueError):
-        args = parse_args(
-            ['--popsize', 'A=10', 'B=10', '--pre-quarantine', '10', 'A10'])
-        params = Params(args)
-
-
 def test_option_infectors():
     args = parse_args(['--infectors', '10'])
     params = Params(args)
@@ -322,12 +287,19 @@ def test_main_asymptomatic():
     ])
 
 
-def test_main_pre_quarantine():
-    main(['--jobs', '1', '--repeats', '100', '--pre-quarantine', '7'])
-    main(['--jobs', '1', '--repeats', '100', '--pre-quarantine', '7', '1', '2'])
+def test_plugin_pre_quarantine():
+    main([
+        '--jobs', '1', '--repeats', '100', '--plugin', 'quarantine',
+        '--duration', '7'
+    ])
+    main([
+        '--jobs', '1', '--repeats', '100', '--plugin', 'quarantine', '1', '2',
+        '--duration', '7'
+    ])
     main([
         '--jobs', '1', '--repeats', '100', '--popsize', 'A=100', 'B=200',
-        '--pre-quarantine', '7', 'A2', 'A7', '--infector', 'A2', 'A7'
+        '--infector', 'A2', 'A7', '--plugin', 'quarantine', 'A2', 'A7',
+        '--duration', '7'
     ])
 
 

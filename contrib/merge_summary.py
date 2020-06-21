@@ -9,7 +9,6 @@ def merge_results(files, output_file):
         'popsize',
         'handle_symptomatic',
         'prop_asym_carriers',
-        'pre_quarantine',
         'allow_lead_time',
         'interval',
         'n_simulation',

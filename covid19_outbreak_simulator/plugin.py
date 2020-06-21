@@ -8,6 +8,7 @@ class BasePlugin(object):
         self.population = population
         self.logger = self.simulator.logger if self.simulator else None
         self.last_applied = None
+        self.applied_at = set()
 
     def get_parser(self):
         parser = argparse.ArgumentParser(
@@ -31,12 +32,15 @@ class BasePlugin(object):
         return parser
 
     def can_apply(self, time, args):
+        if time in self.applied_at:
+            return False
 
         if args.end is not None and time > args.end:
             return False
 
         if args.start is not None:
             if self.last_applied is None and time >= args.start:
+                self.applied_at.add(time)
                 self.last_applied = time
                 return True
             else:
@@ -44,10 +48,12 @@ class BasePlugin(object):
 
         if args.interval is not None:
             if time - self.last_applied >= args.interval:
+                self.applied_at.add(time)
                 self.last_applied = time
                 return True
 
         if args.at is not None and time in args.at:
+            self.applied_at.add(time)
             self.last_applied = time
             return True
 

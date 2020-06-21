@@ -28,7 +28,6 @@ def simulator(params, logger):
     simu_args.popsize = 64
     simu_args.repeat = 1
     simu_args.handle_symptomatic = 'remove'
-    simu_args.pre_quarantine = None
 
     return Simulator(params=params, logger=logger, simu_args=simu_args)
 

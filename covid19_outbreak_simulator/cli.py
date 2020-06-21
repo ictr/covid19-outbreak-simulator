@@ -103,8 +103,6 @@ def summarize_simulations(logfile):
                 total_show_symptom += 1
                 if target in infectors:
                     n_seed_show_symptom_on_day[int(time) + 1] += 1
-                if args.pre_quarantine and time < float(args.pre_quarantine[0]):
-                    pass
                 elif id not in first_symptom_day_per_sim:
                     first_symptom_day_per_sim[id] = time
                 elif id not in second_symptom_per_sim:
@@ -124,12 +122,7 @@ def summarize_simulations(logfile):
             elif event == 'END':
                 n_simulation += 1
                 n_remaining_popsize[target] += 1
-                if not args.pre_quarantine:
-                    n_outbreak_duration[0 if time == 0 else int(time) + 1] += 1
-                else:
-                    n_outbreak_duration[
-                        0 if time <= float(args.pre_quarantine[0]) else
-                        int(time - float(args.pre_quarantine[0])) + 1] += 1
+                n_outbreak_duration[0 if time == 0 else int(time) + 1] += 1
                 if target == total_popsize and id not in first_symptom_day_per_sim:
                     n_no_outbreak += 1
             elif event == 'RECOVER':
@@ -167,21 +160,12 @@ def summarize_simulations(logfile):
         n_num_infected_by_seed[v] += 1
     #
     for v in infection_time_from_seed_per_sim.values():
-        if args.pre_quarantine:
-            n_first_infected_by_seed_on_day[int(v -
-                                                float(args.pre_quarantine[0])) +
-                                            1] += 1
-        else:
-            n_first_infected_by_seed_on_day[int(v) + 1] += 1
+        n_first_infected_by_seed_on_day[int(v) + 1] += 1
     n_first_infected_by_seed_on_day[0] = n_simulation - sum(
         n_first_infected_by_seed_on_day.values())
     #
     for v in first_infection_day_per_sim.values():
-        if args.pre_quarantine:
-            n_first_infection_on_day[int(v - float(args.pre_quarantine[0])) +
-                                     1] += 1
-        else:
-            n_first_infection_on_day[int(v) + 1] += 1
+        n_first_infection_on_day[int(v) + 1] += 1
     n_first_infection_on_day[0] = n_simulation - sum(
         n_first_infection_on_day.values())
     #
@@ -189,11 +173,7 @@ def summarize_simulations(logfile):
         n_seed_show_symptom_on_day.values())
     #
     for v in first_symptom_day_per_sim.values():
-        if args.pre_quarantine:
-            n_first_symptom_on_day[int(v - float(args.pre_quarantine[0])) +
-                                   1] += 1
-        else:
-            n_first_symptom_on_day[int(v) + 1] += 1
+        n_first_symptom_on_day[int(v) + 1] += 1
     n_first_symptom = sum(n_first_symptom_on_day.values())
     #
     for v in second_symptom_per_sim.values():
@@ -216,10 +196,6 @@ def summarize_simulations(logfile):
         print(
             f'incubation_period\t{args.incubation_period[0]}({args.incubation_period[1]}, {args.incubation_period[2]}) '
             + ' '.join(args.incubation_period[3:]))
-    if args.pre_quarantine is None:
-        print(f'pre_quarantine\tno')
-    else:
-        print(f'pre_quarantine\t{" ".join(args.pre_quarantine)}')
     if args.interval == 1 / 24:
         print(f'interval\t1 hour')
     elif args.interval == 1:
@@ -408,14 +384,6 @@ def parse_args(args=None):
             be specified as "quarantine_7" etc to specify duration of quarantine.'''
     )
     parser.add_argument(
-        '--pre-quarantine',
-        nargs='*',
-        help='''Days of self-quarantine before introducing infector to the group.
-            The simulation will be aborted if the infector shows symptom before
-            introduction. If you quarantine multiple people or specified named
-            groups, you will need to append the IDs to the parameter (e.g.
-            --pre-quarantine day nurse1 nurse2''')
-    parser.add_argument(
         '--initial-incidence-rate',
         nargs='*',
         help='''Incidence rate of the population (default to zero), which should be
@@ -502,7 +470,7 @@ def main(argv=None):
         else:
             plugin = args.plugin[0]
             if '.' not in plugin:
-                module_name, plugin_name = plugin, plugin
+                module_name, plugin_name = plugin, plugin.replace('-', '_')
             else:
                 module_name, plugin_name = plugin.rsplit('.', 1)
             try:

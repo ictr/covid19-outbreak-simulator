@@ -85,17 +85,6 @@ class Params:
                 raise ValueError(f'Group "{name}" has been specified before')
             self.groups[name] = size
 
-    def set_pre_quarantine(self, val):
-        if not val:
-            return
-        try:
-            float(val[0])
-        except Exception:
-            raise ValueError(
-                'The first parameter of pre_quarantine should be a number')
-        for ID in val[1:]:
-            self.check_id(ID)
-
     def set_infectors(self, val):
         if not val:
             return
@@ -290,7 +279,6 @@ class Params:
             return
 
         self.set_popsize(args.popsize)
-        self.set_pre_quarantine(args.pre_quarantine)
         self.set_infectors(args.infectors)
         # modify from command line args
         self.set_symptomatic_r0(args.symptomatic_r0)
