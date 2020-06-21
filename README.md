@@ -35,7 +35,9 @@ This README file contains all essential information but you can also visit our [
       * [System plugins](#system-plugins)
          * [Common paramters of plugins](#common-paramters-of-plugins)
          * [Plugin dynamic-r0](#plugin-dynamic-r0)
+         * [Plugin stat](#plugin-stat)
          * [Plugin sample](#plugin-sample)
+         * [Plugin quarantine](#plugin-quarantine)
       * [Implementation of plugins](#implementation-of-plugins)
    * [Output from the simulator](#output-from-the-simulator)
       * [Events tracked during the simulation](#events-tracked-during-the-simulation)
@@ -45,7 +47,7 @@ This README file contains all essential information but you can also visit our [
          * [merge_summary.py](#merge_summarypy)
    * [Acknowledgements](#acknowledgements)
 
-<!-- Added by: bpeng, at: Sat Jun 20 21:05:18 CDT 2020 -->
+<!-- Added by: bpeng, at: Sun Jun 21 00:39:55 CDT 2020 -->
 
 <!--te-->
 
@@ -441,6 +443,28 @@ optional arguments:
   --sample-interval SAMPLE_INTERVAL
                         Sampling interval, default to 1
 
+```
+
+### Plugin `quarantine`
+
+
+```sh
+% outbreak_simulator --plugin quarantine -h
+
+usage: --plugin quarantine [-h] [--start START] [--end END] [--at AT [AT ...]] [--interval INTERVAL] [--duration DURATION] [IDs [IDs ...]]
+
+Quarantine specified or all infected individuals for specified durations.
+
+positional arguments:
+  IDs                  IDs of individuals to quarantine.
+
+optional arguments:
+  -h, --help           show this help message and exit
+  --start START        Start time, default to 0
+  --end END            End time, default to none
+  --at AT [AT ...]     Specific time at which the plugin is applied
+  --interval INTERVAL  Interval at which plugin is applied
+  --duration DURATION  Days of quarantine
 ```
 
 
