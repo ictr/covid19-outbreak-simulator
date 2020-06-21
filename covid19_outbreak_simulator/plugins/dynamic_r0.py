@@ -8,9 +8,6 @@ import random
 #
 class dynamic_r0(BasePlugin):
 
-    # events that will trigger this plugin
-    events = set()
-
     def __init__(self, *args, **kwargs):
         # this will set self.simualtor, self.logger
         super(dynamic_r0, self).__init__(*args, **kwargs)

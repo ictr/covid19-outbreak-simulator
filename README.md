@@ -35,6 +35,7 @@ This README file contains all essential information but you can also visit our [
       * [Specify one or more plugins from command line](#specify-one-or-more-plugins-from-command-line)
       * [System plugins](#system-plugins)
          * [Common paramters of plugins](#common-paramters-of-plugins)
+         * [Plugin init](#plugin-init)
          * [Plugin dynamic-r0](#plugin-dynamic-r0)
          * [Plugin stat](#plugin-stat)
          * [Plugin sample](#plugin-sample)
@@ -48,7 +49,7 @@ This README file contains all essential information but you can also visit our [
          * [merge_summary.py](#merge_summarypy)
    * [Acknowledgements](#acknowledgements)
 
-<!-- Added by: bpeng, at: Sun Jun 21 00:39:55 CDT 2020 -->
+<!-- Added by: bpeng, at: Sun Jun 21 18:05:46 CDT 2020 -->
 
 <!--te-->
 
@@ -367,11 +368,38 @@ A plugin for covid19-outbreak-simulator
 
 optional arguments:
   -h, --help           show this help message and exit
-  --start START        Start time, default to 0
-  --end END            End time, default to none
-  --at AT [AT ...]     Specific time at which the plugin is applied
-  --interval INTERVAL  Interval at which plugin is applied
+  --start START        Start time. Default to 0 no parameter is defined so the plugin will be called once at the beginning.
+  --end END            End time, default to none, meaning there is no end time.
+  --at AT [AT ...]     Specific time at which the plugin is applied.
+  --interval INTERVAL  Interval at which plugin is applied, it will assume a 0 starting time if --start is left unspecified.
 
+```
+
+### Plugin `init`
+
+```sh
+% outbreak_simulator --plugin init -h
+usage: --plugin init [-h] [--start START] [--end END] [--at AT [AT ...]] [--interval INTERVAL]
+                     [--incidence-rate [INCIDENCE_RATE [INCIDENCE_RATE ...]]] [--seroprevalence [SEROPREVALENCE [SEROPREVALENCE ...]]]
+
+Initialize population with initial prevalence and seroprevalence
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --start START         Start time. Default to 0 no parameter is defined so the plugin will be called once at the beginning.
+  --end END             End time, default to none, meaning there is no end time.
+  --at AT [AT ...]      Specific time at which the plugin is applied.
+  --interval INTERVAL   Interval at which plugin is applied, it will assume a 0 starting time if --start is left unspecified.
+  --incidence-rate [INCIDENCE_RATE [INCIDENCE_RATE ...]]
+                        Incidence rate of the population (default to zero), which should be the probability that any individual is
+                        currently affected with the virus (not necessarily show any symptom). Multipliers can be specified to set
+                        incidence rate of for particular groups (e.g. --initial-incidence-rate 0.1 docter=1.2 will set incidence rate
+                        to 0.12 for doctors).
+  --seroprevalence [SEROPREVALENCE [SEROPREVALENCE ...]]
+                        Seroprevalence of the population (default to zero). The seroprevalence should always be greater than or euqal
+                        to initial incidence rate. The difference between seroprevalence and incidence rate will determine the
+                        "recovered" rate of the population. Multipliers can be specified to set incidence rate of for particular
+                        groups (e.g. --initial-incidence-rate 0.1 docter=1.2 will set incidence rate to 0.12 for doctors).
 ```
 
 ### Plugin `dynamic-r0`

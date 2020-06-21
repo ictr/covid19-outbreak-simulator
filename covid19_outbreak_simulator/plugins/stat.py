@@ -10,9 +10,6 @@ from covid19_outbreak_simulator.simulator import EventType
 #
 class stat(BasePlugin):
 
-    # events that will trigger this plugin
-    events = set()
-
     def __init__(self, *args, **kwargs):
         # this will set self.simualtor, self.logger
         super(stat, self).__init__(*args, **kwargs)
@@ -27,11 +24,11 @@ class stat(BasePlugin):
         res = {}
         res[f'n_recovered'] = len([
             x for x, ind in population.items()
-            if ind.recovered not in (None, False)
+            if isinstance(ind.recovered, float)
         ])
         res[f'n_infected'] = len([
             x for x, ind in population.items()
-            if ind.infected not in (False, None)
+            if isinstance(ind.infected, float)
         ])
         res[f'n_popsize'] = len([x for x, ind in population.items()])
         res[f'incidence_rate'] = '0' if res[

@@ -141,8 +141,9 @@ def summarize_simulations(logfile):
                         pass
             elif event == 'ERROR':
                 # an error has happened
-                params = line.split('\t')[-1]
-                raise eval(params.split('=', 1)[-1])
+                # params = line.split('\t')[-1]
+                # err = eval(params.split('=', 1)[-1])
+                sys.exit(f'Simulator exists with error')
 
             else:
                 # customized events
@@ -330,11 +331,14 @@ class Worker(multiprocessing.Process):
                     params=self.params, logger=logger, simu_args=self.simu_args)
                 try:
                     simu.simulate(id)
-                except Exception as e:
+                except (SystemExit, Exception) as e:
                     msg = repr(e).replace('\n',
                                           ' ').replace('\t',
                                                        ' ').replace(',', ' ')
                     logger.write(f'{id}\t0.00\tERROR\t.\texception={msg}\n')
+                    self.task_queue.task_done()
+                    self.result_queue.put(logger.getvalue())
+                    raise e
                 self.task_queue.task_done()
                 self.result_queue.put(logger.getvalue())
 
@@ -396,26 +400,9 @@ def parse_args(args=None):
             be specified as "quarantine_7" etc to specify duration of quarantine.'''
     )
     parser.add_argument(
-        '--initial-incidence-rate',
-        nargs='*',
-        help='''Incidence rate of the population (default to zero), which should be
-        the probability that any individual is currently affected with the virus (not
-        necessarily show any symptom). Multipliers can be specified to set incidence
-        rate of for particular groups (e.g. --initial-incidence-rate 0.1 docter=1.2
-        will set incidence rate to 0.12 for doctors).''')
-    parser.add_argument(
-        '--initial-seroprevalence',
-        nargs='*',
-        help='''Seroprevalence of the population (default to zero). The seroprevalence
-        should always be greater than or euqal to initial incidence rate. The difference
-        between seroprevalence and incidence rate will determine the "recovered" rate of
-        the population. Multipliers can be specified to set incidence rate of
-        for particular groups (e.g. --initial-incidence-rate 0.1 docter=1.2 will set
-        incidence rate to 0.12 for doctors).''')
-    parser.add_argument(
         '--infectors',
         nargs='*',
-        help='''Infectees to introduce to the population, default to '0'. If you
+        help='''Infectees to introduce to the population. If you
             would like to introduce multiple infectees to the population, or if
             you have named groups, you will have to specify the IDs of carrier
             such as --infectors nurse1 nurse2. Specifying this parameter without
@@ -529,6 +516,8 @@ def main(argv=None):
         for i in tqdm(range(args.repeats)):
             result = results.get()
             logger.write(result)
+            if 'ERROR' in result:
+                break
         logger.write(
             f'# START: {datetime.now().strftime("%m/%d/%Y, %H:%M:%S")}\n')
 

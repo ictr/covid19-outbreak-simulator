@@ -8,9 +8,6 @@ import random
 #
 class sample(BasePlugin):
 
-    # events that will trigger this plugin
-    events = set()
-
     def __init__(self, *args, **kwargs):
         # this will set self.simualtor, self.logger
         super(sample, self).__init__(*args, **kwargs)
@@ -29,7 +26,6 @@ class sample(BasePlugin):
         return parser
 
     def apply(self, time, population, args=None, simu_args=None):
-        self.last_sampled = time
         stat = {}
 
         if args.proportion:
@@ -45,7 +41,7 @@ class sample(BasePlugin):
 
         stat['n_recovered'] = len([
             x for s, (x, ind) in zip(samples, population.items())
-            if ind.recovered not in (None, False) and s
+            if isinstance(ind.recovered, float) and s
         ])
         stat['n_infected'] = len([
             x for s, (x, ind) in zip(samples, population.items())

@@ -51,13 +51,14 @@ class Individual(object):
 
         by = kwargs.get('by', None)
 
-        if by is None and 'allow_lead_time' in kwargs:
+        if by is None and 'allow_lead_time' in kwargs and kwargs[
+                'allow_lead_time']:
             # this is the first infection, the guy should be asymptomatic, but
             # could be anywhere in his incubation period
             lead_time = np.random.uniform(0, self.incubation_period)
         else:
             lead_time = 0
-        self.infected = time - lead_time
+        self.infected = float(time - lead_time)
 
         handle_symptomatic = kwargs.get('handle_symptomatic', ['remove', 1])
 
@@ -218,14 +219,15 @@ class Individual(object):
 
         by = kwargs.get('by',)
 
-        if by is None and 'allow_lead_time' in kwargs:
+        if by is None and 'allow_lead_time' in kwargs and kwargs[
+                'allow_lead_time']:
             # this is the first infection, the guy should be asymptomatic, but
             # could be anywhere in his incubation period
             lead_time = np.random.uniform(0, 10)
         else:
             lead_time = 0
 
-        self.infected = time - lead_time
+        self.infected = float(time - lead_time)
 
         # REMOVAL ...
         evts = []
@@ -333,12 +335,19 @@ class Event(object):
     Events that happen during the simulation.
     '''
 
-    def __init__(self, time, action, target=None, logger=None, **kwargs):
+    def __init__(self,
+                 time,
+                 action,
+                 target=None,
+                 logger=None,
+                 priority=False,
+                 **kwargs):
         self.time = time
         self.action = action
         self.target = target
         self.logger = logger
         self.kwargs = kwargs
+        self.priority = priority
 
     def apply(self, population, simu_args):
         if self.action == EventType.INFECTION:
@@ -486,11 +495,7 @@ class Simulator(object):
             # if there is a parser
             if hasattr(obj, 'get_parser'):
                 parser = obj.get_parser()
-                try:
-                    args = parser.parse_args(group[1:])
-                except SystemExit as e:
-                    raise ValueError(
-                        f'Failed to parse argument for plugin {plugin}.')
+                args = parser.parse_args(group[1:])
             else:
                 args = None
             #
@@ -510,58 +515,10 @@ class Simulator(object):
         population = {}
         idx = 0
 
-        # population prevalence and incidence rate
-        ir = {'': 0.0}
-        if self.simu_args.initial_incidence_rate:
-            # the first number must be float
-            try:
-                ir[''] = float(self.simu_args.initial_incidence_rate[0])
-            except Exception as e:
-                raise ValueError(
-                    f'The first parameter of --initial-incidence-rate should be a float number "{self.simu_args.initial_incidence_rate[0]}" provided: {e}'
-                )
-            for multiplier in self.simu_args.initial_incidence_rate[1:]:
-                if '=' not in multiplier:
-                    raise ValueError(
-                        f'The non-first parameter of --initial-incidence-rate should be a float number "{multiplier}" provided.'
-                    )
-                name, value = multiplier.split('=', 1)
-                try:
-                    value = float(value)
-                except Exception:
-                    raise ValueError(
-                        f'Multiplier should have format name=float_value: {multiplier} provided'
-                    )
-                ir[name] = value * ir['']
-        #
-        isp = {'': 0.0}
-        if self.simu_args.initial_seroprevalence:
-            # the first number must be float
-            try:
-                isp[''] = float(self.simu_args.initial_seroprevalence[0])
-            except Exception as e:
-                raise ValueError(
-                    f'The first parameter of --initial-seroprevalence should be a float number "{self.simu_args.initial_incidence_rate[0]}" provided: {e}'
-                )
-            for multiplier in self.simu_args.initial_seroprevalence[1:]:
-                if '=' not in multiplier:
-                    raise ValueError(
-                        f'The non-first parameter of --initial-incidence-rate should be a float number "{multiplier}" provided.'
-                    )
-                name, value = multiplier.split('=', 1)
-                try:
-                    value = float(value)
-                except Exception:
-                    raise ValueError(
-                        f'Multiplier should have format name=float_value: {multiplier} provided'
-                    )
-                isp[name] = value * ir['']
-
         for ps in self.simu_args.popsize:
             if '=' in ps:
                 # this is named population size
                 name, sz = ps.split('=', 1)
-
             else:
                 name = ''
                 sz = ps
@@ -570,21 +527,6 @@ class Simulator(object):
             except Exception:
                 raise ValueError(
                     f'Named population size should be name=int: {ps} provided')
-            pop_ir = ir.get(name if name in ir else '', 0.0)
-            n_ir = np.random.binomial(sz, pop_ir, 1)[0]
-
-            pop_isp = isp.get(name if name in isp else '', 0.0)
-            if pop_isp == 0.0:
-                n_recovered = 0
-            elif pop_isp < pop_ir:
-                raise ValueError(
-                    'Seroprevalence, if specified, should be greater than or equal to incidence rate.'
-                )
-            else:
-                n_recovered = np.random.binomial(sz, pop_isp - pop_ir, 1)[0]
-            pop_status = [1] * n_ir + [2] * n_recovered + [0] * (
-                sz - n_ir - n_recovered)
-            random.shuffle(pop_status)
 
             population.update({
                 name + str(idx): Individual(
@@ -593,30 +535,16 @@ class Simulator(object):
                     susceptibility=getattr(self.model.params,
                                            f'susceptibility_multiplier_{name}',
                                            1),
-                    infected=sts == 1,
-                    recovered=sts == 2,
+                    infected=None,
+                    recovered=None,
                     model=self.model,
-                    logger=self.logger)
-                for idx, sts in zip(range(idx, idx + sz), pop_status)
+                    logger=self.logger) for idx in range(idx, idx + sz)
             })
 
         events = defaultdict(list)
         self.logger.id = id
 
-        if self.simu_args.initial_incidence_rate:
-            for id, ind in population.items():
-                if ind.infected:
-                    events[0].append(
-                        Event(
-                            0,
-                            EventType.INFECTION,
-                            target=id,
-                            logger=self.logger))
-                    ind.infected = False
-
-        infectors = [
-            '0'
-        ] if self.simu_args.infectors is None else self.simu_args.infectors
+        infectors = [] if self.simu_args.infectors is None else self.simu_args.infectors
         for infector in infectors:
             if infector not in population:
                 raise ValueError(f'Invalid ID for carrier {infector}')
@@ -659,15 +587,28 @@ class Simulator(object):
             new_events = []
             aborted = False
             # processing events
-            for evt in events[time]:
+            cur_events = [x for x in events[time] if x.priority
+                         ] + [x for x in events[time] if not x.priority]
+            while True:
+                try:
+                    evt = cur_events.pop(0)
+                except:
+                    break
                 if evt.action == EventType.ABORT:
                     self.logger.write(
                         f'{self.logger.id}\t{time:.2f}\t{EventType.ABORT.name}\t{evt.target.id}\tpopsize={len(population)}\n'
                     )
                     aborted = True
                     break
-                # event triggers new event
-                new_events.extend(evt.apply(population, self.simu_args))
+                res = evt.apply(population, self.simu_args)
+                for x in res:
+                    if x.time == time:
+                        if x.priority:
+                            cur_events.insert(0, x)
+                        else:
+                            cur_events.append(x)
+                    else:
+                        new_events.append(x)
 
             events.pop(time)
             # if there is no other events, and all new ones are plugin generated

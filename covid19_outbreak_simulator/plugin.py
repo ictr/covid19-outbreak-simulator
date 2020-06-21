@@ -4,10 +4,11 @@ from covid19_outbreak_simulator.simulator import Event, EventType
 
 class PlugInEvent(object):
 
-    def __init__(self, time, plugin, args):
+    def __init__(self, time, plugin, args, priority=False):
         self.time = time
         self.plugin = plugin
         self.args = args
+        self.priority = priority
         self.action = EventType.PLUGIN
 
     def apply(self, population, simu_args):
@@ -19,6 +20,8 @@ class PlugInEvent(object):
 
 
 class BasePlugin(object):
+
+    apply_at = 'after_core_events'
 
     def __init__(self, simulator, *args, **kwargs):
         self.simulator = simulator
@@ -56,49 +59,38 @@ class BasePlugin(object):
     def get_plugin_events(self, args):
         events = []
         if args.start is not None:
-            events.append(PlugInEvent(time=args.start, plugin=self, args=args))
+            events.append(
+                PlugInEvent(
+                    time=args.start,
+                    plugin=self,
+                    args=args,
+                    priority=self.apply_at == 'before_core_events'))
 
         if args.interval is not None and args.start is None:
-            events.append(PlugInEvent(time=0, plugin=self, args=args))
+            events.append(
+                PlugInEvent(
+                    time=0,
+                    plugin=self,
+                    args=args,
+                    priority=self.apply_at == 'before_core_events'))
 
         if args.at is not None:
             for t in args.at:
-                events.append(PlugInEvent(time=t, plugin=self, args=args))
+                events.append(
+                    PlugInEvent(
+                        time=t,
+                        plugin=self,
+                        args=args,
+                        priority=self.apply_at == 'before_core_events'))
 
         if not events:
-            events.append(PlugInEvent(time=0, plugin=self, args=args))
+            events.append(
+                PlugInEvent(
+                    time=0,
+                    plugin=self,
+                    args=args,
+                    priority=self.apply_at == 'before_core_events'))
         return events
-
-    def can_apply(self, time, args):
-        # the plugin could be applied multiple times at a timepoint
-        # due to the generation of more events at the same time point.
-        if time in self.applied_at:
-            return False
-
-        if args.end is not None and time > args.end:
-            return False
-
-        if args.start is not None:
-            if self.last_applied is None and time >= args.start:
-                self.applied_at.add(time)
-                self.last_applied = time
-                return True
-
-        if args.interval is not None:
-            # if start is not applied, the first call should start it
-            if (self.last_applied is None and args.start is None) or (
-                    self.last_applied is not None and
-                    time - self.last_applied >= args.interval):
-                self.applied_at.add(time)
-                self.last_applied = time
-                return True
-
-        if args.at is not None and time in args.at:
-            self.applied_at.add(time)
-            self.last_applied = time
-            return True
-
-        return False
 
     def apply(self, time, population, args=None, simu_args=None):
         # redefined by subclassed

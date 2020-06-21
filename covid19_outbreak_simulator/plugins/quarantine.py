@@ -5,13 +5,7 @@ from covid19_outbreak_simulator.plugin import BasePlugin
 from covid19_outbreak_simulator.simulator import Event, EventType
 
 
-#
-# This plugin take random samples from the population during evolution.
-#
 class quarantine(BasePlugin):
-
-    # events that will trigger this plugin
-    events = set()
 
     def __init__(self, *args, **kwargs):
         # this will set self.simualtor, self.logger
@@ -32,7 +26,7 @@ class quarantine(BasePlugin):
         print(f'RAISE {args}')
 
         IDs = args.IDs if args.IDs else [
-            x for x, y in population.items() if y.infected not in (None, False)
+            x for x, y in population.items() if isinstance(y.infected, float)
         ]
         events = []
 
