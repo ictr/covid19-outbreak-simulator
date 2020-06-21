@@ -523,6 +523,7 @@ Currently the following events are tracked
 | `STAT`              | Report population stats at specified intervals.                                         |
 | `ABORT`             | If the first carrier show sympton during quarantine.                                    |
 | `END`               | Simulation ends.                                                                        |
+| `ERROR`             | An error was raised.                                                      |
 
 The log file of a typical simulation would look like the following:
 

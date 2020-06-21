@@ -323,6 +323,8 @@ class EventType(Enum):
     ABORT = 11
     # end of simulation
     END = 12
+    # ERROR
+    ERROR = 13
 
 
 class Event(object):

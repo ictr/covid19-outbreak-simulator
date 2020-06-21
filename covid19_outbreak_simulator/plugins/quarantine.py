@@ -39,7 +39,6 @@ class quarantine(BasePlugin):
         events = []
 
         for ID in IDs:
-            print(f"quarantine {ID}")
             if ID not in self.population:
                 raise ValueError(f'Invalid ID to quanrantine {ID}')
             events.append(

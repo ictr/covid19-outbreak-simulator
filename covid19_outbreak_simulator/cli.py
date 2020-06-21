@@ -139,6 +139,11 @@ def summarize_simulations(logfile):
                             timed_stats[key][time] = value.strip()
                     except Exception:
                         pass
+            elif event == 'ERROR':
+                # an error has happened
+                params = line.split('\t')[-1]
+                raise eval(params.split('=', 1)[-1])
+
             else:
                 # customized events
                 id, time, event, target, params = line.split('\t')
@@ -313,6 +318,7 @@ class Worker(multiprocessing.Process):
     def run(self):
         # set random seed to a random number
         np.random.seed()
+
         while True:
             id = self.task_queue.get()
             if id is None:
@@ -322,7 +328,13 @@ class Worker(multiprocessing.Process):
                 logger.id = id
                 simu = Simulator(
                     params=self.params, logger=logger, simu_args=self.simu_args)
-                simu.simulate(id)
+                try:
+                    simu.simulate(id)
+                except Exception as e:
+                    msg = repr(e).replace('\n',
+                                          ' ').replace('\t',
+                                                       ' ').replace(',', ' ')
+                    logger.write(f'{id}\t0.00\tERROR\t.\texception={msg}\n')
                 self.task_queue.task_done()
                 self.result_queue.put(logger.getvalue())
 
