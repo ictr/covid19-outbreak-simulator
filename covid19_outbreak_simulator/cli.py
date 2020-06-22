@@ -11,7 +11,7 @@ from collections import defaultdict
 from datetime import datetime
 from importlib import import_module
 
-from .simulator import Simulator
+from .simulator import Simulator, load_plugins
 from .model import Params
 
 
@@ -460,36 +460,8 @@ def main(argv=None):
             bp = BasePlugin(simulator=None, population=None)
             parser = bp.get_parser()
             parser.parse_args(['-h'])
-        elif args.plugin[0].startswith('-'):
-            # it has to be -h
-            raise ValueError(
-                f'Plugin name should not start with a dash (-): "{args.plugin[0]}" provided.'
-            )
-        else:
-            plugin = args.plugin[0]
-            if '.' not in plugin:
-                module_name, plugin_name = plugin, plugin.replace('-', '_')
-            else:
-                module_name, plugin_name = plugin.rsplit('.', 1)
-            try:
-                mod = import_module(
-                    f'covid19_outbreak_simulator.plugins.{module_name}')
-            except Exception as e:
-                try:
-                    mod = import_module(module_name)
-                except Exception as e:
-                    raise ValueError(
-                        f'Failed to import module {module_name}: {e}')
-            try:
-                obj = getattr(mod, plugin_name)(simulator=None, population=None)
-            except Exception as e:
-                raise ValueError(
-                    f'Failed to retrieve plugin {plugin_name} from module {module_name}: {e}'
-                )
-            # if there is a parser
-            parser = obj.get_parser()
-            if '-h' in args.plugin:
-                parser.parse_args(['-h'])
+        # load the plugins just to check if the parameters are ok
+        load_plugins(args.plugin)
 
     if not args.jobs:
         args.jobs = multiprocessing.cpu_count()

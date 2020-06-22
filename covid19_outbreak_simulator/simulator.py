@@ -452,6 +452,43 @@ class Event(object):
         return f'{self.action.name}_{self.target.id if self.target else ""}_at_{self.time:.2f}'
 
 
+def load_plugins(args, simulator=None):
+    groups = [
+        list(group)
+        for k, group in groupby(args, lambda x: x == '--plugin')
+        if not k
+    ]
+    plugins = []
+    for group in groups:
+        plugin = group[0]
+        if '.' not in plugin:
+            module_name, plugin_name = plugin, plugin.replace('-', '_')
+        else:
+            module_name, plugin_name = plugin.rsplit('.', 1)
+        try:
+            mod = import_module(
+                f'covid19_outbreak_simulator.plugins.{module_name}')
+        except Exception as e:
+            try:
+                mod = import_module(module_name)
+            except Exception as e:
+                raise ValueError(f'Failed to import module {module_name}: {e}')
+        try:
+            obj = getattr(mod, plugin_name)(simulator)
+        except Exception as e:
+            raise ValueError(
+                f'Failed to retrieve plugin {plugin_name} from module {module_name}: {e}'
+            )
+        # if there is a parser
+        parser = obj.get_parser()
+        args = parser.parse_args(group[1:])
+        #
+        if not hasattr(obj, 'apply'):
+            raise ValueError('No "apply" function is defined for plugin')
+        plugins.append([obj, args])
+    return plugins
+
+
 class Simulator(object):
 
     def __init__(self, params, logger, simu_args):
@@ -464,46 +501,14 @@ class Simulator(object):
     def get_plugin_events(self):
         if not self.simu_args.plugin:
             return [], {}
-        # split by '--plugin'
-        groups = [
-            list(group) for k, group in groupby(
-                self.simu_args.plugin, lambda x: x == '--plugin') if not k
-        ]
 
         trigger_events = []
         initial_events = []
-        for group in groups:
-            plugin = group[0]
-            if '.' not in plugin:
-                module_name, plugin_name = plugin, plugin.replace('-', '_')
-            else:
-                module_name, plugin_name = plugin.rsplit('.', 1)
-            try:
-                mod = import_module(
-                    f'covid19_outbreak_simulator.plugins.{module_name}')
-            except Exception as e:
-                try:
-                    mod = import_module(module_name)
-                except Exception as e:
-                    raise ValueError(
-                        f'Failed to import module {module_name}: {e}')
-            try:
-                obj = getattr(mod, plugin_name)(simulator=self)
-            except Exception as e:
-                raise ValueError(
-                    f'Failed to retrieve plugin {plugin_name} from module {module_name}: {e}'
-                )
-            # if there is a parser
-            if hasattr(obj, 'get_parser'):
-                parser = obj.get_parser()
-                args = parser.parse_args(group[1:])
-            else:
-                args = None
-            #
-            if not hasattr(obj, 'apply'):
-                raise ValueError('No "apply" function is defined for plugin')
-            initial_events.extend(obj.get_plugin_events(args))
-            trigger_events.extend(obj.get_trigger_events(args))
+
+        for plugin, args in load_plugins(self.simu_args.plugin, simulator=self):
+            initial_events.extend(plugin.get_plugin_events(args))
+            trigger_events.extend(plugin.get_trigger_events(args))
+
         trigger_events_dict = defaultdict(list)
         for te in trigger_events:
             trigger_events_dict[te.trigger_event].append(te)
