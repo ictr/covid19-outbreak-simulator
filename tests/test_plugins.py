@@ -4,6 +4,37 @@ from covid19_outbreak_simulator.cli import parse_args, main
 from covid19_outbreak_simulator.model import Params
 
 
+def test_option_base_plugin_help():
+    args = parse_args(['--plugin', '-h'])
+    assert args.plugin == ['-h']
+
+
+def test_option_plugin_help():
+    args = parse_args(['--plugin', 'sample', '-h'])
+    assert args.plugin == ['sample', '-h']
+
+
+def test_option_plugin_args():
+    args = parse_args(['--plugin', 'sample', '--sample-size', '100'])
+    assert args.plugin == ['sample', '--sample-size', '100']
+
+
+def test_plugin_no_module():
+    with pytest.raises(Exception):
+        main([
+            '--jobs', '1', '--repeats', '100', '--infectors', '1', '--plugin',
+            'non-exist'
+        ])
+
+
+def test_plugin_no_module():
+    with pytest.raises(Exception):
+        main([
+            '--jobs', '1', '--repeats', '100', '--infectors', '1', '--plugin',
+            'sample.non-exist'
+        ])
+
+
 def test_plugin_trigger():
     main([
         '--jobs', '1', '--repeats', '100', '--infectors', '1', '--plugin',

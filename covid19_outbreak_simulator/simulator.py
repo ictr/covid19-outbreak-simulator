@@ -463,7 +463,7 @@ class Simulator(object):
 
     def get_plugin_events(self):
         if not self.simu_args.plugin:
-            return []
+            return [], {}
         # split by '--plugin'
         groups = [
             list(group) for k, group in groupby(
@@ -575,21 +575,11 @@ class Simulator(object):
                 max_time = max(events.keys())
 
             if self.simu_args.stop_if is not None:
-                if self.simu_args.stop_if[0].startswith('t>'):
-                    #
-                    try:
-                        st = float(self.simu_args.stop_if[0][2:])
-                    except Exception:
-                        raise ValueError(
-                            f'Invalid value for option --stop-if "{self.simu_args.stop_if[0]}": {e}'
-                        )
-                    if time > st:
-                        time = st
-                        break
-                else:
-                    raise ValueError(
-                        f'Option --stop-if currently only supports t>TIME to stop after certain time point.'
-                    )
+                st = float(self.simu_args.stop_if[0][2:])
+                if time > st:
+                    time = st
+                    break
+
             new_events = []
             aborted = False
             # processing events

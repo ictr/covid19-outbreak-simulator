@@ -58,7 +58,7 @@ def summarize_simulations(logfile):
         third_symptom_per_sim = defaultdict(int)
 
         total_popsize = 0
-        infectors = ['0']
+        infectors = []
         args = None
 
         for line in lines:
@@ -405,8 +405,7 @@ def parse_args(args=None):
         help='''Infectees to introduce to the population. If you
             would like to introduce multiple infectees to the population, or if
             you have named groups, you will have to specify the IDs of carrier
-            such as --infectors nurse1 nurse2. Specifying this parameter without
-            value will not introduce any infector.''')
+            such as --infectors nurse1 nurse2.''')
     parser.add_argument(
         '--interval',
         default=1 / 24,
@@ -454,7 +453,7 @@ def main(argv=None):
     tasks = multiprocessing.JoinableQueue()
     results = multiprocessing.Queue()
 
-    if args.plugin and '-h' in args.plugin:
+    if args.plugin:
         if args.plugin[0] == '-h':
             # list all plugins
             from covid19_outbreak_simulator.plugin import BasePlugin
@@ -464,7 +463,7 @@ def main(argv=None):
         elif args.plugin[0].startswith('-'):
             # it has to be -h
             raise ValueError(
-                f'Plugin name should not start with a dash (-): "{plugin}" provided.'
+                f'Plugin name should not start with a dash (-): "{args.plugin[0]}" provided.'
             )
         else:
             plugin = args.plugin[0]
@@ -489,10 +488,25 @@ def main(argv=None):
                 )
             # if there is a parser
             parser = obj.get_parser()
-            parser.parse_args(['-h'])
+            if '-h' in args.plugin:
+                parser.parse_args(['-h'])
 
     if not args.jobs:
         args.jobs = multiprocessing.cpu_count()
+
+    if args.stop_if is not None:
+        if args.stop_if[0].startswith('t>'):
+            #
+            try:
+                st = float(args.stop_if[0][2:])
+            except Exception:
+                raise ValueError(
+                    f'Invalid value for option --stop-if "{args.stop_if[0]}": {e}'
+                )
+        else:
+            raise ValueError(
+                f'Option --stop-if currently only supports t>TIME to stop after certain time point.'
+            )
 
     workers = [
         Worker(tasks, results, args)

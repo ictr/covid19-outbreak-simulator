@@ -251,21 +251,6 @@ def test_option_prop_asym_carriers():
     assert params.prop_asym_carriers_multiplier_A == 1.2
 
 
-def test_option_base_plugin_help():
-    args = parse_args(['--plugin', '-h'])
-    assert args.plugin == ['-h']
-
-
-def test_option_plugin_help():
-    args = parse_args(['--plugin', 'sample', '-h'])
-    assert args.plugin == ['sample', '-h']
-
-
-def test_option_plugin_args():
-    args = parse_args(['--plugin', 'sample', '--sample-size', '100'])
-    assert args.plugin == ['sample', '--sample-size', '100']
-
-
 def test_main_default():
     main(['--jobs', '1', '--repeats', '100'])
     main(['--jobs', '1', '--repeats', '100', '--logfile', 'test.out'])
@@ -296,3 +281,12 @@ def test_main_incubation_period():
         '--jobs', '1', '--repeats', '100', '--incubation-period', 'normal', '1',
         '2'
     ])
+
+
+def test_main_stop_if():
+    main(['--jobs', '1', '--repeats', '100', '--stop-if', 't>1'])
+
+
+def test_main_stop_if_error():
+    with pytest.raises(Exception):
+        main(['--jobs', '1', '--repeats', '100', '--stop-if', 'st>1'])
