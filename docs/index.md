@@ -7,7 +7,6 @@ Welcome to COVID-19 Outbreak Simulator's documentation!
 
    readme
    contributing
-   history
 
 Indices and tables
 ==================
