@@ -385,7 +385,7 @@ def parse_args(args=None):
     )
     parser.add_argument(
         '--repeats',
-        default=10000,
+        default=100,
         type=int,
         help='''Number of replicates to simulate. An ID starting from
               1 will be assinged to each replicate and as the first columns

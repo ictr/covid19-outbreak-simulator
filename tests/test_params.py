@@ -7,6 +7,14 @@ from scipy.stats import norm
 import numpy as np
 
 
+def test_unknown_param(params):
+    with pytest.raises(ValueError):
+        params.set('unknown', 'value', '0.3')
+
+    with pytest.raises(ValueError):
+        params.set('prop_asym_carriers', 'unknown', '0.3')
+
+
 def test_params_set_mean(params):
     params.set('prop_asym_carriers', 'loc', 0.3)
     assert params.prop_asym_carriers_loc == 0.3
@@ -85,8 +93,8 @@ def draw_random_incubation_period(default_model):
     #
     assert math.fabs(sum(symp_r0) / N) - scipy.stats.lognorm.mean(
         s=1,
-        loc=self.params.incubation_period_mean,
-        scale=self.params.incubation_period_sigma) < 0.001
+        loc=default_model.params.incubation_period_mean,
+        scale=default_model.params.incubation_period_sigma) < 0.001
 
 
 def test_get_symptomatic_transmission_probability(default_model):

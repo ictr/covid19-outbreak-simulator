@@ -59,11 +59,11 @@ def test_infect_with_leadtime(individual_factory):
 
 
 @pytest.mark.parametrize(
-    'by, handle_symptomatic, quarantined, allow_lead_time',
+    'by, handle_symptomatic, proportion, quarantined, allow_lead_time',
     product([None, 1], ['keep', 'remove', 'quarantine', 'quarantine_14'],
-            [True, False], [True, False]))
+            [None, 'A', 0, 0.2, 1], [True, False], [True, False]))
 def test_symptomatic_infect(individual_factory, by, handle_symptomatic,
-                            quarantined, allow_lead_time):
+                            proportion, quarantined, allow_lead_time):
     ind1 = individual_factory(id=1)
     ind2 = individual_factory(id=2)
 
@@ -71,11 +71,25 @@ def test_symptomatic_infect(individual_factory, by, handle_symptomatic,
     if quarantined:
         ind1.quarantine(till=20)
     #
-    res = ind1.symptomatic_infect(
-        5.0,
-        by=None if by is None or allow_lead_time else ind2,
-        handle_symptomatic=[handle_symptomatic],
-        allow_lead_time=allow_lead_time)
+    if not quarantined and proportion == 'A':
+        with pytest.raises(ValueError):
+            res = ind1.symptomatic_infect(
+                5.0,
+                by=None if by is None or allow_lead_time else ind2,
+                handle_symptomatic=[handle_symptomatic, proportion],
+                allow_lead_time=allow_lead_time)
+    elif proportion is None:
+        res = ind1.symptomatic_infect(
+            5.0,
+            by=None if by is None or allow_lead_time else ind2,
+            handle_symptomatic=[handle_symptomatic],
+            allow_lead_time=allow_lead_time)
+    else:
+        res = ind1.symptomatic_infect(
+            5.0,
+            by=None if by is None or allow_lead_time else ind2,
+            handle_symptomatic=[handle_symptomatic, proportion],
+            allow_lead_time=allow_lead_time)
 
     if allow_lead_time:
         assert ind1.infected != 5.0
@@ -86,11 +100,11 @@ def test_symptomatic_infect(individual_factory, by, handle_symptomatic,
 
 
 @pytest.mark.parametrize(
-    'by, handle_symptomatic, quarantined, allow_lead_time',
-    product([False, True], [None, 1],
-            ['keep', 'remove', 'quanrantine', 'quarantine_7'], [True, False]))
+    'by, handle_symptomatic, proportion, quarantined, allow_lead_time',
+    product([None, 1], ['keep', 'remove', 'quanrantine', 'quarantine_7'],
+            ['A', 1], [True, False], [True, False]))
 def test_asymptomatic_infect(individual_factory, by, handle_symptomatic,
-                             quarantined, allow_lead_time):
+                             proportion, quarantined, allow_lead_time):
     ind1 = individual_factory(id=1)
     ind2 = individual_factory(id=2)
 
@@ -98,10 +112,11 @@ def test_asymptomatic_infect(individual_factory, by, handle_symptomatic,
     if quarantined:
         ind1.quarantine(till=20)
     #
+    # asymptomatic case does not care about handle_symptomatic and proportion etc
     res = ind1.asymptomatic_infect(
         5.0,
         by=None if by is None or allow_lead_time else ind2,
-        handle_symptomatic=handle_symptomatic,
+        handle_symptomatic=[handle_symptomatic, proportion],
         allow_lead_time=allow_lead_time)
 
     if allow_lead_time:

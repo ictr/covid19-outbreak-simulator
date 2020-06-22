@@ -50,6 +50,12 @@ def test_option_susceptibility():
             ['--popsize', 'A=500', 'B=300', '--susceptibility', 'C=0.8'])
         params = Params(args)
 
+    # not float
+    with pytest.raises(ValueError):
+        args = parse_args(
+            ['--popsize', 'A=500', 'B=300', '--susceptibility', 'A=1f'])
+        params = Params(args)
+
     # not as multiplier
     with pytest.raises(ValueError):
         args = parse_args(
@@ -89,6 +95,10 @@ def test_option_symptomatic_r0():
         args = parse_args(['--symptomatic-r0', '0.8', '1.0f'])
         params = Params(args)
 
+    with pytest.raises(ValueError):
+        args = parse_args(['--popsize', 'A=200', '--symptomatic-r0', 'A=8b'])
+        params = Params(args)
+
     # more numbers
     with pytest.raises(ValueError):
         args = parse_args(['--symptomatic-r0', '0.8', '1.0', '2.0'])
@@ -125,6 +135,10 @@ def test_option_asymptomatic_r0():
 
     with pytest.raises(ValueError):
         args = parse_args(['--asymptomatic-r0', '0.8', '1.0f'])
+        params = Params(args)
+
+    with pytest.raises(ValueError):
+        args = parse_args(['--popsize', 'A=200', '--asymptomatic-r0', 'A=8b'])
         params = Params(args)
 
     # more numbers
@@ -198,6 +212,12 @@ def test_option_inclubation_period():
             ['--popsize', 'A=500', 'B=300', '--incubation-period', 'A=-1'])
         params = Params(args)
 
+    # non-float multiplier
+    with pytest.raises(ValueError):
+        args = parse_args(
+            ['--popsize', 'A=500', 'B=300', '--incubation-period', 'A=1f'])
+        params = Params(args)
+
 
 def test_option_infectors():
     args = parse_args(['--infectors', '10'])
@@ -229,6 +249,26 @@ def test_option_prop_asym_carriers():
     args = parse_args(['--prop-asym-carriers', '0.1', '0.3'])
     params = Params(args)
     assert params.prop_asym_carriers_loc == 0.2
+
+    # not a float number
+    with pytest.raises(ValueError):
+        args = parse_args(
+            ['--popsize', 'A=10', 'B=10', '--prop-asym-carriers', '1.2f'])
+        params = Params(args)
+
+    # not incremental
+    with pytest.raises(ValueError):
+        args = parse_args(
+            ['--popsize', 'A=10', 'B=10', '--prop-asym-carriers', '1.5', '0.5'])
+        params = Params(args)
+
+    # more numbers
+    with pytest.raises(ValueError):
+        args = parse_args([
+            '--popsize', 'A=10', 'B=10', '--prop-asym-carriers', '1.5', '2.5',
+            '3.5'
+        ])
+        params = Params(args)
 
     with pytest.raises(ValueError):
         args = parse_args(
@@ -280,6 +320,13 @@ def test_main_incubation_period():
     main([
         '--jobs', '1', '--repeats', '100', '--incubation-period', 'normal', '1',
         '2'
+    ])
+
+
+def test_main_susceptibility():
+    main([
+        '--jobs', '1', '--repeats', '10', '--popsize', 'A=100', 'B=200',
+        '--susceptibility', 'A=0.08', 'B=1.2', '--infectors', 'B1', 'B2'
     ])
 
 

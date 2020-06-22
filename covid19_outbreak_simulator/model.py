@@ -76,7 +76,7 @@ class Params:
                     )
             else:
                 name = ''
-                size = int(ps)
+                size = ps
             try:
                 size = int(size)
             except Exception:
