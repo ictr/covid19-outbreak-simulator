@@ -102,8 +102,6 @@ class Simulator(object):
                     susceptibility=getattr(self.model.params,
                                            f'susceptibility_multiplier_{name}',
                                            1),
-                    infected=None,
-                    recovered=None,
                     model=self.model,
                     logger=self.logger) for idx in range(idx, idx + sz)
             ])
@@ -123,7 +121,7 @@ class Simulator(object):
                     target=infector,
                     logger=self.logger,
                     handle_symptomatic=self.simu_args.handle_symptomatic,
-                    allow_lead_time=self.simu_args.allow_lead_time))
+                    leadtime=self.simu_args.leadtime))
 
         # load the plugins
         init_events, trigger_events = self.get_plugin_events()
@@ -152,7 +150,7 @@ class Simulator(object):
                     break
                 if evt.action == EventType.ABORT:
                     self.logger.write(
-                        f'{self.logger.id}\t{time:.2f}\t{EventType.ABORT.name}\t{evt.target.id}\tpopsize={len(population)}\n'
+                        f'{self.logger.id}\t{time:.2f}\t{EventType.ABORT.name}\t{evt.target}\tpopsize={len(population)}\n'
                     )
                     aborted = True
                     break

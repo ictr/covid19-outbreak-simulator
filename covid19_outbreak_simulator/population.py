@@ -7,18 +7,19 @@ from .event import Event, EventType
 
 class Individual(object):
 
-    def __init__(self, id, group, susceptibility, infected, recovered, model,
-                 logger):
+    def __init__(self, id, group, susceptibility, model, logger):
         self.id = id
         self.model = model
         self.group = group
         self.susceptibility = susceptibility
         self.logger = logger
 
-        self.infected = infected
-        self.recovered = recovered
-        self.quarantined = None
-        self.n_infectee = 0
+        # these will be set to event happen time
+        self.infected = False
+        self.show_symptom = False
+        self.recovered = False
+
+        self.quarantined = False
 
         self.r0 = None
         self.incubation_period = None
@@ -33,10 +34,16 @@ class Individual(object):
             raise ValueError(
                 'No till parameter is specified for quarantine event.')
         self.quarantined = till
-        return [Event(till, EventType.REINTEGRATION, self, logger=self.logger)]
+        return [
+            Event(
+                till,
+                EventType.REINTEGRATION,
+                target=self.id,
+                logger=self.logger)
+        ]
 
     def reintegrate(self):
-        self.quarantined = None
+        self.quarantined = False
         return []
 
     def symptomatic_infect(self, time, **kwargs):
@@ -46,101 +53,115 @@ class Individual(object):
 
         by = kwargs.get('by', None)
 
-        if by is None and 'allow_lead_time' in kwargs and kwargs[
-                'allow_lead_time']:
-            # this is the first infection, the guy should be asymptomatic, but
-            # could be anywhere in his incubation period
-            lead_time = np.random.uniform(0, self.incubation_period)
+        if 'leadtime' in kwargs and kwargs['leadtime'] is not None:
+            if by is not None:
+                raise ValueError(
+                    'leadtime is only allowed during initialization of infection event (no by option.)'
+                )
+            if kwargs['leadtime'] == 'any':
+                lead_time = np.random.uniform(0, self.incubation_period + 7)
+            elif kwargs['leadtime'] == 'asymptomatic':
+                lead_time = np.random.uniform(0, self.incubation_period)
+            else:
+                try:
+                    lead_time = float(kwargs['leadtime'])
+                except:
+                    raise ValueError(
+                        f'--leadtime can only be any, asymptomatic, or a fixed number: {kwargs["leadtime"]} provided'
+                    )
         else:
             lead_time = 0
+
         self.infected = float(time - lead_time)
 
         handle_symptomatic = kwargs.get('handle_symptomatic', ['remove', 1])
 
-        # REMOVAL ...
-        evts = [
-            Event(
-                time + self.incubation_period - lead_time,
-                EventType.SHOW_SYMPTOM,
-                self,
-                logger=self.logger)
-        ]
+        # show symptom
         kept = True
-        if self.quarantined and time + self.incubation_period - lead_time < self.quarantined:
-            # scheduling ABORT
+        evts = []
+        symp_time = time + self.incubation_period - lead_time
+        if symp_time < 0:
+            self.show_symptom = symp_time
+        else:
+            # show symptom after current time ...
             evts.append(
                 Event(
-                    time + self.incubation_period - lead_time,
-                    EventType.ABORT,
-                    self,
+                    symp_time,
+                    EventType.SHOW_SYMPTOM,
+                    target=self.id,
                     logger=self.logger))
-        elif handle_symptomatic[0] in ('remove', 'keep'):
-            if len(handle_symptomatic) == 1:
-                proportion = 1
-            else:
-                try:
-                    proportion = float(handle_symptomatic[1])
-                except Exception:
+            #
+            if self.quarantined and self.quarantined > symp_time:
+                # show symptom during quarantine, ok
+                pass
+            elif handle_symptomatic[0] in ('remove', 'keep'):
+                if len(handle_symptomatic) == 1:
+                    proportion = 1
+                else:
+                    try:
+                        proportion = float(handle_symptomatic[1])
+                    except Exception:
+                        raise ValueError(
+                            f'Proportion in "--handle-symptomatic remove/keep prop" should be a float number: {handle_symptomatic[1]} provided'
+                        )
+                if proportion > 1 or proportion < 0:
                     raise ValueError(
-                        f'Proportion in "--handle-symptomatic remove/keep prop" should be a float number: {handle_symptomatic[1]} provided'
+                        f'Proportion in "--handle-symptomatic remove/keep prop" should be a float number between 0 and 1: {proportion} provided'
                     )
-            if proportion > 1 or proportion < 0:
+                if (handle_symptomatic[0] == 'keep' and
+                        np.random.uniform(0, 1, 1)[0] > proportion) or (
+                            handle_symptomatic[0] == 'remove' and
+                            (proportion == 1 or
+                             np.random.uniform(0, 1, 1)[0] <= proportion)):
+                    kept = False
+                    evts.append(
+                        # scheduling REMOVAL
+                        Event(
+                            symp_time,
+                            EventType.REMOVAL,
+                            target=self.id,
+                            logger=self.logger))
+            elif handle_symptomatic[0].startswith('quarantine'):
+                if handle_symptomatic[0] == 'quarantine':
+                    quarantine_duration = 14
+                else:
+                    try:
+                        quarantine_duration = float(handle_symptomatic[0].split(
+                            '_', 1)[1])
+                    except Exception:
+                        raise ValueError(
+                            f'quanrantine duration should be specified as "quarantine_DURATION": {handle_symptomatic[0]} provided'
+                        )
+                if len(handle_symptomatic) == 1:
+                    proportion = 1
+                else:
+                    try:
+                        proportion = float(handle_symptomatic[1])
+                    except Exception:
+                        raise ValueError(
+                            f'Proportion in "--handle-symptomatic quarantine_DURATION prop" should be a float number: {handle_symptomatic[1]} provided'
+                        )
+                if proportion > 1 or proportion < 0:
+                    raise ValueError(
+                        f'Proportion in "--handle-symptomatic quarantine_DUURATION prop" should be a float number between 0 and 1: {proportion} provided'
+                    )
+                if proportion == 1 or np.random.uniform(0, 1,
+                                                        1)[0] <= proportion:
+                    kept = False
+                    evts.append(
+                        # scheduling QUARANTINE
+                        Event(
+                            symp_time,
+                            EventType.QUARANTINE,
+                            target=self.id,
+                            logger=self.logger,
+                            till=symp_time + quarantine_duration))
+            else:
                 raise ValueError(
-                    f'Proportion in "--handle-symptomatic remove/keep prop" should be a float number between 0 and 1: {proportion} provided'
+                    f'Unrecognizable symptomatic case handling method: {" ".join(handle_symptomatic)}'
                 )
-            if (handle_symptomatic[0] == 'keep' and
-                    np.random.uniform(0, 1, 1)[0] > proportion) or (
-                        handle_symptomatic[0] == 'remove' and
-                        (proportion == 1 or
-                         np.random.uniform(0, 1, 1)[0] <= proportion)):
-                kept = False
-                evts.append(
-                    # scheduling REMOVAL
-                    Event(
-                        time + self.incubation_period - lead_time,
-                        EventType.REMOVAL,
-                        self,
-                        logger=self.logger))
-        elif handle_symptomatic[0].startswith('quarantine'):
-            if handle_symptomatic[0] == 'quarantine':
-                quarantine_duration = 14
-            else:
-                try:
-                    quarantine_duration = float(handle_symptomatic[0].split(
-                        '_', 1)[1])
-                except Exception:
-                    raise ValueError(
-                        f'quanrantine duration should be specified as "quarantine_DURATION": {handle_symptomatic[0]} provided'
-                    )
-            if len(handle_symptomatic) == 1:
-                proportion = 1
-            else:
-                try:
-                    proportion = float(handle_symptomatic[1])
-                except Exception:
-                    raise ValueError(
-                        f'Proportion in "--handle-symptomatic quarantine_DURATION prop" should be a float number: {handle_symptomatic[1]} provided'
-                    )
-            if proportion > 1 or proportion < 0:
-                raise ValueError(
-                    f'Proportion in "--handle-symptomatic quarantine_DUURATION prop" should be a float number between 0 and 1: {proportion} provided'
-                )
-            if proportion == 1 or np.random.uniform(0, 1, 1)[0] <= proportion:
-                kept = False
-                evts.append(
-                    # scheduling QUARANTINE
-                    Event(
-                        time + self.incubation_period - lead_time,
-                        EventType.QUARANTINE,
-                        self,
-                        logger=self.logger,
-                        till=time + self.incubation_period - lead_time +
-                        quarantine_duration))
-        else:
-            raise ValueError(
-                f'Unrecognizable symptomatic case handling method: {" ".join(handle_symptomatic)}'
-            )
         #
+        # infect others
         x_grid, trans_prob = self.model.get_symptomatic_transmission_probability(
             self.incubation_period, self.r0)
         # infect only before removal or quarantine
@@ -168,7 +189,7 @@ class Individual(object):
                         Event(
                             time + x,
                             EventType.INFECTION_AVOIDED,
-                            self.id,
+                            target=self.id,
                             logger=self.logger,
                             by=self))
                     infected[idx] = 0
@@ -179,7 +200,7 @@ class Individual(object):
                     Event(
                         time + x,
                         EventType.INFECTION,
-                        None,
+                        target=None,
                         logger=self.logger,
                         by=self,
                         handle_symptomatic=kwargs.get('handle_symptomatic',
@@ -189,11 +210,10 @@ class Individual(object):
             Event(
                 time + x_grid[-1] - lead_time,
                 EventType.RECOVER,
-                self,
+                target=self.id,
                 logger=self.logger))
         if by:
-            by.n_infectee += 1
-            params = [f'by={by.id}']
+            params = [f'by={by}']
         elif lead_time:
             params = [f'leadtime={lead_time:.2f}']
         else:
@@ -217,17 +237,30 @@ class Individual(object):
 
         by = kwargs.get('by',)
 
-        if by is None and 'allow_lead_time' in kwargs and kwargs[
-                'allow_lead_time']:
-            # this is the first infection, the guy should be asymptomatic, but
-            # could be anywhere in his incubation period
-            lead_time = np.random.uniform(0, 10)
+        if 'leadtime' in kwargs and kwargs['leadtime'] is not None:
+            if by is not None:
+                raise ValueError(
+                    'leadtime is only allowed during initialization of infection event (no by option.)'
+                )
+
+            if kwargs['leadtime'] in ('any', 'asymptomatic'):
+                # this is the first infection, the guy should be asymptomatic, but
+                # could be anywhere in his incubation period
+                lead_time = np.random.uniform(0, 10)
+            else:
+                try:
+                    lead_time = float(kwargs['leadtime'])
+                except:
+                    raise ValueError(
+                        f'--leadtime can only be any, asymptomatic, or a fixed number: {kwargs["leadtime"]} provided'
+                    )
         else:
             lead_time = 0
 
         self.infected = float(time - lead_time)
 
         # REMOVAL ...
+        kept = True
         evts = []
         #
         x_grid, trans_prob = self.model.get_asymptomatic_transmission_probability(
@@ -249,7 +282,7 @@ class Individual(object):
                         Event(
                             time + x,
                             EventType.INFECTION_AVOIDED,
-                            self.id,
+                            target=self.id,
                             logger=self.logger,
                             by=self))
                     infected[idx] = 0
@@ -260,17 +293,19 @@ class Individual(object):
                     Event(
                         time + x,
                         EventType.INFECTION,
-                        None,
+                        target=None,
                         logger=self.logger,
                         by=self,
                         handle_symptomatic=kwargs.get('handle_symptomatic',
                                                       None)))
         evts.append(
             Event(
-                time + x_grid[-1], EventType.RECOVER, self, logger=self.logger))
+                time + x_grid[-1],
+                EventType.RECOVER,
+                target=self.id,
+                logger=self.logger))
         if by:
-            by.n_infectee += 1
-            params = [f'by={by.id}']
+            params = [f'by={by}']
         elif lead_time > 0:
             params = [f'leadtime={lead_time:.2f}']
         else:
@@ -333,7 +368,7 @@ class Population(object):
             # select one non-quarantined indivudal to infect
             ids = [(id, ind.susceptibility)
                    for id, ind in self.individuals.items()
-                   if (not exclude or id != exclude.id) and not ind.quarantined]
+                   if id != exclude and not ind.quarantined]
 
             if not ids:
                 return None
@@ -345,7 +380,7 @@ class Population(object):
             # select one non-quarantined indivudal to infect
             ids = [
                 id for id, ind in self.individuals.items()
-                if (not exclude or id != exclude.id) and not ind.quarantined
+                if id != exclude and not ind.quarantined
             ]
             if not ids:
                 return None

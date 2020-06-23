@@ -184,7 +184,7 @@ usage: outbreak_simulator [-h] [--popsize POPSIZE [POPSIZE ...]]
                           [--initial-seroprevalence [INITIAL_SEROPREVALENCE [INITIAL_SEROPREVALENCE ...]]]
                           [--infectors [INFECTORS [INFECTORS ...]]] [--interval INTERVAL] [--logfile LOGFILE]
                           [--prop-asym-carriers [PROP_ASYM_CARRIERS [PROP_ASYM_CARRIERS ...]]]
-                          [--stop-if [STOP_IF [STOP_IF ...]]] [--allow-lead-time] [--plugin ...] [-j JOBS]
+                          [--stop-if [STOP_IF [STOP_IF ...]]] [--leadtime] [--plugin ...] [-j JOBS]
                           [-s STAT_INTERVAL]
 
 optional arguments:
@@ -250,7 +250,7 @@ optional arguments:
                         individuals are affected or all infected individuals are removed. Current you can specify a
                         time after which the simulation will stop in the format of `--stop-if "t>10"' (for 10
                         days).
-  --allow-lead-time     The seed carrier will be asumptomatic but always be at the beginning of incurbation time.
+  --leadtime     The seed carrier will be asumptomatic but always be at the beginning of incurbation time.
                         If allow lead time is set to True, the carrier will be anywhere in his or her incubation
                         period.
   --plugin ...          One or more of "--plugin MODULE.PLUGIN [args]" to specify one or more plugins. FLUGIN will

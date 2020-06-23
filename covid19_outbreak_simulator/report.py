@@ -206,7 +206,7 @@ def summarize_simulations(logfile):
             )
     else:
         print(f'prop_asym_carriers\t10% to 40%')
-    print(f'allow_lead_time\t{"yes" if args.allow_lead_time else "no"}')
+    print(f'leadtime\t{"yes" if args.leadtime else "no"}')
     print(f'n_simulation\t{n_simulation}')
     print(f'total_infection\t{total_infection}')
     print(f'total_infection_failed\t{total_infection_failed}')

@@ -5,11 +5,10 @@ from covid19_outbreak_simulator.event import EventType
 
 
 def test_individual(default_model, logger):
-    ind = Individual(0, 'group 1', 1.2, None, None, default_model, logger)
+    ind = Individual(0, 'group 1', 1.2, default_model, logger)
 
-    assert ind.infected is None
-    assert ind.quarantined is None
-    assert ind.n_infectee == 0
+    assert ind.infected is False
+    assert ind.quarantined is False
 
     assert ind.r0 is None
     assert ind.incubation_period is None
@@ -22,12 +21,12 @@ def test_quarantine(individual):
     assert len(res) == 1
     assert res[0].action == EventType.REINTEGRATION
     assert res[0].time == 2
-    assert res[0].target == individual
+    assert res[0].target == individual.id
 
     res = individual.reintegrate()
 
     assert not res
-    assert individual.quarantined is None
+    assert individual.quarantined is False
 
 
 def test_quarantine_error(individual):
@@ -37,7 +36,7 @@ def test_quarantine_error(individual):
 
 def test_infect(individual):
     individual.model.draw_prop_asym_carriers()
-    res = individual.infect(5.0, by=None)
+    individual.infect(5.0, by=None)
 
 
 def test_infect_infected(individual_factory):
@@ -52,47 +51,40 @@ def test_infect_infected(individual_factory):
 
 
 def test_infect_with_leadtime(individual_factory):
-    ind = individual_factory(id=1)
+    ind = individual_factory(id='1')
     ind.model.draw_prop_asym_carriers()
-    res = ind.infect(5.0, by=None, allow_lead_time=True)
+    res = ind.infect(5.0, by=None, leadtime=True)
 
     assert ind.infected != 5.0
 
 
 @pytest.mark.parametrize(
-    'by, handle_symptomatic, proportion, quarantined, allow_lead_time',
+    'by, handle_symptomatic, proportion, quarantined, leadtime',
     product([None, 1], ['keep', 'remove', 'quarantine', 'quarantine_14'],
-            [None, 'A', 0, 0.2, 1], [True, False], [True, False]))
+            [None, 0, 0.2, 1], [True, False], [None, 2, 'any', 'asymptomatic']))
 def test_symptomatic_infect(individual_factory, by, handle_symptomatic,
-                            proportion, quarantined, allow_lead_time):
-    ind1 = individual_factory(id=1)
-    ind2 = individual_factory(id=2)
+                            proportion, quarantined, leadtime):
+    ind1 = individual_factory(id='1')
+    ind2 = individual_factory(id='2')
 
     ind1.model.draw_prop_asym_carriers()
     if quarantined:
         ind1.quarantine(till=20)
     #
-    if not quarantined and proportion == 'A':
-        with pytest.raises(ValueError):
-            res = ind1.symptomatic_infect(
-                5.0,
-                by=None if by is None or allow_lead_time else ind2,
-                handle_symptomatic=[handle_symptomatic, proportion],
-                allow_lead_time=allow_lead_time)
-    elif proportion is None:
+    if proportion is None:
         res = ind1.symptomatic_infect(
             5.0,
-            by=None if by is None or allow_lead_time else ind2,
+            by=None if by is None or leadtime is not None else ind2.id,
             handle_symptomatic=[handle_symptomatic],
-            allow_lead_time=allow_lead_time)
+            leadtime=leadtime)
     else:
         res = ind1.symptomatic_infect(
             5.0,
-            by=None if by is None or allow_lead_time else ind2,
+            by=None if by is None or leadtime is not None else ind2.id,
             handle_symptomatic=[handle_symptomatic, proportion],
-            allow_lead_time=allow_lead_time)
+            leadtime=leadtime)
 
-    if allow_lead_time:
+    if leadtime:
         assert ind1.infected != 5.0
     else:
         assert ind1.infected == 5.0
@@ -101,13 +93,13 @@ def test_symptomatic_infect(individual_factory, by, handle_symptomatic,
 
 
 @pytest.mark.parametrize(
-    'by, handle_symptomatic, proportion, quarantined, allow_lead_time',
+    'by, handle_symptomatic, proportion, quarantined, leadtime',
     product([None, 1], ['keep', 'remove', 'quanrantine', 'quarantine_7'],
-            ['A', 1], [True, False], [True, False]))
+            ['A', 1], [True, False], [None, 1, 'any', 'asymptomatic']))
 def test_asymptomatic_infect(individual_factory, by, handle_symptomatic,
-                             proportion, quarantined, allow_lead_time):
-    ind1 = individual_factory(id=1)
-    ind2 = individual_factory(id=2)
+                             proportion, quarantined, leadtime):
+    ind1 = individual_factory(id='1')
+    ind2 = individual_factory(id='2')
 
     ind1.model.draw_prop_asym_carriers()
     if quarantined:
@@ -116,11 +108,11 @@ def test_asymptomatic_infect(individual_factory, by, handle_symptomatic,
     # asymptomatic case does not care about handle_symptomatic and proportion etc
     res = ind1.asymptomatic_infect(
         5.0,
-        by=None if by is None or allow_lead_time else ind2,
+        by=None if by is None or leadtime is not None else ind2.id,
         handle_symptomatic=[handle_symptomatic, proportion],
-        allow_lead_time=allow_lead_time)
+        leadtime=leadtime)
 
-    if allow_lead_time:
+    if leadtime:
         assert ind1.infected != 5.0
     else:
         assert ind1.infected == 5.0

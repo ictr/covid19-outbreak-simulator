@@ -47,7 +47,7 @@ class quarantine(BasePlugin):
                 Event(
                     time,
                     EventType.QUARANTINE,
-                    population[ID],
+                    target=ID,
                     logger=self.logger,
                     till=time + args.duration))
         return events

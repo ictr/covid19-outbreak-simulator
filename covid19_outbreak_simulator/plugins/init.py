@@ -34,7 +34,15 @@ class init(BasePlugin):
             the population. Multipliers can be specified to set incidence rate of
             for particular groups (e.g. --initial-incidence-rate 0.1 docter=1.2 will set
             incidence rate to 0.12 for doctors).''')
-
+        parser.add_argument(
+            '--leadtime',
+            help='''With "leadtime" infections are assumed to happen before the simulation.
+            This option can be a fixed positive number `t` when the infection happens
+            `t` days before current time. If can also be set to 'any' for which the
+            carrier can be any time during its course of infection, or `asymptomatic`
+            for which the leadtime is adjust so that the carrier does not show any
+            symptom at the time point (in incubation period for symptomatic case).
+            All events triggered before current time are ignored.''')
         return parser
 
     def apply(self, time, population, args=None):
@@ -126,6 +134,7 @@ class init(BasePlugin):
                             EventType.INFECTION,
                             target=name + str(idx),
                             logger=self.logger,
-                            priority=True))
+                            priority=True,
+                            leadtime=args.leadtime))
 
         return events

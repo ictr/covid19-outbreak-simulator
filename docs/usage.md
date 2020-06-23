@@ -43,7 +43,7 @@ Command line options
                           [--infectors [INFECTORS [INFECTORS ...]]]
                           [--interval INTERVAL] [--logfile LOGFILE]
                           [--prop-asym-carriers [PROP_ASYM_CARRIERS [PROP_ASYM_CARRIERS ...]]]
-                          [--allow-lead-time] [--analyze-existing-logfile]
+                          [--leadtime] [--analyze-existing-logfile]
                           [-j JOBS]
 
    optional arguments:
@@ -103,7 +103,7 @@ Command line options
                            Proportion of asymptomatic cases. You can specify a
                            fix number, or two numbers as the lower and higher CI
                            (95%) of the proportion. Default to 0.10 to 0.40.
-     --allow-lead-time     The seed carrier will be asumptomatic but always be at
+     --leadtime     The seed carrier will be asumptomatic but always be at
                            the beginning of incurbation time. If allow lead time
                            is set to True, the carrier will be anywhere in his or
                            her incubation period.

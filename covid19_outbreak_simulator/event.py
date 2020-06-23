@@ -47,7 +47,12 @@ class Event(object):
                  **kwargs):
         self.time = time
         self.action = action
-        self.target = target
+        if target is None or isinstance(target, str):
+            self.target = target
+        else:
+            raise ValueError(
+                f'Target of events should be None or an ID: {target} of type {target.__class__.__name__} provided'
+            )
         self.logger = logger
         self.kwargs = kwargs
         self.priority = priority
@@ -69,28 +74,34 @@ class Event(object):
             self.logger.write(
                 f'{self.logger.id}\t{self.time:.2f}\t{EventType.QUARANTINE.name}\t{self.target}\ttill={self.kwargs["till"]:.2f}\n'
             )
-            return population[self.target.id].quarantine(**self.kwargs)
+            return population[self.target].quarantine(**self.kwargs)
         elif self.action == EventType.REINTEGRATION:
-            if self.target.id not in population:
+            if self.target not in population:
                 return []
             else:
                 self.logger.write(
                     f'{self.logger.id}\t{self.time:.2f}\t{EventType.REINTEGRATION.name}\t{self.target}\tsucc=True\n'
                 )
-                return population[self.target.id].reintegrate(**self.kwargs)
+                return population[self.target].reintegrate(**self.kwargs)
         elif self.action == EventType.INFECTION_AVOIDED:
             self.logger.write(
                 f'{self.logger.id}\t{self.time:.2f}\t{EventType.INFECTION_AVOIDED.name}\t.\tby={self.kwargs["by"]}\n'
             )
             return []
         elif self.action == EventType.SHOW_SYMPTOM:
-            self.logger.write(
-                f'{self.logger.id}\t{self.time:.2f}\t{EventType.SHOW_SYMPTOM.name}\t{self.target}\t.\n'
-            )
+            if self.target in population:
+                population[self.target].show_symptom = self.time
+                self.logger.write(
+                    f'{self.logger.id}\t{self.time:.2f}\t{EventType.SHOW_SYMPTOM.name}\t{self.target}\t.\n'
+                )
+            else:
+                self.logger.write(
+                    f'{self.logger.id}\t{self.time:.2f}\t{EventType.SHOW_SYMPTOM.name}\t{self.target}\tsucc=False\n'
+                )
             return []
         elif self.action == EventType.REMOVAL:
-            if self.target.id in population:
-                population.remove(self.target.id)
+            if self.target in population:
+                population.remove(self.target)
                 self.logger.write(
                     f'{self.logger.id}\t{self.time:.2f}\t{EventType.REMOVAL.name}\t{self.target}\tpopsize={len(population)}\n'
                 )
@@ -100,10 +111,10 @@ class Event(object):
                 )
             return []
         elif self.action == EventType.RECOVER:
-            removed = self.target.id not in population
+            removed = self.target not in population
 
             if not removed:
-                population[self.target.id].recovered = self.time
+                population[self.target].recovered = self.time
 
             n_recovered = len([
                 x for x, ind in population.items()
@@ -128,4 +139,4 @@ class Event(object):
             raise RuntimeError(f'Unrecognized action {self.action}')
 
     def __str__(self):
-        return f'{self.action.name}_{self.target.id if self.target else ""}_at_{self.time:.2f}'
+        return f'{self.action.name}_{self.target if self.target is not None else ""}_at_{self.time:.2f}'

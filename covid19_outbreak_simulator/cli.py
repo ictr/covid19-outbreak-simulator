@@ -98,11 +98,14 @@ def parse_args(args=None):
             are removed. Current you can specify a time after which the simulation
             will stop in the format of `--stop-if "t>10"' (for 10 days).''')
     parser.add_argument(
-        '--allow-lead-time',
-        nargs='*',
-        help='''The seed carrier will be asumptomatic but always be at the beginning
-            of incurbation time. If allow lead time is set to True, the carrier will
-            be anywhere in his or her incubation period.''')
+        '--leadtime',
+        help='''With "leadtime" infections are assumed to happen before the simulation.
+            This option can be a fixed positive number `t` when the infection happens
+            `t` days before current time. If can also be set to 'any' for which the
+            carrier can be any time during its course of infection, or `asymptomatic`
+            for which the leadtime is adjust so that the carrier does not show any
+            symptom at the time point (in incubation period for symptomatic case).
+            All events triggered before current time are ignored.''')
     parser.add_argument(
         '--plugin',
         nargs=argparse.REMAINDER,
