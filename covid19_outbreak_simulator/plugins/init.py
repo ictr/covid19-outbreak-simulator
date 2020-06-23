@@ -37,7 +37,7 @@ class init(BasePlugin):
 
         return parser
 
-    def apply(self, time, population, args=None, simu_args=None):
+    def apply(self, time, population, args=None):
         idx = 0
 
         # population prevalence and incidence rate
@@ -88,7 +88,7 @@ class init(BasePlugin):
                 isp[name] = value * ir['']
 
         events = []
-        for ps in simu_args.popsize:
+        for ps in population.popsize:
             if '=' in ps:
                 # this is named population size
                 name, sz = ps.split('=', 1)

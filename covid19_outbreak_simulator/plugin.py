@@ -13,9 +13,8 @@ class PlugInEvent(object):
         self.action = EventType.PLUGIN
         self.trigger_event = trigger_event
 
-    def apply(self, population, simu_args):
-        return self.plugin.apply_plugin(self.time, population, self.args,
-                                        simu_args)
+    def apply(self, population):
+        return self.plugin.apply_plugin(self.time, population, self.args)
 
     def __str__(self):
         return f'Call {self.plugin} at {self.time}'
@@ -118,13 +117,13 @@ class BasePlugin(object):
             ]
         return []
 
-    def apply(self, time, population, args=None, simu_args=None):
+    def apply(self, time, population, args=None):
         # redefined by subclassed
         raise ValueError('This function should be redefined.')
 
-    def apply_plugin(self, time, population, args=None, simu_args=None):
+    def apply_plugin(self, time, population, args=None):
 
-        events = self.apply(time, population, args, simu_args)
+        events = self.apply(time, population, args)
 
         # schedule the next call
         if args.interval is not None and (args.end is None or

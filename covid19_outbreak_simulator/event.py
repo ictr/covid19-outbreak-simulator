@@ -52,7 +52,7 @@ class Event(object):
         self.kwargs = kwargs
         self.priority = priority
 
-    def apply(self, population, simu_args):
+    def apply(self, population):
         if self.action == EventType.INFECTION:
             if self.target is not None:
                 selected = self.target
@@ -64,11 +64,7 @@ class Event(object):
                         f'{self.logger.id}\t{self.time:.2f}\t{EventType.INFECTION_FAILED.name}\t{self.target}\tby={self.kwargs["by"]}\n'
                     )
                     return []
-            return population[selected].infect(
-                self.time,
-                handle_symptomatic=simu_args.handle_symptomatic,
-                allow_lead_time=simu_args.allow_lead_time,
-                **self.kwargs)
+            return population[selected].infect(self.time, **self.kwargs)
         elif self.action == EventType.QUARANTINE:
             self.logger.write(
                 f'{self.logger.id}\t{self.time:.2f}\t{EventType.QUARANTINE.name}\t{self.target}\ttill={self.kwargs["till"]:.2f}\n'

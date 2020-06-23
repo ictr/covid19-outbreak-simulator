@@ -25,7 +25,7 @@ class sample(BasePlugin):
             '--size', type=int, help='''Number of individuals to sample.''')
         return parser
 
-    def apply(self, time, population, args=None, simu_args=None):
+    def apply(self, time, population, args=None):
         stat = {}
 
         if args.proportion:

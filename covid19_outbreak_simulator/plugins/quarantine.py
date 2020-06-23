@@ -27,7 +27,7 @@ class quarantine(BasePlugin):
             '--duration', type=float, default=14, help='''Days of quarantine''')
         return parser
 
-    def apply(self, time, population, args=None, simu_args=None):
+    def apply(self, time, population, args=None):
         if args.IDs:
             IDs = args.IDs
         else:

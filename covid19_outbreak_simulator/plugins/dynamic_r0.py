@@ -30,7 +30,7 @@ class dynamic_r0(BasePlugin):
         )
         return parser
 
-    def apply(self, time, population, args=None, simu_args=None):
+    def apply(self, time, population, args=None):
         # change parameter
         self.simulator.model.params.set_symptomatic_r0(args.new_symptomatic_r0)
         self.simulator.model.params.set_asymptomatic_r0(

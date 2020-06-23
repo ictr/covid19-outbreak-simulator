@@ -17,7 +17,7 @@ class stat(BasePlugin):
         parser.description = 'Print STAT information'
         return parser
 
-    def apply(self, time, population, args=None, simu_args=None):
+    def apply(self, time, population, args=None):
         res = {}
         res[f'n_recovered'] = len([
             x for x, ind in population.items()

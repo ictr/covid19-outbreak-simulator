@@ -78,6 +78,7 @@ class Simulator(object):
 
         # collection of individuals
         population = Population(
+            popsize=self.simu_args.popsize,
             uneven_susceptibility=self.simu_args.susceptibility is not None)
         idx = 0
 
@@ -117,8 +118,12 @@ class Simulator(object):
             # infect the first person
             events[0].append(
                 Event(
-                    0, EventType.INFECTION, target=infector,
-                    logger=self.logger))
+                    0,
+                    EventType.INFECTION,
+                    target=infector,
+                    logger=self.logger,
+                    handle_symptomatic=self.simu_args.handle_symptomatic,
+                    allow_lead_time=self.simu_args.allow_lead_time))
 
         # load the plugins
         init_events, trigger_events = self.get_plugin_events()
@@ -151,7 +156,7 @@ class Simulator(object):
                     )
                     aborted = True
                     break
-                res = evt.apply(population, self.simu_args)
+                res = evt.apply(population)
                 if evt.action in trigger_events:
                     for x in trigger_events[evt.action]:
                         x.time = time

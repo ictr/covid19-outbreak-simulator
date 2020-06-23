@@ -181,7 +181,9 @@ class Individual(object):
                         EventType.INFECTION,
                         None,
                         logger=self.logger,
-                        by=self))
+                        by=self,
+                        handle_symptomatic=kwargs.get('handle_symptomatic',
+                                                      None)))
 
         evts.append(
             Event(
@@ -260,7 +262,9 @@ class Individual(object):
                         EventType.INFECTION,
                         None,
                         logger=self.logger,
-                        by=self))
+                        by=self,
+                        handle_symptomatic=kwargs.get('handle_symptomatic',
+                                                      None)))
         evts.append(
             Event(
                 time + x_grid[-1], EventType.RECOVER, self, logger=self.logger))
@@ -298,8 +302,9 @@ class Individual(object):
 
 class Population(object):
 
-    def __init__(self, uneven_susceptibility=False):
+    def __init__(self, popsize, uneven_susceptibility=False):
         self.individuals = {}
+        self.popsize = popsize
         self.uneven_susceptibility = uneven_susceptibility
 
     def add(self, items):
