@@ -57,9 +57,7 @@ class Event(object):
             if self.target is not None:
                 selected = self.target
             else:
-                selected = population.select(
-                    exclude=self.target,
-                    susceptibility=simu_args.susceptibility is not None)
+                selected = population.select(exclude=self.target)
 
                 if not selected:
                     self.logger.write(

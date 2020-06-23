@@ -298,8 +298,9 @@ class Individual(object):
 
 class Population(object):
 
-    def __init__(self):
+    def __init__(self, uneven_susceptibility=False):
         self.individuals = {}
+        self.uneven_susceptibility = uneven_susceptibility
 
     def add(self, items):
         self.individuals.update({x.id: x for x in items})
@@ -322,8 +323,8 @@ class Population(object):
     def values(self):
         return self.individuals.values()
 
-    def select(self, exclude, susceptibility=False):
-        if susceptibility:
+    def select(self, exclude):
+        if self.uneven_susceptibility:
             # select one non-quarantined indivudal to infect
             ids = [(id, ind.susceptibility)
                    for id, ind in self.individuals.items()

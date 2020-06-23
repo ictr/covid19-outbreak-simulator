@@ -77,7 +77,8 @@ class Simulator(object):
         self.model.draw_prop_asym_carriers()
 
         # collection of individuals
-        population = Population()
+        population = Population(
+            uneven_susceptibility=self.simu_args.susceptibility is not None)
         idx = 0
 
         for ps in self.simu_args.popsize:
