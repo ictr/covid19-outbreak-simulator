@@ -4,6 +4,8 @@ import numpy as np
 
 
 class EventType(Enum):
+    # START
+    START = 0
     # Infection
     INFECTION = 1
     # infection failed due to perhaps no more people to infect

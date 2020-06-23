@@ -50,24 +50,22 @@ def summarize_simulations(logfile):
         args = None
 
         for line in lines:
-            if line.startswith('#'):
-                if line.startswith('# CMD:'):
-                    from .cli import parse_args
-                    args = parse_args(shlex.split(line[6:])[1:])
-                    if args.infectors:
-                        infectors = args.infectors
-                    total_popsize = sum(
-                        int(x.split('=')[-1]) for x in args.popsize)
-                continue
-            id, time, event, target, params = line.split('\t')
+            id, time, event, target, params_field = line.split('\t')
             if id == 'id':
                 # skip header
                 continue
             time = float(time)
             target = None if target == '.' else target
-            params = params.split(',')
+            params = params_field.split(',')
             #
-            if event == 'INFECTION':
+            if event == 'START':
+                from .cli import parse_args
+                cmd_args = params_field.split(',args=')[-1]
+                args = parse_args(shlex.split(cmd_args))
+                if args.infectors:
+                    infectors = args.infectors
+                total_popsize = sum(int(x.split('=')[-1]) for x in args.popsize)
+            elif event == 'INFECTION':
                 total_infection += 1
                 if any(x in params for x in [f'by={x}' for x in infectors]):
                     infection_from_seed_per_sim[id] += 1
@@ -199,10 +197,12 @@ def summarize_simulations(logfile):
         print(f'interval\t{args.interval:.2f} day')
     if args.prop_asym_carriers:
         if len(args.prop_asym_carriers) == 1:
-            print(f'prop_asym_carriers\t{args.prop_asym_carriers[0]*100:.1f}%')
+            print(
+                f'prop_asym_carriers\t{float(args.prop_asym_carriers[0])*100:.1f}%'
+            )
         else:
             print(
-                f'prop_asym_carriers\t{args.prop_asym_carriers[0]*100:.1f}% to {args.prop_asym_carriers[1]*100:.1f}%'
+                f'prop_asym_carriers\t{float(args.prop_asym_carriers[0])*100:.1f}% to {float(args.prop_asym_carriers[1])*100:.1f}%'
             )
     else:
         print(f'prop_asym_carriers\t10% to 40%')

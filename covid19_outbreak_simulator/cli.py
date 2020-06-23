@@ -1,9 +1,7 @@
 """Console script for covid19_outbreak_simulator."""
 import argparse
 import multiprocessing
-import subprocess
 import sys
-from datetime import datetime
 from io import StringIO
 
 import numpy as np
@@ -68,7 +66,8 @@ def parse_args(args=None):
         help='''How to handle individuals who show symptom, which should be "keep" (stay in
             population), "remove" (remove from population), and "quarantine" (put aside until
             it recovers). all options can be followed by a "proportion", and quarantine can
-            be specified as "quarantine_7" etc to specify duration of quarantine.'''
+            be specified as "quarantine_7" etc to specify duration of quarantine. Default to
+            "remove", meaning all symptomatic cases will be removed from population.'''
     )
     parser.add_argument(
         '--infectors',
@@ -198,11 +197,6 @@ def main(argv=None):
         worker.start()
 
     with open(args.logfile, 'w') as logger:
-        logger.write(
-            f'# CMD: outbreak_simulator {subprocess.list2cmdline(argv if argv else sys.argv[1:])}\n'
-        )
-        logger.write(
-            f'# START: {datetime.now().strftime("%m/%d/%Y, %H:%M:%S")}\n')
         logger.write('id\ttime\tevent\ttarget\tparams\n')
         for i in range(args.repeats):
             tasks.put(i + 1)
@@ -214,8 +208,6 @@ def main(argv=None):
             logger.write(result)
             if 'ERROR' in result:
                 break
-        logger.write(
-            f'# START: {datetime.now().strftime("%m/%d/%Y, %H:%M:%S")}\n')
 
     summarize_simulations(args.logfile)
     return 0

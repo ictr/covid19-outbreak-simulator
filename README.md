@@ -173,93 +173,62 @@ to get the usage information of a particular plugin.
 
 ```
 $ outbreak_simulator -h
-usage: outbreak_simulator [-h] [--popsize POPSIZE [POPSIZE ...]]
-                          [--susceptibility SUSCEPTIBILITY [SUSCEPTIBILITY ...]]
-                          [--symptomatic-r0 SYMPTOMATIC_R0 [SYMPTOMATIC_R0 ...]]
-                          [--asymptomatic-r0 ASYMPTOMATIC_R0 [ASYMPTOMATIC_R0 ...]]
+
+usage: outbreak_simulator [-h] [--popsize POPSIZE [POPSIZE ...]] [--susceptibility SUSCEPTIBILITY [SUSCEPTIBILITY ...]]
+                          [--symptomatic-r0 SYMPTOMATIC_R0 [SYMPTOMATIC_R0 ...]] [--asymptomatic-r0 ASYMPTOMATIC_R0 [ASYMPTOMATIC_R0 ...]]
                           [--incubation-period INCUBATION_PERIOD [INCUBATION_PERIOD ...]] [--repeats REPEATS]
-                          [--handle-symptomatic [HANDLE_SYMPTOMATIC [HANDLE_SYMPTOMATIC ...]]]
-                          [--pre-quarantine [PRE_QUARANTINE [PRE_QUARANTINE ...]]]
-                          [--initial-incidence-rate [INITIAL_INCIDENCE_RATE [INITIAL_INCIDENCE_RATE ...]]]
-                          [--initial-seroprevalence [INITIAL_SEROPREVALENCE [INITIAL_SEROPREVALENCE ...]]]
-                          [--infectors [INFECTORS [INFECTORS ...]]] [--interval INTERVAL] [--logfile LOGFILE]
-                          [--prop-asym-carriers [PROP_ASYM_CARRIERS [PROP_ASYM_CARRIERS ...]]]
-                          [--stop-if [STOP_IF [STOP_IF ...]]] [--leadtime] [--plugin ...] [-j JOBS]
-                          [-s STAT_INTERVAL]
+                          [--handle-symptomatic [HANDLE_SYMPTOMATIC [HANDLE_SYMPTOMATIC ...]]] [--infectors [INFECTORS [INFECTORS ...]]]
+                          [--interval INTERVAL] [--logfile LOGFILE] [--prop-asym-carriers [PROP_ASYM_CARRIERS [PROP_ASYM_CARRIERS ...]]]
+                          [--stop-if [STOP_IF [STOP_IF ...]]] [--leadtime LEADTIME] [--plugin ...] [-j JOBS]
 
 optional arguments:
   -h, --help            show this help message and exit
   --popsize POPSIZE [POPSIZE ...]
-                        Size of the population, including the infector that will be introduced at the beginning of
-                        the simulation. It should be specified as a single number, or a serial of name=size values
-                        for different groups. For example "--popsize nurse=10 patient=100". The names will be used
-                        for setting group specific parameters. The IDs of these individuals will be nurse0, nurse1
-                        etc.
+                        Size of the population, including the infector that will be introduced at the beginning of the simulation. It should
+                        be specified as a single number, or a serial of name=size values for different groups. For example "--popsize
+                        nurse=10 patient=100". The names will be used for setting group specific parameters. The IDs of these individuals
+                        will be nurse0, nurse1 etc.
   --susceptibility SUSCEPTIBILITY [SUSCEPTIBILITY ...]
-                        Weight of susceptibility. The default value is 1, meaning everyone is equally susceptible.
-                        With options such as "--susceptibility nurse=1.2 patients=0.8" you can give weights to
-                        different groups of people so that they have higher or lower probabilities to be infected.
+                        Weight of susceptibility. The default value is 1, meaning everyone is equally susceptible. With options such as "--
+                        susceptibility nurse=1.2 patients=0.8" you can give weights to different groups of people so that they have higher or
+                        lower probabilities to be infected.
   --symptomatic-r0 SYMPTOMATIC_R0 [SYMPTOMATIC_R0 ...]
-                        Production number of symptomatic infectors, should be specified as a single fixed number,
-                        or a range, and/or multipliers for different groups such as A=1.2. For example "--
-                        symptomatic-r0 1.4 2.8 nurse=1.2" means a general R0 ranging from 1.4 to 2.8, while nursed
-                        has a range from 1.4*1.2 and 2.8*1.2.
+                        Production number of symptomatic infectors, should be specified as a single fixed number, or a range, and/or
+                        multipliers for different groups such as A=1.2. For example "--symptomatic-r0 1.4 2.8 nurse=1.2" means a general R0
+                        ranging from 1.4 to 2.8, while nursed has a range from 1.4*1.2 and 2.8*1.2.
   --asymptomatic-r0 ASYMPTOMATIC_R0 [ASYMPTOMATIC_R0 ...]
-                        Production number of asymptomatic infectors, should be specified as a single fixed number,
-                        or a range and/or multipliers for different groups
+                        Production number of asymptomatic infectors, should be specified as a single fixed number, or a range and/or
+                        multipliers for different groups
   --incubation-period INCUBATION_PERIOD [INCUBATION_PERIOD ...]
-                        Incubation period period, should be specified as "lognormal" followed by two numbers as
-                        mean and sigma, or "normal" followed by mean and sd, and/or multipliers for different
-                        groups. Default to "lognormal 1.621 0.418"
-  --repeats REPEATS     Number of replicates to simulate. An ID starting from 1 will be assinged to each replicate
-                        and as the first columns in the log file.
+                        Incubation period period, should be specified as "lognormal" followed by two numbers as mean and sigma, or "normal"
+                        followed by mean and sd, and/or multipliers for different groups. Default to "lognormal 1.621 0.418"
+  --repeats REPEATS     Number of replicates to simulate. An ID starting from 1 will be assinged to each replicate and as the first columns
+                        in the log file.
   --handle-symptomatic [HANDLE_SYMPTOMATIC [HANDLE_SYMPTOMATIC ...]]
-                        How to handle individuals who show symptom, which should be "keep" (stay in population),
-                        "remove" (remove from population), and "quarantine" (put aside until it recovers). all
-                        options can be followed by a "proportion", and quarantine can be specified as
-                        "quarantine_7" etc to specify duration of quarantine.
-  --pre-quarantine [PRE_QUARANTINE [PRE_QUARANTINE ...]]
-                        Days of self-quarantine before introducing infector to the group. The simulation will be
-                        aborted if the infector shows symptom before introduction. If you quarantine multiple
-                        people or specified named groups, you will need to append the IDs to the parameter (e.g.
-                        --pre-quarantine day nurse1 nurse2
-  --initial-incidence-rate [INITIAL_INCIDENCE_RATE [INITIAL_INCIDENCE_RATE ...]]
-                        Incidence rate of the population (default to zero), which should be the probability that
-                        any individual is currently affected with the virus (not necessarily show any symptom).
-                        Multipliers can be specified to set incidence rate of for particular groups (e.g.
-                        --initial-incidence-rate 0.1 docter=1.2 will set incidence rate to 0.12 for doctors).
-  --initial-seroprevalence [INITIAL_SEROPREVALENCE [INITIAL_SEROPREVALENCE ...]]
-                        Seroprevalence of the population (default to zero). The seroprevalence should always be
-                        greater than or euqal to initial incidence rate. The difference between seroprevalence and
-                        incidence rate will determine the "recovered" rate of the population. Multipliers can be
-                        specified to set incidence rate of for particular groups (e.g. --initial-incidence-rate 0.1
-                        docter=1.2 will set incidence rate to 0.12 for doctors).
+                        How to handle individuals who show symptom, which should be "keep" (stay in population), "remove" (remove from
+                        population), and "quarantine" (put aside until it recovers). all options can be followed by a "proportion", and
+                        quarantine can be specified as "quarantine_7" etc to specify duration of quarantine.
   --infectors [INFECTORS [INFECTORS ...]]
-                        Infectees to introduce to the population, default to '0'. If you would like to introduce
-                        multiple infectees to the population, or if you have named groups, you will have to specify
-                        the IDs of carrier such as --infectors nurse1 nurse2. Specifying this parameter without
-                        value will not introduce any infector.
+                        Infectees to introduce to the population. If you would like to introduce multiple infectees to the population, or if
+                        you have named groups, you will have to specify the IDs of carrier such as --infectors nurse1 nurse2.
   --interval INTERVAL   Interval of simulation, default to 1/24, by hour
   --logfile LOGFILE     logfile
   --prop-asym-carriers [PROP_ASYM_CARRIERS [PROP_ASYM_CARRIERS ...]]
-                        Proportion of asymptomatic cases. You can specify a fix number, or two numbers as the lower
-                        and higher CI (95%) of the proportion. Default to 0.10 to 0.40. Multipliers can be
-                        specified to set proportion of asymptomatic carriers for particular groups.
+                        Proportion of asymptomatic cases. You can specify a fix number, or two numbers as the lower and higher CI (95%) of
+                        the proportion. Default to 0.10 to 0.40. Multipliers can be specified to set proportion of asymptomatic carriers for
+                        particular groups.
   --stop-if [STOP_IF [STOP_IF ...]]
-                        Condition at which the simulation will end. By default the simulation stops when all
-                        individuals are affected or all infected individuals are removed. Current you can specify a
-                        time after which the simulation will stop in the format of `--stop-if "t>10"' (for 10
-                        days).
-  --leadtime     The seed carrier will be asumptomatic but always be at the beginning of incurbation time.
-                        If allow lead time is set to True, the carrier will be anywhere in his or her incubation
-                        period.
-  --plugin ...          One or more of "--plugin MODULE.PLUGIN [args]" to specify one or more plugins. FLUGIN will
-                        be assumed to be MODULE name if left unspecified. Each plugin has its own parser and can
-                        parse its own args.
+                        Condition at which the simulation will end. By default the simulation stops when all individuals are affected or all
+                        infected individuals are removed. Current you can specify a time after which the simulation will stop in the format
+                        of `--stop-if "t>10"' (for 10 days).
+  --leadtime LEADTIME   With "leadtime" infections are assumed to happen before the simulation. This option can be a fixed positive number
+                        `t` when the infection happens `t` days before current time. If can also be set to 'any' for which the carrier can be
+                        any time during its course of infection, or `asymptomatic` for which the leadtime is adjust so that the carrier does
+                        not show any symptom at the time point (in incubation period for symptomatic case). All events triggered before
+                        current time are ignored.
+  --plugin ...          One or more of "--plugin MODULE.PLUGIN [args]" to specify one or more plugins. FLUGIN will be assumed to be MODULE
+                        name if left unspecified. Each plugin has its own parser and can parse its own args.
   -j JOBS, --jobs JOBS  Number of process to use for simulation. Default to number of CPU cores.
-  -s STAT_INTERVAL, --stat-interval STAT_INTERVAL
-                        Interval for statistics to be calculated, default to 1. No STAT event will happen it it is
-                        set to 0.
 
 ```
 
@@ -555,6 +524,7 @@ Currently the following events are tracked
 
 | Name                | Event                                                                                   |
 | ------------------- | --------------------------------------------------------------------------------------- |
+| `START`             | Start up simulation.                                                                    |
 | `INFECTION`         | Infect an non-quarantined individual, who might already been infected.                  |
 | `INFECION_FAILED`   | No one left to infect                                                                   |
 | `INFECTION_AVOIDED` | An infection happended during quarantine. The individual might not have showed sympton. |
@@ -572,40 +542,21 @@ Currently the following events are tracked
 The log file of a typical simulation would look like the following:
 
 ```
-# CMD: outbreak_simulator --rep 3 --plugin stat --interval 1
-# START: 06/21/2020, 00:02:06
 id      time    event   target  params
-2       0.00    INFECTION       0       leadtime=2.26,r0=1.94,r=0,r_presym=0,r_sym=0,incu=3.07
-2       0.00    STAT    .       n_recovered=0,n_infected=1,n_popsize=64,incidence_rate=0.0156,seroprevalence=0.0156
-2       0.81    SHOW_SYMPTOM    0       .
-2       0.81    REMOVAL 0       popsize=63
-2       7.79    RECOVER 0       recovered=0,infected=0,popsize=63,True=True
-2       7.79    END     63      popsize=63,prop_asym=0.288
-3       0.00    INFECTION       0       leadtime=4.82,r0=2.20,r=0,r_presym=0,r_sym=0,incu=4.82
-3       0.00    STAT    .       n_recovered=0,n_infected=1,n_popsize=64,incidence_rate=0.0156,seroprevalence=0.0156
-3       0.00    SHOW_SYMPTOM    0       .
-3       0.00    REMOVAL 0       popsize=63
-3       6.40    RECOVER 0       recovered=0,infected=0,popsize=63,True=True
-3       6.40    END     63      popsize=63,prop_asym=0.260
-1       0.00    INFECTION       0       leadtime=0.16,r0=2.49,r=1,r_presym=1,r_sym=0,incu=2.38
-1       0.00    STAT    .       n_recovered=0,n_infected=1,n_popsize=64,incidence_rate=0.0156,seroprevalence=0.0156
-1       2.14    INFECTION       20      by=0,r0=0.45,r=1,r_asym=1
-1       2.22    SHOW_SYMPTOM    0       .
-1       2.22    REMOVAL 0       popsize=63
-1       6.61    INFECTION       36      by=20,r0=1.69,r=1,r_presym=1,r_sym=0,incu=7.04
-1       9.43    RECOVER 0       recovered=0,infected=2,popsize=63,True=True
-1       10.55   INFECTION       19      by=36,r0=0.49,r=1,r_asym=1
-1       13.39   INFECTION       62      by=19,r0=1.44,r=0,r_presym=0,r_sym=0,incu=3.65
-1       13.65   SHOW_SYMPTOM    36      .
-1       13.65   REMOVAL 36      popsize=62
-1       14.14   RECOVER 20      recovered=1,infected=3,popsize=62
-1       17.04   SHOW_SYMPTOM    62      .
-1       17.04   REMOVAL 62      popsize=61
-1       19.30   RECOVER 36      recovered=1,infected=2,popsize=61,True=True
-1       22.55   RECOVER 19      recovered=2,infected=2,popsize=61
-1       23.83   RECOVER 62      recovered=2,infected=2,popsize=61,True=True
-1       23.83   END     61      popsize=61,prop_asym=0.092
-# START: 06/21/2020, 00:02:07
+2       0.00    START   .       id=2,time=06/23/2020-17:51:39,args=--infector 0
+2       0.00    INFECTION       0       r0=2.10,r=0,r_presym=0,r_sym=0,incu=4.99
+2       4.99    SHOW_SYMPTOM    0       .
+2       4.99    REMOVAL 0       popsize=63
+2       11.33   RECOVER 0       recovered=0,infected=0,popsize=63,True=True
+2       11.33   END     63      popsize=63,prop_asym=0.123,time=06/23/2020-17:51:39
+3       0.00    START   .       id=3,time=06/23/2020-17:51:39,args=--infector 0
+3       0.00    INFECTION       0       r0=1.49,r=0,r_presym=0,r_sym=0,incu=5.47
+3       5.47    SHOW_SYMPTOM    0       .
+3       5.47    REMOVAL 0       popsize=63
+3       11.64   RECOVER 0       recovered=0,infected=0,popsize=63,True=True
+3       11.64   END     63      popsize=63,prop_asym=0.220,time=06/23/2020-17:51:39
+7       0.00    START   .       id=7,time=06/23/2020-17:51:39,args=--infector 0
+7       0.00    INFECTION       0       r0=0.43,r=0,r_asym=0
 ```
 
 which I assume would be pretty self-explanatory. Note that **the simulation IDs

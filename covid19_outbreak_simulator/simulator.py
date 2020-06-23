@@ -1,3 +1,7 @@
+from datetime import datetime
+import subprocess
+import sys
+
 from collections import defaultdict
 from importlib import import_module
 from itertools import groupby
@@ -128,6 +132,16 @@ class Simulator(object):
         for evt in init_events:
             events[evt.time].append(evt)
 
+        start_params = {
+            'id': self.logger.id,
+            'time': datetime.now().strftime("%m/%d/%Y-%H:%M:%S"),
+            'args': subprocess.list2cmdline(sys.argv[1:])
+        }
+        start_params = ','.join([f'{x}={y}' for x, y in start_params.items()])
+
+        self.logger.write(
+            f'{self.logger.id}\t0.00\t{EventType.START.name}\t.\t{start_params}\n'
+        )
         while True:
             # find the latest event
             time = 0.00 if not events else min(events.keys())
@@ -186,7 +200,8 @@ class Simulator(object):
             #     break
         res = {
             'popsize': len(population),
-            'prop_asym': f'{self.model.params.prop_asym_carriers:.3f}'
+            'prop_asym': f'{self.model.params.prop_asym_carriers:.3f}',
+            'time': datetime.now().strftime("%m/%d/%Y-%H:%M:%S"),
         }
         if self.simu_args.stop_if:
             res['stop_if'] = ''.join(self.simu_args.stop_if)
