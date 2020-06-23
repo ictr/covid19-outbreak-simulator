@@ -1,9 +1,8 @@
-import random
 import re
 
 import numpy as np
-from scipy.stats import norm
 from scipy.optimize import bisect
+from scipy.stats import norm
 
 
 class Params:
@@ -107,13 +106,13 @@ class Params:
         elif len(pars) == 2:
             try:
                 self.set('symptomatic_r0', 'low', float(pars[0]))
-            except Exception as e:
+            except Exception:
                 raise ValueError(
                     f'The symptomatic_r0 should be a float number, if it is not a multiplier for groups: {pars[0]} provided'
                 )
             try:
                 self.set('symptomatic_r0', 'high', float(pars[1]))
-            except Exception as e:
+            except Exception:
                 raise ValueError(
                     f'The symptomatic_r0 should be a float number, if it is not a multiplier for groups: {pars[1]} provided'
                 )
@@ -147,13 +146,13 @@ class Params:
         elif len(pars) == 2:
             try:
                 self.set('asymptomatic_r0', 'low', float(pars[0]))
-            except Exception as e:
+            except Exception:
                 raise ValueError(
                     f'The asymptomatic_r0 should be a float number, if it is not a multiplier for groups: {pars[0]} provided'
                 )
             try:
                 self.set('asymptomatic_r0', 'high', float(pars[1]))
-            except Exception as e:
+            except Exception:
                 raise ValueError(
                     f'The asymptomatic_r0 should be a float number, if it is not a multiplier for groups: {pars[1]} provided'
                 )
@@ -390,7 +389,6 @@ class Model(object):
             y = np.concatenate(
                 [dist_left.pdf(x[:idx]) * scale,
                  dist_right.pdf(x[idx:])])
-        sum_y = sum(y)
         return x, y / sum(y) * R0
 
     def get_asymptomatic_transmission_probability(self, R0):
@@ -411,5 +409,4 @@ class Model(object):
         dist = norm(4.8, self.sd_5)
         x = np.linspace(0, 12, int(12 / self.params.simulation_interval))
         y = dist.pdf(x)
-        sum_y = sum(y)
         return x, y / sum(y) * R0

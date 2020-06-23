@@ -1,6 +1,7 @@
 import pytest
 from itertools import product
-from covid19_outbreak_simulator.simulator import Individual, EventType
+from covid19_outbreak_simulator.simulator import Individual
+from covid19_outbreak_simulator.event import EventType
 
 
 def test_individual(default_model, logger):

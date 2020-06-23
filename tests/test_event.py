@@ -1,4 +1,4 @@
-from covid19_outbreak_simulator.simulator import Event, EventType
+from covid19_outbreak_simulator.event import Event, EventType
 
 
 def test_event_infection(simulator):

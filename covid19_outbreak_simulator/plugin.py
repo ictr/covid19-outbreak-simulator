@@ -1,5 +1,6 @@
 import argparse
-from covid19_outbreak_simulator.simulator import Event, EventType
+
+from covid19_outbreak_simulator.event import EventType
 
 
 class PlugInEvent(object):

@@ -1,18 +1,18 @@
 """Console script for covid19_outbreak_simulator."""
 import argparse
-import sys
+import multiprocessing
 import shlex
 import subprocess
-import multiprocessing
-import numpy as np
-from io import StringIO
-from tqdm import tqdm
+import sys
 from collections import defaultdict
 from datetime import datetime
-from importlib import import_module
+from io import StringIO
 
-from .simulator import Simulator, load_plugins
+import numpy as np
+from tqdm import tqdm
+
 from .model import Params
+from .simulator import Simulator, load_plugins
 
 
 def summarize_simulations(logfile):
@@ -428,7 +428,7 @@ def parse_args(args=None):
             will stop in the format of `--stop-if "t>10"' (for 10 days).''')
     parser.add_argument(
         '--allow-lead-time',
-        action='store_true',
+        nargs='*',
         help='''The seed carrier will be asumptomatic but always be at the beginning
             of incurbation time. If allow lead time is set to True, the carrier will
             be anywhere in his or her incubation period.''')
@@ -470,8 +470,8 @@ def main(argv=None):
         if args.stop_if[0].startswith('t>'):
             #
             try:
-                st = float(args.stop_if[0][2:])
-            except Exception:
+                float(args.stop_if[0][2:])
+            except Exception as e:
                 raise ValueError(
                     f'Invalid value for option --stop-if "{args.stop_if[0]}": {e}'
                 )

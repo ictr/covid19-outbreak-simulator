@@ -1,8 +1,7 @@
-import argparse
-from covid19_outbreak_simulator.plugin import BasePlugin
-from covid19_outbreak_simulator.simulator import Event, EventType
-import numpy as np
 import random
+
+from covid19_outbreak_simulator.event import Event, EventType
+from covid19_outbreak_simulator.plugin import BasePlugin
 
 
 class init(BasePlugin):

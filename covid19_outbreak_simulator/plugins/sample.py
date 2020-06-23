@@ -1,6 +1,6 @@
-import argparse
-from covid19_outbreak_simulator.plugin import BasePlugin
 import random
+
+from covid19_outbreak_simulator.plugin import BasePlugin
 
 
 #
