@@ -1,8 +1,6 @@
-import random
 from enum import Enum
 
 import numpy as np
-from numpy.random import choice
 
 
 class EventType(Enum):
@@ -58,34 +56,16 @@ class Event(object):
         if self.action == EventType.INFECTION:
             if self.target is not None:
                 selected = self.target
-            elif simu_args.susceptibility:
-                # select one non-quarantined indivudal to infect
-                ids = [(id, ind.susceptibility)
-                       for id, ind in population.items()
-                       if (not self.target or id != self.target.id) and
-                       not ind.quarantined]
-
-                if not ids:
-                    self.logger.write(
-                        f'{self.logger.id}\t{self.time:.2f}\t{EventType.INFECTION_FAILED.name}\t{self.target}\tby={self.kwargs["by"]}\n'
-                    )
-                    return []
-                weights = np.array([x[1] for x in ids])
-                weights = weights / sum(weights)
-                selected = ids[choice(len(ids), 1, p=weights)[0]][0]
             else:
-                # select one non-quarantined indivudal to infect
-                ids = [
-                    id for id, ind in population.items()
-                    if (not self.target or id != self.target.id) and
-                    not ind.quarantined
-                ]
-                if not ids:
+                selected = population.select(
+                    exclude=self.target,
+                    susceptibility=simu_args.susceptibility is not None)
+
+                if not selected:
                     self.logger.write(
                         f'{self.logger.id}\t{self.time:.2f}\t{EventType.INFECTION_FAILED.name}\t{self.target}\tby={self.kwargs["by"]}\n'
                     )
                     return []
-                selected = random.choice(ids)
             return population[selected].infect(
                 self.time,
                 handle_symptomatic=simu_args.handle_symptomatic,
@@ -116,7 +96,7 @@ class Event(object):
             return []
         elif self.action == EventType.REMOVAL:
             if self.target.id in population:
-                population.pop(self.target.id)
+                population.remove(self.target.id)
                 self.logger.write(
                     f'{self.logger.id}\t{self.time:.2f}\t{EventType.REMOVAL.name}\t{self.target}\tpopsize={len(population)}\n'
                 )

@@ -1,4 +1,6 @@
+import random
 import numpy as np
+from numpy.random import choice
 
 from .event import Event, EventType
 
@@ -292,3 +294,53 @@ class Individual(object):
             return self.asymptomatic_infect(time, **kwargs)
         else:
             return self.symptomatic_infect(time, **kwargs)
+
+
+class Population(object):
+
+    def __init__(self):
+        self.individuals = {}
+
+    def add(self, items):
+        self.individuals.update({x.id: x for x in items})
+
+    def remove(self, item):
+        self.individuals.pop(item)
+
+    def __len__(self):
+        return len(self.individuals)
+
+    def __contains__(self, item):
+        return item in self.individuals
+
+    def __getitem__(self, id):
+        return self.individuals[id]
+
+    def items(self):
+        return self.individuals.items()
+
+    def values(self):
+        return self.individuals.values()
+
+    def select(self, exclude, susceptibility=False):
+        if susceptibility:
+            # select one non-quarantined indivudal to infect
+            ids = [(id, ind.susceptibility)
+                   for id, ind in self.individuals.items()
+                   if (not exclude or id != exclude.id) and not ind.quarantined]
+
+            if not ids:
+                return None
+
+            weights = np.array([x[1] for x in ids])
+            weights = weights / sum(weights)
+            return ids[choice(len(ids), 1, p=weights)[0]][0]
+        else:
+            # select one non-quarantined indivudal to infect
+            ids = [
+                id for id, ind in self.individuals.items()
+                if (not exclude or id != exclude.id) and not ind.quarantined
+            ]
+            if not ids:
+                return None
+            return random.choice(ids)

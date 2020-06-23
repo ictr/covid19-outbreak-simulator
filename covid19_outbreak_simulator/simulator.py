@@ -4,7 +4,7 @@ from itertools import groupby
 
 from .event import Event, EventType
 from .model import Model
-from .population import Individual
+from .population import Individual, Population
 
 
 def load_plugins(args, simulator=None):
@@ -77,7 +77,7 @@ class Simulator(object):
         self.model.draw_prop_asym_carriers()
 
         # collection of individuals
-        population = {}
+        population = Population()
         idx = 0
 
         for ps in self.simu_args.popsize:
@@ -93,8 +93,8 @@ class Simulator(object):
                 raise ValueError(
                     f'Named population size should be name=int: {ps} provided')
 
-            population.update({
-                name + str(idx): Individual(
+            population.add([
+                Individual(
                     name + str(idx),
                     group=name,
                     susceptibility=getattr(self.model.params,
@@ -104,7 +104,7 @@ class Simulator(object):
                     recovered=None,
                     model=self.model,
                     logger=self.logger) for idx in range(idx, idx + sz)
-            })
+            ])
 
         events = defaultdict(list)
         self.logger.id = id
