@@ -19,7 +19,7 @@ class quarantine(BasePlugin):
             '--proportion',
             type=float,
             default=1.0,
-            help='''Proportion of affected individuals to quarantine. Default to
+            help='''Proportion of active cases to quarantine. Default to
             all, but can be set to a lower value to indicate incomplete quarantine.
             This option does not apply to cases when IDs are explicitly specified.''',
         )
@@ -33,7 +33,8 @@ class quarantine(BasePlugin):
         else:
             IDs = [
                 x for x, y in population.items()
-                if isinstance(y.infected, float)
+                if isinstance(y.infected, float) and
+                not isinstance(y.recovered, float)
             ]
             if args.proportion != 1.0:
                 IDs = IDs[:int(len(IDs) * args.proportion)]

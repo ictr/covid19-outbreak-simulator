@@ -34,7 +34,9 @@ This README file contains all essential information but you can also visit our [
          * [Plugin setparam](#plugin-setparam)
          * [Plugin stat](#plugin-stat)
          * [Plugin sample](#plugin-sample)
+         * [Plugin insert](#plugin-insert)
          * [Plugin quarantine](#plugin-quarantine)
+         * [Plugin pcrtest](#plugin-pcrtest)
       * [Implementation of plugins](#implementation-of-plugins)
    * [Output from the simulator](#output-from-the-simulator)
       * [Events tracked during the simulation](#events-tracked-during-the-simulation)
@@ -53,7 +55,7 @@ This README file contains all essential information but you can also visit our [
       * [Version 0.2.0](#version-020)
       * [Version 0.1.0](#version-010)
 
-<!-- Added by: bpeng, at: Tue Jun 23 23:56:33 CDT 2020 -->
+<!-- Added by: bpeng, at: Wed Jun 24 00:58:35 CDT 2020 -->
 
 <!--te-->
 
@@ -416,6 +418,30 @@ optional arguments:
 ```
 % outbreak_simulator --plugin insert -h
 
+usage: --plugin insert [-h] [--start START] [--end END] [--at AT [AT ...]] [--interval INTERVAL] [--trigger-by [TRIGGER_BY [TRIGGER_BY ...]]]
+                       [--prop-of-infected PROP_OF_INFECTED] [--leadtime LEADTIME]
+                       popsize [popsize ...]
+
+insert new individuals to the population
+
+positional arguments:
+  popsize               Population size, which should only add to existing populations
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --start START         Start time. Default to 0 no parameter is defined so the plugin will be called once at the beginning.
+  --end END             End time, default to none, meaning there is no end time.
+  --at AT [AT ...]      Specific time at which the plugin is applied.
+  --interval INTERVAL   Interval at which plugin is applied, it will assume a 0 starting time if --start is left unspecified.
+  --trigger-by [TRIGGER_BY [TRIGGER_BY ...]]
+                        Events that triggers this plug in.
+  --prop-of-infected PROP_OF_INFECTED
+                        Proportion of infected. Default to 1, meaning all are infected.
+  --leadtime LEADTIME   With "leadtime" infections are assumed to happen before the simulation. This option can be a fixed positive number
+                        `t` when the infection happens `t` days before current time. If can also be set to 'any' for which the carrier can be
+                        any time during its course of infection, or `asymptomatic` for which the leadtime is adjust so that the carrier does
+                        not show any symptom at the time point (in incubation period for symptomatic case). All events triggered before
+                        current time are ignored.
 
 ```
 
@@ -448,6 +474,36 @@ optional arguments:
   --duration DURATION   Days of quarantine
 ```
 
+### Plugin `pcrtest`
+
+```
+% outbreak_simulator --plugin pcrtest -h
+
+usage: --plugin pcrtest [-h] [--start START] [--end END] [--at AT [AT ...]] [--interval INTERVAL]
+                        [--trigger-by [TRIGGER_BY [TRIGGER_BY ...]]] [--proportion PROPORTION] [--handle-positive HANDLE_POSITIVE]
+                        [IDs [IDs ...]]
+
+PCR-based test that can pick out all active cases.
+
+positional arguments:
+  IDs                   IDs of individuals to test.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --start START         Start time. Default to 0 no parameter is defined so the plugin will be called once at the beginning.
+  --end END             End time, default to none, meaning there is no end time.
+  --at AT [AT ...]      Specific time at which the plugin is applied.
+  --interval INTERVAL   Interval at which plugin is applied, it will assume a 0 starting time if --start is left unspecified.
+  --trigger-by [TRIGGER_BY [TRIGGER_BY ...]]
+                        Events that triggers this plug in.
+  --proportion PROPORTION
+                        Proportion of individuals to test. Individuals who are tested positive will by default be quarantined.
+  --handle-positive HANDLE_POSITIVE
+                        How to handle individuals who are tested positive, which should be "remove" (remove from population), and
+                        "quarantine" (put aside until it recovers). Quarantine can be specified as "quarantine_7" etc to specify duration of
+                        quarantine. Default to "remove", meaning all symptomatic cases will be removed from population.
+
+```
 
 ## Implementation of plugins
 

@@ -50,11 +50,12 @@ def load_plugins(args, simulator=None):
 
 class Simulator(object):
 
-    def __init__(self, params, logger, simu_args):
+    def __init__(self, params, logger, simu_args, cmd):
         self.logger = logger
         self.simu_args = simu_args
         self.params = params
         self.model = None
+        self.cmd = cmd
         self.plugins = {}
 
     def get_plugin_events(self):
@@ -136,7 +137,7 @@ class Simulator(object):
         start_params = {
             'id': self.logger.id,
             'time': datetime.now().strftime("%m/%d/%Y-%H:%M:%S"),
-            'args': subprocess.list2cmdline(sys.argv[1:])
+            'args': subprocess.list2cmdline(self.cmd)
         }
         start_params = ','.join([f'{x}={y}' for x, y in start_params.items()])
 

@@ -137,3 +137,13 @@ def test_plugin_insert():
         '--jobs', '1', '--repeats', '100', '--stop-if', 't>10', '--plugin',
         'insert', '2', '--interval', '1'
     ])
+
+
+def test_plugin_pcrtest():
+    main(['--jobs', '1', '--repeats', '100', '--plugin', 'pcrtest'])
+    main(['--jobs', '1', '--repeats', '100', '--plugin', 'pcrtest', '1', '2'])
+    main([
+        '--jobs', '1', '--repeats', '100', '--popsize', 'A=100', 'B=200',
+        '--infector', 'A2', 'A7', '--plugin', 'pcrtest', 'A2', 'A7',
+        '--handle-positive', 'quarantine_7'
+    ])

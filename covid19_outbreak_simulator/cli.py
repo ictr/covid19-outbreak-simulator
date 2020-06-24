@@ -121,12 +121,13 @@ def parse_args(args=None):
 
 class Worker(multiprocessing.Process):
 
-    def __init__(self, task_queue, result_queue, args):
+    def __init__(self, task_queue, result_queue, args, cmd):
         multiprocessing.Process.__init__(self)
         self.task_queue = task_queue
         self.result_queue = result_queue
         self.params = Params(args)
         self.simu_args = args
+        self.cmd = cmd
 
     def run(self):
         # set random seed to a random number
@@ -140,7 +141,10 @@ class Worker(multiprocessing.Process):
             with StringIO() as logger:
                 logger.id = id
                 simu = Simulator(
-                    params=self.params, logger=logger, simu_args=self.simu_args)
+                    params=self.params,
+                    logger=logger,
+                    simu_args=self.simu_args,
+                    cmd=self.cmd)
                 try:
                     simu.simulate(id)
                 except (SystemExit, Exception) as e:
@@ -189,7 +193,7 @@ def main(argv=None):
             )
 
     workers = [
-        Worker(tasks, results, args)
+        Worker(tasks, results, args, cmd=argv)
         for i in range(min(args.jobs, args.repeats))
     ]
     for worker in workers:
