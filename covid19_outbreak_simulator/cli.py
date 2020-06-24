@@ -164,7 +164,6 @@ def main(argv=None):
     args = parse_args(argv)
     tasks = multiprocessing.JoinableQueue()
     results = multiprocessing.Queue()
-
     if args.plugin:
         if args.plugin[0] == '-h':
             # list all plugins
@@ -193,7 +192,7 @@ def main(argv=None):
             )
 
     workers = [
-        Worker(tasks, results, args, cmd=argv)
+        Worker(tasks, results, args, cmd=argv if argv else sys.argv[1:])
         for i in range(min(args.jobs, args.repeats))
     ]
     for worker in workers:

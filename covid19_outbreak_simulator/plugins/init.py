@@ -96,19 +96,7 @@ class init(BasePlugin):
                 isp[name] = value * ir['']
 
         events = []
-        for ps in population.popsize:
-            if '=' in ps:
-                # this is named population size
-                name, sz = ps.split('=', 1)
-
-            else:
-                name = ''
-                sz = ps
-            try:
-                sz = int(sz)
-            except Exception:
-                raise ValueError(
-                    f'Named population size should be name=int: {ps} provided')
+        for name, sz in population.subpops.items():
             pop_ir = ir.get(name if name in ir else '', 0.0)
             n_ir = int(sz * pop_ir)
 
@@ -128,7 +116,7 @@ class init(BasePlugin):
             self.logger.write(
                 f'{self.logger.id}\t{time}\t{EventType.PLUGIN.name}\t.\tname=init,n_recovered={n_recovered},n_infected={n_ir}\n'
             )
-            for idx, sts in zip(range(idx, idx + sz), pop_status):
+            for idx, sts in zip(range(0, sz), pop_status):
                 if sts == 2:
                     population[name + str(idx)].infected = -10.0
                     population[name + str(idx)].recovered = -2.0

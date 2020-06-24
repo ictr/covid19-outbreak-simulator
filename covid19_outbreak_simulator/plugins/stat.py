@@ -42,11 +42,11 @@ class stat(BasePlugin):
                 continue
             res[f'n_{group}_recovered'] = len([
                 x for x, ind in population.items()
-                if ind.recovered is True and ind.group == group
+                if isinstance(ind.recovered, float) and ind.group == group
             ])
             res[f'n_{group}_infected'] = len([
                 x for x, ind in population.items()
-                if ind.infected not in (False, None) and ind.group == group
+                if isinstance(ind.infected, float) and ind.group == group
             ])
             res[f'n_{group}_active'] = res[f'n_{group}_infected'] - res[
                 f'n_{group}_recovered']
