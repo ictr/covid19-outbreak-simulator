@@ -135,6 +135,7 @@ class init(BasePlugin):
                             target=name + str(idx),
                             logger=self.logger,
                             priority=True,
+                            by=None,
                             leadtime=args.leadtime))
 
         return events

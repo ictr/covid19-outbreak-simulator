@@ -124,6 +124,7 @@ class Simulator(object):
                     EventType.INFECTION,
                     target=infector,
                     logger=self.logger,
+                    by=None,
                     handle_symptomatic=self.simu_args.handle_symptomatic,
                     leadtime=self.simu_args.leadtime))
 

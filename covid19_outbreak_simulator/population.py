@@ -191,7 +191,7 @@ class Individual(object):
                             EventType.INFECTION_AVOIDED,
                             target=self.id,
                             logger=self.logger,
-                            by=self))
+                            by=self.id))
                     infected[idx] = 0
         #
         for x, infe in zip(x_before, infected):
@@ -202,7 +202,7 @@ class Individual(object):
                         EventType.INFECTION,
                         target=None,
                         logger=self.logger,
-                        by=self,
+                        by=self.id,
                         handle_symptomatic=kwargs.get('handle_symptomatic',
                                                       None)))
 
@@ -260,7 +260,6 @@ class Individual(object):
         self.infected = float(time - lead_time)
 
         # REMOVAL ...
-        kept = True
         evts = []
         #
         x_grid, trans_prob = self.model.get_asymptomatic_transmission_probability(
@@ -284,7 +283,7 @@ class Individual(object):
                             EventType.INFECTION_AVOIDED,
                             target=self.id,
                             logger=self.logger,
-                            by=self))
+                            by=self.id))
                     infected[idx] = 0
         #
         for x, infe in zip(x_grid, infected):
@@ -295,7 +294,7 @@ class Individual(object):
                         EventType.INFECTION,
                         target=None,
                         logger=self.logger,
-                        by=self,
+                        by=self.id,
                         handle_symptomatic=kwargs.get('handle_symptomatic',
                                                       None)))
         evts.append(
@@ -321,9 +320,8 @@ class Individual(object):
         return evts
 
     def infect(self, time, **kwargs):
-        if self.infected not in (False, None) or self.recovered not in (False,
-                                                                        None):
-            by_id = kwargs["by"].id if "by" in kwargs else 'None'
+        if isinstance(self.infected, float):
+            by_id = '.' if kwargs['by'] is None else kwargs['by']
             self.logger.write(
                 f'{self.logger.id}\t{time:.2f}\t{EventType.INFECTION_IGNORED.name}\t{self.id}\tby={by_id}\n'
             )

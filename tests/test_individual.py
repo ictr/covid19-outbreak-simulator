@@ -45,7 +45,7 @@ def test_infect_infected(individual_factory):
     ind.model.draw_prop_asym_carriers()
     ind.infected = 5.5
 
-    res = ind.infect(5.0, by=ind1)
+    res = ind.infect(5.0, by=ind1.id)
 
     assert not res
 

@@ -71,6 +71,15 @@ class Event(object):
                         f'{self.logger.id}\t{self.time:.2f}\t{EventType.INFECTION_FAILED.name}\t{self.target}\tby={self.kwargs["by"]}\n'
                     )
                     return []
+            if 'by' not in self.kwargs:
+                raise ValueError('Parameter by is required for INECTION event.')
+            if self.kwargs['by'] in population:
+                by_ind = population[self.kwargs['by']]
+                if by_ind.quarantined and by_ind.quarantined >= self.time:
+                    self.logger.write(
+                        f'{self.logger.id}\t{self.time:.2f}\t{EventType.INFECTION_AVOIDED.name}\t.\tby={by_ind.id}\n'
+                    )
+                    return []
             return population[selected].infect(self.time, **self.kwargs)
         elif self.action == EventType.QUARANTINE:
             self.logger.write(
