@@ -139,6 +139,14 @@ def test_plugin_insert():
     ])
 
 
+def test_plugin_insert_hetero_pop():
+    main([
+        '--jobs', '1', '--repeats', '100', '--stop-if', 't>10', '--popsize',
+        'A=100', 'B=100', '--stop-if', 't>10', '--plugin', 'insert', 'A=2',
+        '--interval', '1'
+    ])
+
+
 def test_plugin_pcrtest():
     main(['--jobs', '1', '--repeats', '100', '--plugin', 'pcrtest'])
     main(['--jobs', '1', '--repeats', '100', '--plugin', 'pcrtest', '1', '2'])

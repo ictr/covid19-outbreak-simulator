@@ -114,7 +114,7 @@ class init(BasePlugin):
             random.shuffle(pop_status)
 
             self.logger.write(
-                f'{self.logger.id}\t{time}\t{EventType.PLUGIN.name}\t.\tname=init,n_recovered={n_recovered},n_infected={n_ir}\n'
+                f'{self.logger.id}\t{time:.2f}\t{EventType.PLUGIN.name}\t.\tname=init,n_recovered={n_recovered},n_infected={n_ir}\n'
             )
             for idx, sts in zip(range(0, sz), pop_status):
                 if sts == 2:

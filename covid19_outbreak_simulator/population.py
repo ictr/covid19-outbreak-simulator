@@ -59,7 +59,8 @@ class Individual(object):
                     'leadtime is only allowed during initialization of infection event (no by option.)'
                 )
             if kwargs['leadtime'] == 'any':
-                lead_time = np.random.uniform(0, self.incubation_period + 7)
+                lead_time = np.random.uniform(
+                    0, self.incubation_period * 2 / 3 + 8)
             elif kwargs['leadtime'] == 'asymptomatic':
                 lead_time = np.random.uniform(0, self.incubation_period)
             else:
