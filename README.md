@@ -232,67 +232,6 @@ optional arguments:
 
 ```
 
-## Example usages
-
-### Homogeneous and heterogeneous populations
-
-```
-outbreak_simulator
-```
-
-simulates the outbreak of COVID-19 in a population with 64 individuals, with one
-introduced infector.
-
-```
-outbreak_simulator --popsize nurse=10 patient=100 --infector patient0
-```
-
-simulates a population with `10` nurses and `100` patients when the first patient
-carries the virus.
-
-### Change number of infectors
-
-```
-outbreak_simulator --infector 0 1 --pre-quarantine 7 0 1
-```
-
-simulates the introduction of two infectors, both after 7 days of quarantine. Here
-`0` and `1` are IDs of individuals
-
-### Changing model parameters
-
-```
-outbreak_simulator --prop-asym-carriers 0.10
-```
-
-runs the simulation with a fixed ratio of asymptomatic carriers.
-
-```
-outbreak_simulator --incubation-period normal 4 2
-```
-
-runs the simulation incubation period sampled from a normal distribution with
-mean 4 and standard deviation of 2.
-
-### Specigy group-specific parameters
-
-Parameters `symptomatic-r0`, `asymptomatic-r0` and `incubation-period` can be
-set to different values for each groups. These are achived by "multipliers",
-which multiplies specified values to values drawn from the default distribution.
-
-For example, if in a hospital environment nurses, once affected, tends to have
-higher `R0` because he or she contact more patients, and on the other hand
-patients are less mobile and should have lower `R0`. In some cases the nurses
-are even less protected and are more susceptible. You can run a simulation
-with two patients carrying the virus with the following options:
-
-```
-outbreak_simulator --popsize nurse=10 patient=100 \
-    --symptomatic-r0 nurse=1.5 patient=0.8 \
-    --asymptomatic-r0 nurse=1.5 patient=0.8 \
-    --susceptibility nurse=1.2 patient=0.8 \
-    --infector patient0 patient1
-```
 
 # Plug-in system (advanced usages)
 
@@ -650,6 +589,94 @@ and produces a figure
 ### `merge_summary.py`
 
 [`contrib/merge_summary.py`](https://github.com/ictr/covid19-outbreak-simulator/blob/master/contrib/merge_summary.py) is a script to merge summary stats from multiple simulation runs.
+
+
+
+# Examples
+
+## A small population with the introduction of one carrier
+
+Assuming that there is no asymptomatic carriers, we can introduce one infected
+carrier to a population of size 64, and observe the development of the outbreak.
+
+```sh
+outbreak_simulator --infector 0  --rep 10000 --prop-asym-carriers 0 --logfile simu_remove_symptomatic.log
+```
+
+We can also assume from 20% to 40% of infected individuals will not show any symptom
+the default parameters for `prop-asym-carriers` is `0.2` to `0.4` so it is actually
+not needed.
+
+```sh
+outbreak_simulator --infector 0  --rep 10000 --prop-asym-carriers .20 .40 --logfile simu_with_asymptomatic.log
+```
+
+We can quarantine the carrier for 7 days, but here we need to use a plugin that applies at time 0
+
+```sh
+outbreak_simulator --infector 0  --rep 10000 --logfile simu_quarantine_7.log \
+  --plugin quarantine --at 0 --duration 7
+```
+
+
+
+```
+outbreak_simulator
+```
+
+simulates the outbreak of COVID-19 in a population with 64 individuals, with one
+introduced infector.
+
+```
+outbreak_simulator --popsize nurse=10 patient=100 --infector patient0
+```
+
+simulates a population with `10` nurses and `100` patients when the first patient
+carries the virus.
+
+### Change number of infectors
+
+```
+outbreak_simulator --infector 0 1 --pre-quarantine 7 0 1
+```
+
+simulates the introduction of two infectors, both after 7 days of quarantine. Here
+`0` and `1` are IDs of individuals
+
+### Changing model parameters
+
+```
+outbreak_simulator --prop-asym-carriers 0.10
+```
+
+runs the simulation with a fixed ratio of asymptomatic carriers.
+
+```
+outbreak_simulator --incubation-period normal 4 2
+```
+
+runs the simulation incubation period sampled from a normal distribution with
+mean 4 and standard deviation of 2.
+
+### Specigy group-specific parameters
+
+Parameters `symptomatic-r0`, `asymptomatic-r0` and `incubation-period` can be
+set to different values for each groups. These are achived by "multipliers",
+which multiplies specified values to values drawn from the default distribution.
+
+For example, if in a hospital environment nurses, once affected, tends to have
+higher `R0` because he or she contact more patients, and on the other hand
+patients are less mobile and should have lower `R0`. In some cases the nurses
+are even less protected and are more susceptible. You can run a simulation
+with two patients carrying the virus with the following options:
+
+```
+outbreak_simulator --popsize nurse=10 patient=100 \
+    --symptomatic-r0 nurse=1.5 patient=0.8 \
+    --asymptomatic-r0 nurse=1.5 patient=0.8 \
+    --susceptibility nurse=1.2 patient=0.8 \
+    --infector patient0 patient1
+```
 
 # Acknowledgements
 
