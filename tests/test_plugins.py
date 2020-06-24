@@ -117,12 +117,12 @@ def test_plugin_sample_error():
         ])
 
 
-def test_plugin_dynamic_r0():
+def test_plugin_setparam():
     main([
-        '--jobs', '1', '--repeats', '100', '--plugin', 'dynamic_r0', '--at',
-        '1', '--new-symptomatic-r0', '0.2'
+        '--jobs', '1', '--repeats', '100', '--plugin', 'setparam', '--at', '1',
+        '--symptomatic-r0', '0.2'
     ])
     main([
-        '--jobs', '1', '--repeats', '100', '--plugin', 'dynamic_r0', '--at',
-        '1', '--new-asymptomatic-r0', '0.4'
+        '--jobs', '1', '--repeats', '100', '--plugin', 'setparam', '--at', '1',
+        '--asymptomatic-r0', '0.4'
     ])

@@ -62,7 +62,6 @@ def parse_args(args=None):
     parser.add_argument(
         '--handle-symptomatic',
         nargs='*',
-        default=['remove'],
         help='''How to handle individuals who show symptom, which should be "keep" (stay in
             population), "remove" (remove from population), and "quarantine" (put aside until
             it recovers). all options can be followed by a "proportion", and quarantine can

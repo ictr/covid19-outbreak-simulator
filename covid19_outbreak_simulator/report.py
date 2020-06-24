@@ -180,7 +180,9 @@ def summarize_simulations(logfile):
     # print
     print(f'logfile\t{args.logfile}')
     print(f'popsize\t{" ".join(args.popsize)}')
-    print(f'handle_symptomatic\t{" ".join(args.handle_symptomatic)}')
+    print(
+        f'handle_symptomatic\t{" ".join(["remove", "1"] if args.handle_symptomatic is None else args.handle_symptomatic)}'
+    )
     if args.symptomatic_r0:
         print(f'symptomatic_r0\t{" - ".join(args.symptomatic_r0)}')
     if args.asymptomatic_r0:

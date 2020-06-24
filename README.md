@@ -26,17 +26,12 @@ This README file contains all essential information but you can also visit our [
       * [Installation](#installation)
       * [Getting help](#getting-help)
       * [Command line options of the core simulator](#command-line-options-of-the-core-simulator)
-      * [Example usages](#example-usages)
-         * [Homogeneous and heterogeneous populations](#homogeneous-and-heterogeneous-populations)
-         * [Change number of infectors](#change-number-of-infectors)
-         * [Changing model parameters](#changing-model-parameters)
-         * [Specigy group-specific parameters](#specigy-group-specific-parameters)
    * [Plug-in system (advanced usages)](#plug-in-system-advanced-usages)
       * [Specify one or more plugins from command line](#specify-one-or-more-plugins-from-command-line)
       * [System plugins](#system-plugins)
          * [Common paramters of plugins](#common-paramters-of-plugins)
          * [Plugin init](#plugin-init)
-         * [Plugin dynamic-r0](#plugin-dynamic-r0)
+         * [Plugin setparam](#plugin-setparam)
          * [Plugin stat](#plugin-stat)
          * [Plugin sample](#plugin-sample)
          * [Plugin quarantine](#plugin-quarantine)
@@ -47,9 +42,18 @@ This README file contains all essential information but you can also visit our [
       * [Data analysis tools](#data-analysis-tools)
          * [time_vs_size.R](#time_vs_sizer)
          * [merge_summary.py](#merge_summarypy)
+   * [Examples](#examples)
+      * [A small population with the introduction of one carrier](#a-small-population-with-the-introduction-of-one-carrier)
+      * [Evolution of a large population](#evolution-of-a-large-population)
+      * [Heterogeneous situation](#heterogeneous-situation)
+         * [Specigy group-specific parameters](#specigy-group-specific-parameters)
    * [Acknowledgements](#acknowledgements)
+   * [Change Log](#change-log)
+      * [Version 0.3.0](#version-030)
+      * [Version 0.2.0](#version-020)
+      * [Version 0.1.0](#version-010)
 
-<!-- Added by: bpeng, at: Sun Jun 21 18:05:46 CDT 2020 -->
+<!-- Added by: bpeng, at: Tue Jun 23 23:56:33 CDT 2020 -->
 
 <!--te-->
 
@@ -314,17 +318,19 @@ optional arguments:
                         groups (e.g. --initial-incidence-rate 0.1 docter=1.2 will set incidence rate to 0.12 for doctors).
 ```
 
-### Plugin `dynamic-r0`
+### Plugin `setparam`
 
 ```
-% outbreak_simulator --plugin dynamic-r0 -h
+% outbreak_simulator --plugin setparam -h
 
-usage: --plugin dynamic_r0 [-h] [--start START] [--end END] [--at AT [AT ...]] [--interval INTERVAL]
-                           [--trigger-by [TRIGGER_BY [TRIGGER_BY ...]]]
-                           [--new-symptomatic-r0 NEW_SYMPTOMATIC_R0 [NEW_SYMPTOMATIC_R0 ...]]
-                           [--new-asymptomatic-r0 NEW_ASYMPTOMATIC_R0 [NEW_ASYMPTOMATIC_R0 ...]]
+usage: --plugin setparam [-h] [--start START] [--end END] [--at AT [AT ...]] [--interval INTERVAL]
+                         [--trigger-by [TRIGGER_BY [TRIGGER_BY ...]]] [--susceptibility SUSCEPTIBILITY [SUSCEPTIBILITY ...]]
+                         [--symptomatic-r0 SYMPTOMATIC_R0 [SYMPTOMATIC_R0 ...]] [--asymptomatic-r0 ASYMPTOMATIC_R0 [ASYMPTOMATIC_R0 ...]]
+                         [--incubation-period INCUBATION_PERIOD [INCUBATION_PERIOD ...]]
+                         [--handle-symptomatic [HANDLE_SYMPTOMATIC [HANDLE_SYMPTOMATIC ...]]]
+                         [--prop-asym-carriers [PROP_ASYM_CARRIERS [PROP_ASYM_CARRIERS ...]]]
 
-Change multiplier number at specific time.
+Change parameters of simulation.
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -334,14 +340,29 @@ optional arguments:
   --interval INTERVAL   Interval at which plugin is applied, it will assume a 0 starting time if --start is left unspecified.
   --trigger-by [TRIGGER_BY [TRIGGER_BY ...]]
                         Events that triggers this plug in.
-  --new-symptomatic-r0 NEW_SYMPTOMATIC_R0 [NEW_SYMPTOMATIC_R0 ...]
-                        Updated production number of symptomatic infectors, should be specified as a single fixed number, or a range,
-                        and/or multipliers for different groups such as A=1.2. For example "--symptomatic-r0 1.4 2.8 nurse=1.2" means
-                        a general R0 ranging from 1.4 to 2.8, while nursed has a range from 1.4*1.2 and 2.8*1.2.
-  --new-asymptomatic-r0 NEW_ASYMPTOMATIC_R0 [NEW_ASYMPTOMATIC_R0 ...]
-                        Updated production number of asymptomatic infectors, should be specified as a single fixed number, or a range
-                        and/or multipliers for different groups
-
+  --susceptibility SUSCEPTIBILITY [SUSCEPTIBILITY ...]
+                        Weight of susceptibility. The default value is 1, meaning everyone is equally susceptible. With options such as "--
+                        susceptibility nurse=1.2 patients=0.8" you can give weights to different groups of people so that they have higher or
+                        lower probabilities to be infected.
+  --symptomatic-r0 SYMPTOMATIC_R0 [SYMPTOMATIC_R0 ...]
+                        Production number of symptomatic infectors, should be specified as a single fixed number, or a range, and/or
+                        multipliers for different groups such as A=1.2. For example "--symptomatic-r0 1.4 2.8 nurse=1.2" means a general R0
+                        ranging from 1.4 to 2.8, while nursed has a range from 1.4*1.2 and 2.8*1.2.
+  --asymptomatic-r0 ASYMPTOMATIC_R0 [ASYMPTOMATIC_R0 ...]
+                        Production number of asymptomatic infectors, should be specified as a single fixed number, or a range and/or
+                        multipliers for different groups
+  --incubation-period INCUBATION_PERIOD [INCUBATION_PERIOD ...]
+                        Incubation period period, should be specified as "lognormal" followed by two numbers as mean and sigma, or "normal"
+                        followed by mean and sd, and/or multipliers for different groups. Default to "lognormal 1.621 0.418"
+  --handle-symptomatic [HANDLE_SYMPTOMATIC [HANDLE_SYMPTOMATIC ...]]
+                        How to handle individuals who show symptom, which should be "keep" (stay in population), "remove" (remove from
+                        population), and "quarantine" (put aside until it recovers). all options can be followed by a "proportion", and
+                        quarantine can be specified as "quarantine_7" etc to specify duration of quarantine. Default to "remove", meaning all
+                        symptomatic cases will be removed from population.
+  --prop-asym-carriers [PROP_ASYM_CARRIERS [PROP_ASYM_CARRIERS ...]]
+                        Proportion of asymptomatic cases. You can specify a fix number, or two numbers as the lower and higher CI (95%) of
+                        the proportion. Default to 0.10 to 0.40. Multipliers can be specified to set proportion of asymptomatic carriers for
+                        particular groups.
 ```
 
 ### Plugin `stat`
@@ -618,45 +639,90 @@ outbreak_simulator --infector 0  --rep 10000 --logfile simu_quarantine_7.log \
   --plugin quarantine --at 0 --duration 7
 ```
 
+or we can try quarantine for 14 days...
 
-
-```
-outbreak_simulator
-```
-
-simulates the outbreak of COVID-19 in a population with 64 individuals, with one
-introduced infector.
-
-```
-outbreak_simulator --popsize nurse=10 patient=100 --infector patient0
+```sh
+outbreak_simulator --infector 0  --rep 10000 --logfile simu_quarantine_15.log \
+  --plugin quarantine --at 0 --duration 14
 ```
 
-simulates a population with `10` nurses and `100` patients when the first patient
-carries the virus.
-
-### Change number of infectors
-
-```
-outbreak_simulator --infector 0 1 --pre-quarantine 7 0 1
-```
-
-simulates the introduction of two infectors, both after 7 days of quarantine. Here
-`0` and `1` are IDs of individuals
-
-### Changing model parameters
+The above simulation assumes that the carriers are infected right before quarantine, which is not really
+realistic. The following add some `leadtime` and simulate scenarios that people enters quarantine
+as long as they do not show symptom.
 
 ```
-outbreak_simulator --prop-asym-carriers 0.10
+outbreak_simulator --infector 0  --rep 10000 --leadtime asymptomatic --logfile simu_leadtime_quarantine_7.log -j 1 \
+  --plugin quarantine --at 0 --duration 7
 ```
 
-runs the simulation with a fixed ratio of asymptomatic carriers.
+## Evolution of a large population
 
-```
-outbreak_simulator --incubation-period normal 4 2
+Assuming a population of size `34993` with `85` total cases (in the past few months). Assuming that every case has 4
+unreported (asymptomatic etc) cases, there has been `85*5` cases so the population has a seroprevalence of
+`85*5/34993=0.01214`. Assuming 8 weeks outbreak duration and 2 week active window, 1/4 cases would be "active",
+so the current incidence rate would be `85*5/4 / 34993 = 0.003036`.
+
+We assume that 75% of all symptomatic cases will be quarantined (hospitalized), the rest would be able to infect
+others. We only simulate 1 replicate because the population size is large. The command to simulate this population
+is as follows:
+
+```sh
+outbreak_simulator  --popsize 34993 -j1 --rep 1 --handle-symptomatic quarantine_14 1 \
+    --logfile pop_quarantine_all.log > pop_quarantine_all.txt \
+    --plugin init --seroprevalence 0.01214 --incidence-rate 0.003036 \
+    --plugin stat --interval 1
 ```
 
-runs the simulation incubation period sampled from a normal distribution with
-mean 4 and standard deviation of 2.
+The simulation shows that the last case will recover after 173 days with 4.18% seroprevalence,
+a total of 1462 cases (29 deaths if we assume 2% fatality rate) at the end of the simulation.
+Active cases of 104 new cases happens around the 50 days.
+
+However, if people with mild symptoms are not hospitalized (or quarantined) and continue
+to infect others, the situation will get much worse.
+
+```sh
+outbreak_simulator  --popsize 34993 -j1 --rep 1 --handle-symptomatic quarantine_14 0.75 \
+    --logfile pop_quarantine_.75.log > pop_quarantine_.75.txt \
+    --plugin init --seroprevalence 0.01214 --incidence-rate 0.003036 \
+    --plugin stat --interval 1
+```
+
+The simulation shows that the outbreak will last 223 days with a seroprevalence of `32%`.
+A total of 11205 people will be infected (224 deaths if we assume 2% fatality rate). A peak
+of 1500 cases per day happens at around 80 days.
+
+Social distancing can slow down the spread of the disease. The current R0 for symptomatic cases
+is assumed to be between 1.4 and 2.8.
+
+Let us assume that we can tighten up social distancing to half the R0 from 0.7 to 1.4, at day 20
+
+```sh
+outbreak_simulator  --popsize 34993 -j1 --rep 1 --handle-symptomatic quarantine_14 1 \
+    --logfile pop_distancing_at_20.log > pop_distancing_at_20.txt \
+    --plugin init --seroprevalence 0.01214 --incidence-rate 0.003036 \
+    --plugin stat --interval 1 \
+    --plugin setparam --symptomatic-r0 1.2 2.4 --at 20
+```
+
+With increased social distancing, the daily number of cases starts to decline shortly after
+day 20 (about 346), the outbreak still lasted 263 days but seroprevalence peaked at 4.42%.q
+
+Now, what if we start social distancing earlier, say at day 10?
+
+
+```sh
+outbreak_simulator  --popsize 34993 -j1 --rep 1 --handle-symptomatic quarantine_14 1 \
+    --logfile pop_distancing_at_10.log > pop_distancing_at_10.txt \
+    --plugin init --seroprevalence 0.01214 --incidence-rate 0.003036 \
+    --plugin stat --interval 1 \
+    --plugin setparam --symptomatic-r0 1.2 2.4 --at 10
+```
+
+The peak happens after day 10 at around 200 cases per day. The outbreak stops after 80
+days, with an ending seroprevalence of `2.2%`.
+
+## Heterogeneous situation
+
 
 ### Specigy group-specific parameters
 
@@ -690,7 +756,7 @@ This package was created with [Cookiecutter](https://github.com/audreyr/cookiecu
 ## Version 0.3.0
 
 * A new plugin system that can be triggered by options `--begin`, `--end`, `--interval`, `--at`, and `--trigger-by`.
-* Add a number of system plugins including `dynamic-r0`, `init`, `sample`, and `quarantine`, some of them are separated from the simulator core.
+* Add a number of system plugins including `init`, `sample`, `setparam`, and `quarantine`, some of them are separated from the simulator core.
 
 ## Version 0.2.0
 

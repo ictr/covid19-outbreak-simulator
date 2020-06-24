@@ -125,8 +125,13 @@ class init(BasePlugin):
                 sz - n_ir - n_recovered)
             random.shuffle(pop_status)
 
+            self.logger.write(
+                f'{self.logger.id}\t{time}\t{EventType.PLUGIN.name}\t.\tname=init,n_recovered={n_recovered},n_infected={n_ir}\n'
+            )
             for idx, sts in zip(range(idx, idx + sz), pop_status):
-                population[name + str(idx)].recovered = sts == 2
+                if sts == 2:
+                    population[name + str(idx)].infected = -10.0
+                    population[name + str(idx)].recovered = -2.0
                 if sts == 1:
                     events.append(
                         Event(
@@ -136,6 +141,8 @@ class init(BasePlugin):
                             logger=self.logger,
                             priority=True,
                             by=None,
-                            leadtime=args.leadtime))
+                            leadtime=args.leadtime,
+                            handle_symptomatic=self.simulator.simu_args
+                            .handle_symptomatic))
 
         return events

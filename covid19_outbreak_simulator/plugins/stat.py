@@ -27,13 +27,14 @@ class stat(BasePlugin):
             x for x, ind in population.items()
             if isinstance(ind.infected, float)
         ])
-        res[f'n_popsize'] = len([x for x, ind in population.items()])
+        res[f'n_active'] = res['n_infected'] - res['n_recovered']
+        res[f'n_popsize'] = len(population)
         res[f'incidence_rate'] = '0' if res[
-            f'n_popsize'] == 0 else '{:.4f}'.format(res[f'n_infected'] /
+            f'n_popsize'] == 0 else '{:.4f}'.format(res[f'n_active'] /
                                                     res[f'n_popsize'])
         res[f'seroprevalence'] = '0' if res[
-            f'n_popsize'] == 0 else '{:.4f}'.format(
-                (res[f'n_recovered'] + res[f'n_infected']) / res[f'n_popsize'])
+            f'n_popsize'] == 0 else '{:.4f}'.format(res[f'n_infected'] /
+                                                    res[f'n_popsize'])
 
         groups = set([x.group for x in population.values()])
         for group in groups:
@@ -47,15 +48,16 @@ class stat(BasePlugin):
                 x for x, ind in population.items()
                 if ind.infected not in (False, None) and ind.group == group
             ])
+            res[f'n_{group}_active'] = res['n_{group}_infected'] - res[
+                'n_{group}_recovered']
             res[f'n_{group}_popsize'] = len(
                 [x for x, ind in population.items() if ind.group == group])
             res[f'{group}_incidence_rate'] = 0 if res[
                 f'n_{group}_popsize'] == '0' else '{:.3f}'.format(
-                    res[f'n_{group}_infected'] / res[f'n_{group}_popsize'])
+                    res[f'n_{group}_active'] / res[f'n_{group}_popsize'])
             res[f'{group}_seroprevalence'] = 0 if res[
                 f'n_{group}_popsize'] == '0' else '{:.3f}'.format(
-                    (res[f'n_{group}_recovered'] + res[f'n_{group}_infected']) /
-                    res[f'n_{group}_popsize'])
+                    res[f'n_{group}_infected'] / res[f'n_{group}_popsize'])
         param = ','.join(f'{k}={v}' for k, v in res.items())
         self.logger.write(
             f'{self.logger.id}\t{time:.2f}\t{EventType.STAT.name}\t.\t{param}\n'

@@ -74,8 +74,11 @@ class Individual(object):
 
         self.infected = float(time - lead_time)
 
-        handle_symptomatic = kwargs.get('handle_symptomatic', ['remove', 1])
-
+        if 'handle_symptomatic' not in kwargs or kwargs[
+                'handle_symptomatic'] is None:
+            handle_symptomatic = ['remove', 1]
+        else:
+            handle_symptomatic = kwargs['handle_symptomatic']
         # show symptom
         kept = True
         evts = []
