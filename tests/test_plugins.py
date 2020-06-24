@@ -126,3 +126,14 @@ def test_plugin_setparam():
         '--jobs', '1', '--repeats', '100', '--plugin', 'setparam', '--at', '1',
         '--asymptomatic-r0', '0.4'
     ])
+
+
+def test_plugin_insert():
+    main([
+        '--jobs', '1', '--repeats', '100', '--stop-if', 't>10', '--plugin',
+        'insert', '2', '--at', '1'
+    ])
+    main([
+        '--jobs', '1', '--repeats', '100', '--stop-if', 't>10', '--plugin',
+        'insert', '2', '--interval', '1'
+    ])

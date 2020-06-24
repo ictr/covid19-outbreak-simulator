@@ -340,11 +340,16 @@ class Population(object):
 
     def __init__(self, popsize, uneven_susceptibility=False):
         self.individuals = {}
-        self.popsize = popsize
+        self.subpops = {(ps.split('=', 1)[0] if '=' in ps else ''):
+                        (int(ps.split('=', 1)[1]) if '=' in ps else int(ps))
+                        for ps in popsize}
         self.uneven_susceptibility = uneven_susceptibility
 
     def add(self, items):
+        sz = len(self.individuals)
         self.individuals.update({x.id: x for x in items})
+        if sz + len(items) != len(self.individuals):
+            raise ValueError(f'One or more IDs are already in the population.')
 
     def remove(self, item):
         self.individuals.pop(item)

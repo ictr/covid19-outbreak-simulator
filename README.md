@@ -410,6 +410,15 @@ optional arguments:
 
 ```
 
+
+### Plugin `insert`
+
+```
+% outbreak_simulator --plugin insert -h
+
+
+```
+
 ### Plugin `quarantine`
 
 
@@ -723,6 +732,7 @@ days, with an ending seroprevalence of `2.2%`.
 
 ## Heterogeneous situation
 
+Now, let us assum
 
 ### Specigy group-specific parameters
 

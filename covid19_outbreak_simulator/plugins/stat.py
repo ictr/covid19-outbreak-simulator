@@ -48,8 +48,8 @@ class stat(BasePlugin):
                 x for x, ind in population.items()
                 if ind.infected not in (False, None) and ind.group == group
             ])
-            res[f'n_{group}_active'] = res['n_{group}_infected'] - res[
-                'n_{group}_recovered']
+            res[f'n_{group}_active'] = res[f'n_{group}_infected'] - res[
+                f'n_{group}_recovered']
             res[f'n_{group}_popsize'] = len(
                 [x for x, ind in population.items() if ind.group == group])
             res[f'{group}_incidence_rate'] = 0 if res[
