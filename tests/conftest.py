@@ -29,7 +29,7 @@ def simulator(params, logger):
     simu_args.repeat = 1
     simu_args.handle_symptomatic = 'remove'
 
-    return Simulator(params=params, logger=logger, simu_args=simu_args)
+    return Simulator(params=params, logger=logger, simu_args=simu_args, cmd=[])
 
 
 @pytest.fixture
