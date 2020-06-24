@@ -7,6 +7,7 @@ library(ggExtra)
 plot_time_vs_size <- function(logfile, title, output) {
     data <- read.table(logfile, sep = "\t", header = 1)
     end_count <- data[data["event"] == "END", ]
+    end_count$target <- as.numeric(end_count$target)
 
 
     p <- ggplot(end_count, aes(x = time, y = target)) +
