@@ -267,7 +267,7 @@ def summarize_simulations(logfile):
     for item, timed_value in timed_stats.items():
         for time, value in timed_value.items():
             values = [x.strip() for x in value.split(',')]
-            if len(set(values)) == 1:
+            if len(set(values)) == 1 and len(values) > 1:
                 value = f'[{values[0]}] * {len(values)}'
                 print(f'{item}_{time}\t{value}')
             else:
@@ -283,7 +283,7 @@ def summarize_simulations(logfile):
     for item, timed_value in customized_stats.items():
         for time, value in timed_value.items():
             values = [x.strip() for x in value.split(',')]
-            if len(set(values)) == 1:
+            if len(set(values)) == 1 and len(values) > 1:
                 value = f'[{values[0]}] * {len(values)}'
                 print(f'{item}_{time}\t{value}')
             else:
