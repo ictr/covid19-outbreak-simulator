@@ -752,9 +752,9 @@ to infect others, the situation will get much worse.
 
 ```sh
 outbreak_simulator  --popsize 34993 -j1 --rep 1 --handle-symptomatic quarantine_14 0.75 \
-    --logfile pop_quarantine_.75.log > pop_quarantine_.75.txt \
+    --logfile pop_quarantine_.75.log  \
     --plugin init --seroprevalence 0.01214 --incidence-rate 0.003036 \
-    --plugin stat --interval 1
+    --plugin stat --interval 1 > pop_quarantine_.75.txt
 ```
 
 The simulation shows that the outbreak will last 223 days with a seroprevalence of `32%`.
@@ -768,9 +768,9 @@ Let us assume that we can tighten up social distancing to half the R0 from 0.7 t
 
 ```sh
 outbreak_simulator  --popsize 34993 -j1 --rep 1 --handle-symptomatic quarantine_14 1 \
-    --logfile pop_distancing_at_20.log > pop_distancing_at_20.txt \
+    --logfile pop_distancing_at_20.log  \
     --plugin init --seroprevalence 0.01214 --incidence-rate 0.003036 \
-    --plugin stat --interval 1 \
+    --plugin stat --interval 1 > pop_distancing_at_20.txt \
     --plugin setparam --symptomatic-r0 1.2 2.4 --at 20
 ```
 
@@ -782,10 +782,11 @@ Now, what if we start social distancing earlier, say at day 10?
 
 ```sh
 outbreak_simulator  --popsize 34993 -j1 --rep 1 --handle-symptomatic quarantine_14 1 \
-    --logfile pop_distancing_at_10.log > pop_distancing_at_10.txt \
+    --logfile pop_distancing_at_10.log  \
     --plugin init --seroprevalence 0.01214 --incidence-rate 0.003036 \
     --plugin stat --interval 1 \
-    --plugin setparam --symptomatic-r0 1.2 2.4 --at 10
+    --plugin setparam --symptomatic-r0 1.2 2.4 --at 10 \
+    > pop_distancing_at_10.txt
 ```
 
 The peak happens after day 10 at around 200 cases per day. The outbreak stops after 80
@@ -793,7 +794,23 @@ days, with an ending seroprevalence of `2.2%`.
 
 ## Heterogeneous situation
 
-Now, let us assum
+Now, let us assume that we have a population with two subpopulations `A` and `B`, be they workers and guest, doctors and patients. Now let us assume that subpopulation `A` is more
+susceptible (more contact with others), and more infectious. Let us also assume that
+there is a intermediate inflow of `A` to the population, half of them would be carriers.
+This simulation can be written as
+
+```sh
+outbreak_simulator --popsize A=2000 B=500 --rep 10 --handle-symptomatic quarantine_14 1 \
+  --susceptibility A=1.2 --symptomatic-r0 A=1.2 B=0.8 --logfile hetero.log \
+  --stop-if 't>40' \
+  --plugin stat --interval 1 \
+  --plugin insert A=5 --prop-of-infected 0.5 --interval 1 \
+  > hetero.txt
+
+```
+
+because the continuous injection of cases, the outbreak will not stop by itself so we have
+to use `--stop-at 't>40'` to set the duration of the simulation.
 
 ### Specigy group-specific parameters
 
