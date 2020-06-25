@@ -94,30 +94,31 @@ class Individual(object):
                     EventType.SHOW_SYMPTOM,
                     target=self.id,
                     logger=self.logger))
-            #
-            if self.quarantined and self.quarantined > symp_time:
-                # show symptom during quarantine, ok
-                pass
-            elif handle_symptomatic[0] in ('remove', 'keep'):
-                if len(handle_symptomatic) == 1:
-                    proportion = 1
-                else:
-                    try:
-                        proportion = float(handle_symptomatic[1])
-                    except Exception:
-                        raise ValueError(
-                            f'Proportion in "--handle-symptomatic remove/keep prop" should be a float number: {handle_symptomatic[1]} provided'
-                        )
-                if proportion > 1 or proportion < 0:
+        #
+        if self.quarantined and self.quarantined > symp_time:
+            # show symptom during quarantine, ok
+            pass
+        elif handle_symptomatic[0] in ('remove', 'keep'):
+            if len(handle_symptomatic) == 1:
+                proportion = 1
+            else:
+                try:
+                    proportion = float(handle_symptomatic[1])
+                except Exception:
                     raise ValueError(
-                        f'Proportion in "--handle-symptomatic remove/keep prop" should be a float number between 0 and 1: {proportion} provided'
+                        f'Proportion in "--handle-symptomatic remove/keep prop" should be a float number: {handle_symptomatic[1]} provided'
                     )
-                if (handle_symptomatic[0] == 'keep' and
-                        np.random.uniform(0, 1, 1)[0] > proportion) or (
-                            handle_symptomatic[0] == 'remove' and
-                            (proportion == 1 or
-                             np.random.uniform(0, 1, 1)[0] <= proportion)):
-                    kept = False
+            if proportion > 1 or proportion < 0:
+                raise ValueError(
+                    f'Proportion in "--handle-symptomatic remove/keep prop" should be a float number between 0 and 1: {proportion} provided'
+                )
+            if (handle_symptomatic[0] == 'keep' and
+                    np.random.uniform(0, 1, 1)[0] > proportion) or (
+                        handle_symptomatic[0] == 'remove' and
+                        (proportion == 1 or
+                         np.random.uniform(0, 1, 1)[0] <= proportion)):
+                kept = False
+                if symp_time >= 0:
                     evts.append(
                         # scheduling REMOVAL
                         Event(
@@ -125,33 +126,39 @@ class Individual(object):
                             EventType.REMOVAL,
                             target=self.id,
                             logger=self.logger))
-            elif handle_symptomatic[0].startswith('quarantine'):
-                if handle_symptomatic[0] == 'quarantine':
-                    quarantine_duration = 14
                 else:
-                    try:
-                        quarantine_duration = float(handle_symptomatic[0].split(
-                            '_', 1)[1])
-                    except Exception:
-                        raise ValueError(
-                            f'quanrantine duration should be specified as "quarantine_DURATION": {handle_symptomatic[0]} provided'
-                        )
-                if len(handle_symptomatic) == 1:
-                    proportion = 1
-                else:
-                    try:
-                        proportion = float(handle_symptomatic[1])
-                    except Exception:
-                        raise ValueError(
-                            f'Proportion in "--handle-symptomatic quarantine_DURATION prop" should be a float number: {handle_symptomatic[1]} provided'
-                        )
-                if proportion > 1 or proportion < 0:
-                    raise ValueError(
-                        f'Proportion in "--handle-symptomatic quarantine_DUURATION prop" should be a float number between 0 and 1: {proportion} provided'
+                    # just remove
+                    self.logger.write(
+                        f'{self.logger.id}\t{time:.2f}\t{EventType.WARNING.name}\t{self.id}\tmsg="Individual not removed before it show symptom before {time}"\n'
                     )
-                if proportion == 1 or np.random.uniform(0, 1,
-                                                        1)[0] <= proportion:
-                    kept = False
+
+        elif handle_symptomatic[0].startswith('quarantine'):
+            if handle_symptomatic[0] == 'quarantine':
+                quarantine_duration = 14
+            else:
+                try:
+                    quarantine_duration = float(handle_symptomatic[0].split(
+                        '_', 1)[1])
+                except Exception:
+                    raise ValueError(
+                        f'quanrantine duration should be specified as "quarantine_DURATION": {handle_symptomatic[0]} provided'
+                    )
+            if len(handle_symptomatic) == 1:
+                proportion = 1
+            else:
+                try:
+                    proportion = float(handle_symptomatic[1])
+                except Exception:
+                    raise ValueError(
+                        f'Proportion in "--handle-symptomatic quarantine_DURATION prop" should be a float number: {handle_symptomatic[1]} provided'
+                    )
+            if proportion > 1 or proportion < 0:
+                raise ValueError(
+                    f'Proportion in "--handle-symptomatic quarantine_DUURATION prop" should be a float number between 0 and 1: {proportion} provided'
+                )
+            if proportion == 1 or np.random.uniform(0, 1, 1)[0] <= proportion:
+                kept = False
+                if symp_time >= 0:
                     evts.append(
                         # scheduling QUARANTINE
                         Event(
@@ -160,10 +167,12 @@ class Individual(object):
                             target=self.id,
                             logger=self.logger,
                             till=symp_time + quarantine_duration))
-            else:
-                raise ValueError(
-                    f'Unrecognizable symptomatic case handling method: {" ".join(handle_symptomatic)}'
-                )
+                else:
+                    self.quarantined = symp_time + quarantine_duration
+        else:
+            raise ValueError(
+                f'Unrecognizable symptomatic case handling method: {" ".join(handle_symptomatic)}'
+            )
         #
         # infect others
         x_grid, trans_prob = self.model.get_symptomatic_transmission_probability(

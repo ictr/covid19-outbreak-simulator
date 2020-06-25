@@ -32,7 +32,9 @@ class EventType(Enum):
     END = 12
     # ERROR
     ERROR = 13
-    PLUGIN = 14
+    WARNING = 14
+    #
+    PLUGIN = 15
 
 
 class Event(object):
