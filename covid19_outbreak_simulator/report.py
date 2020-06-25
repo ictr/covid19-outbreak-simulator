@@ -121,11 +121,14 @@ def summarize_simulations(logfile):
                     try:
                         key, value = param.split('=')
                         if time in timed_stats[key]:
-                            timed_stats[key][time] += ', ' + value.strip()
+                            timed_stats[key][
+                                time] += ', ' + f'{id}:{value.strip()}'
                         else:
-                            timed_stats[key][time] = value.strip()
+                            timed_stats[key][time] = f'{id}:{value.strip()}'
                     except Exception:
                         pass
+            elif event == 'WARNING':
+                pass
             elif event == 'ERROR':
                 # an error has happened
                 # params = line.split('\t')[-1]
@@ -274,10 +277,12 @@ def summarize_simulations(logfile):
                 print(f'{item}_{time}\t{value.strip()}')
         for time, value in timed_value.items():
             try:
-                value = eval(value)
+                value = eval('{' + value + '}')
                 if len(value) > 1:
-                    value = '{:.3f}'.format(sum(value) / len(value))
-                    print(f'avg_{item}_{time}\t{value}')
+                    total = sum(value.values())
+                    print(
+                        f'avg_{item}_{time}\t{total/len(value):.4f}, {total/args.repeats:.4f}'
+                    )
             except:
                 pass
     for item, timed_value in customized_stats.items():
@@ -290,9 +295,11 @@ def summarize_simulations(logfile):
                 print(f'{item}_{time}\t{value.strip()}')
         for time, value in timed_value.items():
             try:
-                value = eval(value)
+                value = eval('{' + value + '}')
                 if len(value) > 1:
-                    value = '{:.3f}'.format(sum(value) / len(value))
-                    print(f'avg_{item}_{time}\t{value}')
+                    total = sum(value.values())
+                    print(
+                        f'avg_{item}_{time}\t{total/len(value):.4f}, {total/args.repeats:.4f}'
+                    )
             except:
                 pass

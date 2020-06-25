@@ -652,6 +652,11 @@ multiple replicated simulations. The output contains the following keys and thei
 | `EVENT_STAT_XXX` | Reported statistics `STAT` for customized event `EVENT` at time `XXX` a list if multiple replicates |
 | `avg_EVENT_STAT_XXX` | Average reported statistics `STAT` for customized event `EVENT` at time `XXX` if there are multiple replicates |
 
+NOTE: All `avg_` fields have average over existing replicates, and all replicates. For
+example, if at time 100, 8 of the replicate simulations have completed and the rest 2
+have population size 5, and 10, the average population size will be reported as
+`7.5` (`5+10/2`) and `0.15` (`5+10/10`).
+
 ## Data analysis tools
 
 Because all the events have been recorded in the log files, it should not be too difficult for
@@ -733,9 +738,9 @@ is as follows:
 
 ```sh
 outbreak_simulator  --popsize 34993 -j1 --rep 1 --handle-symptomatic quarantine_14 1 \
-    --logfile pop_quarantine_all.log > pop_quarantine_all.txt \
+    --logfile pop_quarantine_all.log  \
     --plugin init --seroprevalence 0.01214 --incidence-rate 0.003036 \
-    --plugin stat --interval 1
+    --plugin stat --interval 1 > pop_quarantine_all.txt
 ```
 
 The simulation shows that the last case will recover after 173 days with 4.18% seroprevalence,
