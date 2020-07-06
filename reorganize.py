@@ -41,9 +41,8 @@ def fill_cells(dictionary,dataframe):
 
 def reorganize(input,output):
     #opens txt file
-    with open(input) as f:
-        pq_lines = f.readlines()
-
+    pq_lines = input
+    
     #creates dictionary
     pq_dict = {}
     for i in pq_lines:
@@ -71,7 +70,7 @@ def reorganize(input,output):
     pq_df = pq_df.dropna(axis = 1, how = 'all')
 
     #prints to csv file or to standard output
-    if output == '':
+    if output is None:
         pq_df.to_csv(sys.stdout)
     else:
         pq_df.to_csv(output)
@@ -79,17 +78,33 @@ def reorganize(input,output):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        '-inp', 
-        default = sys.stdin.readline().strip('\n'),
+        '-i', '--input',
         nargs = '?',
         help = 'txt file or path to convert'
         )
     parser.add_argument(
-        '-out', 
+        '-o', '--output',  
         nargs = '?',
-        default = sys.stdin.readline().strip('\n'),
         help = 'file to convert to'
         )
+    parser.add_argument(
+        '-s',
+        nargs = '?',
+        default = 'no read',
+        help = 'reads from sys.stdin',
+        dest = 'stdin'
+        )
     args = parser.parse_args()
-    print(args)
-    reorganize(args.inp,args.out)
+    if args.input:
+        with open(args.input) as f:
+            lines = f.readlines()
+        reorganize(lines,args.output)
+        quit()
+    if args.stdin is None: 
+        print(sys.stdin.readlines())
+        reorganize(sys.stdin,args.output)
+        quit()
+    else:
+        print('No Input or Output')
+        quit()
+
