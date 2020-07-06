@@ -80,31 +80,23 @@ if __name__ == '__main__':
     parser.add_argument(
         '-i', '--input',
         nargs = '?',
-        help = 'txt file or path to convert'
+        help = 'txt file or path to convert; calling -i - or --input - allows for standard input'
         )
     parser.add_argument(
         '-o', '--output',  
         nargs = '?',
-        help = 'file to convert to'
-        )
-    parser.add_argument(
-        '-s',
-        nargs = '?',
-        default = 'no read',
-        help = 'reads from sys.stdin',
-        dest = 'stdin'
+        help = 'file to convert to; default is standard output'
         )
     args = parser.parse_args()
-    if args.input:
+    if args.input is None:
+        print('No Input')
+        quit()
+    if args.input == '-':
+        print('\n Input:')
+        lines = sys.stdin.readlines()
+        print(lines)
+    else:
         with open(args.input) as f:
             lines = f.readlines()
-        reorganize(lines,args.output)
-        quit()
-    if args.stdin is None: 
-        print(sys.stdin.readlines())
-        reorganize(sys.stdin,args.output)
-        quit()
-    else:
-        print('No Input or Output')
-        quit()
-
+    reorganize(lines,args.output)
+    
