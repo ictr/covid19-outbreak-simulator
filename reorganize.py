@@ -1,34 +1,22 @@
 #reorganize.py
 #takes the output of the outbreak simulator and turns it into a csv file with relevant data shown in tabular format
 
-import numpy as np
 import pandas as pd
 import re
-import matplotlib.pyplot as plt
+import sys
 import argparse
 
 def identify_timestamps(dictionary):
-    timestamps = [float(x.rsplit('_', 1)[1]) for x in dictionary.keys()]
+    timestamps = [float(x.rsplit('_', 1)[1]) for x in dictionary.keys() if '_' in x]
     return timestamps
 
 def delete_extra(dictionary):
-    del_list = [x for x in dictionary.keys() if re.search(r'\d+', x) == None]
-    for i in del_list:
-        del dictionary[i]
-    name = [x.rsplit('_', 1)[0] for x in dictionary.keys()]
+    temp_dict = {x[0]:x[1] for x in dictionary.items() if re.search(r'\d+', x[0])}
+    
+    name = [x.rsplit('_', 1)[0] for x in temp_dict.keys()]
+    del_list_2 = [x for x in name if name.count(x) < 3]
 
-    del_list_t = []
-    for x in name:
-        count = 0
-        for y in name:
-            if x == y:
-                count += 1
-        if count < 3:
-            del_list_t.append(x)
-        
-    del_list_f = [x for i in del_list_t for x in dictionary.keys() if i == x.rsplit('_', 1)[0]]
-    for i in (list(set(del_list_f))):
-        del dictionary[i]
+    return {x[0]:x[1] for x in temp_dict.items() if x[0].rsplit('_', 1)[0] not in del_list_2}
               
 def identify_columns(dictionary, num_simulations):
     columns = []
@@ -51,9 +39,9 @@ def fill_cells(dictionary,dataframe):
                 value = y[1]
             dataframe.at[row,column] = value
 
-def reorganize(txtfile):
+def reorganize(input,output):
     #opens txt file
-    with open(txtfile) as f:
+    with open(input) as f:
         pq_lines = f.readlines()
 
     #creates dictionary
@@ -64,7 +52,7 @@ def reorganize(txtfile):
     num_simulations = pq_dict['n_simulation']
 
     #finds and deletes keys without time stamps 1. deletes anything without numbers 2. deletes anything that only occurs once
-    delete_extra(pq_dict)
+    pq_dict = delete_extra(pq_dict)
 
     #finds timestamp
     time_index = range(int(max(identify_timestamps(pq_dict))) + 1)
@@ -78,13 +66,30 @@ def reorganize(txtfile):
     #fill cells using dictionary
     fill_cells(pq_dict, pq_df)
 
-    #organize dataframe and print to csv
+    #drops columns with no data
     pq_df = pq_df.astype(float)
     pq_df = pq_df.dropna(axis = 1, how = 'all')
-    pq_df.to_csv('reorg_data.csv')
+
+    #prints to csv file or to standard output
+    if output == '':
+        pq_df.to_csv(sys.stdout)
+    else:
+        pq_df.to_csv(output)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("file", help="txt file to convert")
+    parser.add_argument(
+        '-inp', 
+        default = sys.stdin.readline().strip('\n'),
+        nargs = '?',
+        help = 'txt file or path to convert'
+        )
+    parser.add_argument(
+        '-out', 
+        nargs = '?',
+        default = sys.stdin.readline().strip('\n'),
+        help = 'file to convert to'
+        )
     args = parser.parse_args()
-    reorganize(args.file)
+    print(args)
+    reorganize(args.inp,args.out)
