@@ -7,7 +7,7 @@ import sys
 import argparse
 
 def identify_timestamps(dictionary):
-    timestamps = [float(x.rsplit('_', 1)[1]) for x in dictionary.keys() if '_' in x]
+    timestamps = sorted(set([float(x.rsplit('_', 1)[1]) for x in dictionary.keys() if '_' in x]))
     return timestamps
 
 def delete_extra(dictionary):
@@ -55,7 +55,7 @@ def reorganize(input,output):
     pq_dict = delete_extra(pq_dict)
 
     #finds timestamp
-    time_index = range(int(max(identify_timestamps(pq_dict))) + 1)
+    time_index = (identify_timestamps(pq_dict))
 
     #finds column name
     column_names = identify_columns(pq_dict,num_simulations)
