@@ -681,7 +681,22 @@ and produces a figure
 
 [`contrib/merge_summary.py`](https://github.com/ictr/covid19-outbreak-simulator/blob/master/contrib/merge_summary.py) is a script to merge summary stats from multiple simulation runs.
 
+### `report2csv.py`
 
+[`contrib/report2csv.py`](https://github.com/ictr/covid19-outbreak-simulator/blob/master/contrib/report2csv.py) converts time-stamped statistics in the report generates from the
+simulator to a csv format. It can be called as
+
+```
+output_simulator OPTIONS | python contrib/report2csv.py
+```
+or be applied to output saved to a file
+
+```
+python contrib/report2csv.py OUTPUT
+```
+
+The output is by default written to standard output, but can be specified with option
+`--output`. Option `--seps` can be used to specify delimiter of the output.
 
 # Examples
 
