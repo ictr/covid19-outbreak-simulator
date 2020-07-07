@@ -76,7 +76,8 @@ def report2csv(ifile, ofile, **kwargs):
 
     # create pandas dataframe
     pq_df = pd.DataFrame(columns=column_names, index=time_index)
-
+    pq_df.index.name = 'time'
+    
     # fill cells using dictionary
     fill_cells(pq_dict, pq_df)
 
