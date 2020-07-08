@@ -13,7 +13,7 @@ def identify_timestamps(dictionary):
 
 def delete_extra(dictionary):
     temp_dict = {
-        x[0]: x[1] for x in dictionary.items() if re.search(r'\d+', x[0])
+        x[0]: x[1] for x in dictionary.items() if re.search(r'\.', x[0])
     }
 
     name = [x.rsplit('_', 1)[0] for x in temp_dict.keys()]
