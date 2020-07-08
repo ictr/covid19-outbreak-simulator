@@ -37,7 +37,7 @@ def identify_columns(dictionary, num_simulations):
 
 def fill_cells(dictionary, dataframe):
     for x in dictionary.keys():
-        row = int(float(x.rsplit('_', 1)[1]))
+        row = float(x.rsplit('_', 1)[1])
         value_list = (dictionary[x].strip('\n').split(', '))
         for y in enumerate(value_list):
             if re.search(':', y[1]):
