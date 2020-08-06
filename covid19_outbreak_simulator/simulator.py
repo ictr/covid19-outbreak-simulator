@@ -195,7 +195,8 @@ class Simulator(object):
                 if isinstance(evt, Event):
                     all_plugin = False
 
-            if not events or aborted or all_plugin:
+            if not events or aborted or (all_plugin and
+                                         self.simu_args.stop_if is None):
                 break
             # if self.simu_args.handle_symptomatic and all(
             #         x.infected for x in population.values()):

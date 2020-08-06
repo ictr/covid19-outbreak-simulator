@@ -361,6 +361,10 @@ class Population(object):
         if sz + len(items) != len(self.individuals):
             raise ValueError(f'One or more IDs are already in the population.')
 
+    @property
+    def ids(self):
+        return self.individuals.keys()
+
     def remove(self, item):
         self.individuals.pop(item)
 

@@ -71,6 +71,10 @@ class BasePlugin(object):
 
     def get_plugin_events(self, args):
         events = []
+
+        if args.interval is not None and args.interval <= 0:
+            return events
+
         if args.start is not None:
             events.append(
                 PlugInEvent(

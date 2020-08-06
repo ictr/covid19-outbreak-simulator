@@ -33,7 +33,11 @@ class pcrtest(BasePlugin):
 
     def apply(self, time, population, args=None):
         if args.IDs:
-            IDs = args.IDs
+            IDs = [
+                x for x in args.IDs
+                if isinstance(population[x].infected, float) and
+                not isinstance(population[x].recovered, float)
+            ]
         else:
             IDs = [
                 x for x, y in population.items()
@@ -67,4 +71,7 @@ class pcrtest(BasePlugin):
             else:
                 raise ValueError(
                     'Unsupported action for patients who test positive.')
+        self.logger.write(
+            f'{self.logger.id}\t{time:.2f}\t{EventType.PLUGIN.name}\t.\tname=pcrtest,n_detected={len(IDs)}\n'
+        )
         return events
