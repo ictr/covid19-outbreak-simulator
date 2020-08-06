@@ -1,5 +1,4 @@
 import pandas as pd
-import re
 import sys
 import argparse
 
@@ -13,7 +12,7 @@ def identify_timestamps(dictionary):
 
 def delete_extra(dictionary):
     temp_dict = {
-        x[0]: x[1] for x in dictionary.items() if re.search(r'\d+', x[0])
+        x[0]: x[1] for x in dictionary.items() if '.' in x[0]
     }
 
     name = [x.rsplit('_', 1)[0] for x in temp_dict.keys()]
@@ -38,7 +37,7 @@ def identify_columns(dictionary, num_simulations):
 
 def fill_cells(dictionary, dataframe):
     for x in dictionary.keys():
-        row = int(float(x.rsplit('_', 1)[1]))
+        row = float(x.rsplit('_', 1)[1])
         value_list = (dictionary[x].strip('\n').split(', '))
         for y in enumerate(value_list):
             if re.search(':', y[1]):
@@ -76,7 +75,8 @@ def report2csv(ifile, ofile, **kwargs):
 
     # create pandas dataframe
     pq_df = pd.DataFrame(columns=column_names, index=time_index)
-
+    pq_df.index.name = 'time'
+    
     # fill cells using dictionary
     fill_cells(pq_dict, pq_df)
 
