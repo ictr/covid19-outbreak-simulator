@@ -505,6 +505,44 @@ optional arguments:
 
 ```
 
+### Plugin `community`
+
+This plugin models community infection where everyone has a pre-specified probabilty
+of getting affected. The probability will be multiplies by population-specific susceptibility
+values if option `--susceptibility` is specified.
+
+
+```
+% outbreak_simulator --plugin community -h
+
+usage: --plugin community [-h] [--start START] [--end END] [--at AT [AT ...]]
+                          [--interval INTERVAL]
+                          [--trigger-by [TRIGGER_BY [TRIGGER_BY ...]]]
+                          [--probability PROBABILITY]
+
+Community infection that infect everyone in the population randomly.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --start START         Start time. Default to 0 no parameter is defined so the plugin
+                        will be called once at the beginning.
+  --end END             End time, default to none, meaning there is no end time.
+  --at AT [AT ...]      Specific time at which the plugin is applied.
+  --interval INTERVAL   Interval at which plugin is applied, it will assume a 0
+                        starting time if --start is left unspecified.
+  --trigger-by [TRIGGER_BY [TRIGGER_BY ...]]
+                        Events that triggers this plug in.
+  --probability PROBABILITY
+                        The probability of anyone to be affected at a given interval,
+                        which is usually per day (with option --interval 1). If
+                        individuals have different susceptibility specified by option
+                        --susceptibility, the probability will be multiplied by the
+                        susceptibility multipliers, The infection events do not have to
+                        cause actual infection because the individual might be in
+                        quarantine, or has been infected. The default value of this
+                        parameter is 0.005.
+```
+
 ## Implementation of plugins
 
 Implementation wise, the plugins should be written as Python classes that
