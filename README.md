@@ -505,7 +505,7 @@ optional arguments:
 
 ```
 
-### Plugin `community`
+### Plugin `community_spread`
 
 This plugin models community infection where everyone has a pre-specified probabilty
 of getting affected. The probability will be multiplies by population-specific susceptibility
@@ -513,12 +513,12 @@ values if option `--susceptibility` is specified.
 
 
 ```
-% outbreak_simulator --plugin community -h
+% outbreak_simulator --plugin community_spread -h
 
-usage: --plugin community [-h] [--start START] [--end END] [--at AT [AT ...]]
-                          [--interval INTERVAL]
-                          [--trigger-by [TRIGGER_BY [TRIGGER_BY ...]]]
-                          [--probability PROBABILITY]
+usage: --plugin community_spread [-h] [--start START] [--end END] [--at AT [AT ...]]
+                                 [--interval INTERVAL]
+                                 [--trigger-by [TRIGGER_BY [TRIGGER_BY ...]]]
+                                 [--probability PROBABILITY]
 
 Community infection that infect everyone in the population randomly.
 
