@@ -1,50 +1,30 @@
 ---
-title: Welcome
+title: Getting started
 permalink: /docs/home/
 redirect_from: /docs/index.html
 ---
 
-## Getting started
 
-[GitHub Pages](https://pages.github.com) can automatically generate and serve the website for you.
-Let's say you have a username/organisation `my-org` and project `my-proj`; if you locate Jekyll source under `docs` folder of master branch in your repo `github.com/my-org/my-proj`, the website will be served on `my-org.github.io/my-proj`.
-The good thing about coupling your documentation with the source repo is, whenever you merge features with regarding content to master branch, it will also be published on the webpage instantly.
+The COVID-19 outbreak simulator simulates is an individual based stochastic simulator that simulates the outbreak of COVID-19
+in a population, subject to changes of population (addition and removal of individuals), model (e.g. production number
+to mimic varying level of social distancing), and various preventative (quarantine, testing) and post-outbreak
+opeartions (quarantine, testing, removal of symptomatic individuals etc). With realistic modeling of the course of
+infection of each individual, this simulator can be used to simulate a variety of scenarios for risk assessment and
+continuity planning.
 
-1. Just [download the source](https://github.com/aksakalli/jekyll-doc-theme/archive/gh-pages.zip) into your repo under `docs` folder.
-2. Edit site settings in  `_config.yml` file according to your project. !!! `baseurl` should be your website's relative URI like `/my-proj` !!!
-3. Replace `favicon.ico` and `assets/img/logonav.png` with your own logo.
+The simulator provides
 
-## Writing content
+* At the low level
+  * A core simulator that simulates the dynamic of populations over time.
+  * A plugin system that provides multiple plugins for different applications.
+  * Multiple scripts and tools to analyze executed simulations and generate reports.
 
-### Docs
+* At a higher level
+  * Notebooks that apply the simulator for different applications, with command
+    used and analysis of results.
+  * Utility to execute the notebooks with different parameters, which can be considered
+    a higher level interface for the simulator.
 
-Docs are [collections](https://jekyllrb.com/docs/collections/) of pages stored under `_docs` folder. To create a new page:
+This README file contains all essential
 
-**1.** Create a new Markdown as `_docs/my-page.md` and write [front matter](https://jekyllrb.com/docs/frontmatter/) & content such as:
-
-```
----
-title: My Page
-permalink: /docs/my-page/
----
-
-Hello World!
-```
-
-**2.** Add the pagename to `_data/docs.yml` file in order to list in docs navigation panel:
-
-```
-- title: My Group Title
-  docs:
-  - my-page
-```
-
-### Blog posts
-
-Add a new Markdown file such as `2017-05-09-my-post.md` and write the content similar to other post examples.
-
-### Pages
-
-The homepage is located under `index.html` file. You can change the content or design completely different welcome page for your taste. (You can use [bootstrap components](http://getbootstrap.com/components/))
-
-In order to add a new page, create a new `.html` or `.md` (markdown) file under root directory and link it in `_includes/topnav.html`.
+Please feel free to [contact us](https://github.com/ictr/covid19-outbreak-simulator/issues) if you would like to simulate any particular environment.

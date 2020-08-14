@@ -1,11 +1,14 @@
-- title: Getting Started
+- title: Outbreak Simulator
   docs:
-  - home
-  - themes
-  - customization
+  - models
+  - installation
+  - cli
+  - output
+  - plugins
+  - contrib
 
-- title: Examples
+- title: Applications
   docs:
-  - cheatsheet
-  - font-awesome
-  - bootstrap
+  - fpso
+  - sampling
+  - testing
