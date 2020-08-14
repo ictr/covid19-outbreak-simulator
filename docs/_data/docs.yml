@@ -1,4 +1,4 @@
-- title: Outbreak Simulator
+- title: Documentation
   docs:
   - models
   - installation
@@ -6,9 +6,3 @@
   - output
   - plugins
   - contrib
-
-- title: Applications
-  docs:
-  - fpso
-  - sampling
-  - testing
