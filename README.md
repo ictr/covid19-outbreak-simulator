@@ -7,11 +7,12 @@
 
 
 
-
-
-The COVID-19 outbreak simulator simulates the outbreak of COVID-19 in a population. It was first designed to simulate
-the outbreak of COVID-19 in small populations in enclosed environments, such as a FPSO (floating production storage and
-offloading vessel) but has since been expanded to simulate much larger populations with dynamic parameters.
+The COVID-19 outbreak simulator simulates is an individual based stochastic simulator that simulates the outbreak of COVID-19
+in a population, subject to changes of population (addition and removal of individuals), model (e.g. production number
+to mimic varying level of social distancing), and various preventative (quarantine, testing) and post-outbreak
+opeartions (quarantine, testing, removal of symptomatic individuals etc). With realistic modeling of the course of
+infection of each individual, this simulator can be used to simulate a variety of scenarios for risk assessment and
+continuity planning.
 
 This README file contains all essential information but you can also visit our [documentation](https://covid19-outbreak-simulator.readthedocs.io/en/latest/?badge=latest) for more details. Please feel free to [contact us](https://github.com/ictr/covid19-outbreak-simulator/issues) if you would like to simulate any particular environment.
 
