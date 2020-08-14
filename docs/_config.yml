@@ -9,6 +9,7 @@ remote_theme: aksakalli/jekyll-doc-theme@gh-pages
 baseurl: "/covid19-outbreak-simulator"
 url: https://ictr.github.io
 git_address: https://github.com/ictr/covid19-outbreak-simulator
+git_edit_address: https://github.com/ictr/covid19-outbreak-simulator/blob/master/docs/
 
 # theme options from https://bootswatch.com/3/
 # comment out this to use default Bootstrap

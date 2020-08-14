@@ -1,6 +1,6 @@
 ---
 title: Post-simulation data analysis
-permalink: /docs/contrib/
+permalink: /docs/extensions/
 ---
 
 
