@@ -1,10 +1,10 @@
 - title: Documentation
   docs:
-  - models
   - installation
+  - models
   - cli
-  - output
   - plugins
+  - output
   - extensions
   - contributing
   - changelog

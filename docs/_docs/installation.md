@@ -4,69 +4,41 @@ permalink: /docs/installation/
 ---
 
 
-## Installation
-
-This simulator is programmed using Python >= 3.6 with `numpy` and `scipy`. A conda environment is
-recommended. After setting up a conda environment with Python >= 3.6 and these two packages,
-please run
+This simulator is programmed using Python >= 3.6 with `numpy` and `scipy`. With a Python 3.6+
+environment, you can install the simulator with command
 
 ```
-pip install -r requirements.txt
+$ pip install covid19-outbreak-simulator
 ```
-
-to install required packages, and then
-
-```
-pip install covid19-outbreak-simulator
-```
-
-to install the simulator.
-
 
 You can then use command
 
 ```
-outbreak_simulator -h
+$ outbreak_simulator -h
 ```
 
 to check if you have successfully installed the simulator, and the usage information of the basic simulator,
-
-```
-outbreak_simualtor --plugin -h
-```
-to get decription of common parameters for plugins, and
-
-```
-outbreak_simulator --plugin plugin_name -h
-```
-to get the usage information of a particular plugin.
-
 
 
 ## Installation from source (for developers)
 
 
-The sources for COVID-19 Outbreak Simulator can be downloaded from the `Github repo`_.
-
-You can either clone the public repository:
-
+The sources for COVID-19 Outbreak Simulator can be downloaded from the [`Github repo`](https://github.com/ictr/covid19-outbreak-simulator). After cloning the repo to a local directory with command
 
 ```
-    $ git clone git://github.com/ictr/covid19-outbreak-simulator
+$ git clone git://github.com/ictr/covid19-outbreak-simulator
 ```
 
-
-Once you have a copy of the source, you can install it with:
-
+you can install it with:
 
 ```
-    $ pip install
+$ pip install
 ```
 
 The command
 
 ```
-    $ pip install -e .
+$ pip install -e .
 ```
 
 is very much recommended because it installs the simulator "in place" in the sense

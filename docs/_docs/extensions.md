@@ -4,12 +4,12 @@ permalink: /docs/extensions/
 ---
 
 
-Because all the events have been recorded in the log files, it should not be too difficult for
+Because all the events have been recorded in the log files, it should not be too difficult forconfig
 you to write your own script (e.g. in R) to analyze them and produce nice figures. We however
 made a small number of tools available. Please feel free to submit or own script for inclusion in the `contrib`
 library.
 
-### `time_vs_size.R`
+## Plot duration vs remaining population size for multiple replicates
 
 The [`contrib/time_vs_size.R`](https://github.com/ictr/covid19-outbreak-simulator/blob/master/contrib/time_vs_size.R) script provides an example on how to process the data and produce
 a figure. It can be used as follows:
@@ -20,13 +20,14 @@ Rscript time_vs_size.R  simulation.log 'COVID19 Outbreak Simulation with Default
 
 and produces a figure
 
-![time_vs_size.png](https://raw.githubusercontent.com/ictr/covid19-outbreak-simulator/master/contrib/time_vs_size.png)
+![time_vs_size.png](https://raw.githubusercontent.com/ictr/covid19-outbreak-simulator/master/contrib/time_vs_size.png){: height="400px" width="600px"}
 
-### `merge_summary.py`
+
+## Merge summary reports from multiple runs
 
 [`contrib/merge_summary.py`](https://github.com/ictr/covid19-outbreak-simulator/blob/master/contrib/merge_summary.py) is a script to merge summary stats from multiple simulation runs.
 
-### `report2csv.py`
+## Convert summary report to `csv` format
 
 [`contrib/report2csv.py`](https://github.com/ictr/covid19-outbreak-simulator/blob/master/contrib/report2csv.py) converts time-stamped statistics in the report generates from the
 simulator to a csv format. It can be called as

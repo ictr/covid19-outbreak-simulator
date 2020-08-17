@@ -1,5 +1,5 @@
 ---
-title: Plugin system
+title: The plugin system
 permalink: /docs/plugins/
 ---
 
@@ -7,34 +7,35 @@ permalink: /docs/plugins/
 It is very likely that for complex simulations you would have scenarios that are
 not provided by the core simulator. This simulator has a plug-in system that allows
 you to define your own functions that would be called by the simulator at specified
-intervals or events.
+time or intervals.
 
 
 ## Specify one or more plugins from command line
 
-To use plugins for a simulation, they should be specified as:
+One or more plugins can be specified with option `--plugin` at the end of the
+`outbreak_simuator` command, for example,
 
 ```bash
 outbreak_simulator \
    # regular parameters
    -j 4 \
-   # first system plugin
-   --plugin contact_tracing --succ-rate 0.8  \
-   # second (customied) plugin
-   --plugin modulename1.plugin_name1 --start 10 --par2 val2 --par3
+   # first plugin
+   --plugin plugin1 --interval 1 --succ-rate 0.8  \
+   # second plugin
+   --plugin plugin_name --start 10 --par2 val2 --par3
 ```
 where
 
 1. Each plugin is defined after a `--plugin` parameter and before another `--plugin` or the end of command line arguments.
 2. A plugin can be a system plugin that is located under the `plugins` directory, or a cutomized plugin that you have defined.
-3. A plugin can be specified by `modulename` if it is the name of the python module and the name of the plugin class, or `modulename.plugin_name` if the class has a different name.
-4. Plugins accept a common set of parameters (e.g. `--start`, `--end`) to define when the plugin will be triggered.
-5. The rest of the plugin parameters will be parsed by the plugin
+3. Plugins accept a common set of parameters (e.g. `--start`, `--end`, `--at` and `--interval`) to define when the plugin will be triggered.
+5. The rest of the plugin parameters will be parsed by the plugin themselves
 
 
-## System plugins
+## Common paramters of plugins
 
-### Common paramters of plugins
+All plugins accept the following parameters, which indicates when the plugins
+will be called.
 
 ```sh
 % outbreak_simulator --plugin -h
@@ -51,6 +52,8 @@ optional arguments:
                         Events that triggers this plug in.
 
 ```
+
+## System plugins
 
 ### Plugin `init`
 
@@ -310,7 +313,11 @@ optional arguments:
 
 Implementation wise, the plugins should be written as Python classes that
 
-1. Drive from `outbreak_simulator.BasePlugin` and calls its `__init__` function. This will point `self.simulator`, and `self.logger` of the plugin to the simulator, population, and logger of the simulator. `simulator` has properties such as `simu_args`, `params`, and `model` so you can access command line simulator arguments, model parameters, and change simulation model (e.g. parameters).
+1. Drive from `outbreak_simulator.BasePlugin` and calls its `__init__` function. This will
+  point `self.simulator`, and `self.logger` of the plugin to the simulator, population, and
+  logger of the simulator. `simulator` has properties such as `simu_args`, `params`, and `model`
+  so you can access command line simulator arguments, model parameters, and change simulation
+  model (e.g. parameters).
 
 2. Provide as member function:
 

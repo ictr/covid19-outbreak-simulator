@@ -10,6 +10,8 @@ requirements = ['tqdm', 'numpy', 'scipy']
 
 setup_requirements = [
     'pytest-runner',
+    'numpy',
+    'pandas',
 ]
 
 test_requirements = [
