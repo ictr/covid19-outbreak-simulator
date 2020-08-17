@@ -18,8 +18,10 @@ layout: default
             <h2 class="header-light regular-pad">A population-based outbreak simulator</h2>
               <p class="lead">COVID-19 Outbreak Simulator is a population-based
               simulator that simulates the spread of SARS-CoV-2 virus in a dynamic
-              population, subject to preventative measures and post-outbreak action
-              plans such as quarantine, testing, and removal of symptomatic cases. </p>
+              and heterogeneous population, subject to preventative measures and post-outbreak action
+              plans such as quarantine, testing, and removal of symptomatic cases. Outputs
+              from the simulator can be used to obtain quantitative measures of the
+              effectiveness of these actions.</p>
         </div>
         <div class="col-md-6 text-center">
             <img src="{{ "/assets/img/illustration.png" | relative_url }}" alt="Jekyll logo" class="img-responsive">
@@ -32,7 +34,7 @@ layout: default
             <h3 class="text-center">Powerful Simulator</h3>
             <p>A simulator with a <a href="/docs/home/">powerful command line interface</a>
              that simulates COVID-19 outbreaks
-            in a heterogeneous population, with dynamic modeling parameters and
+            in a heterogeneous population, with dynamic parameters and
             multiple preventative and interventive actions.
             </p>
         </div>
@@ -40,15 +42,16 @@ layout: default
             <h1 class="text-center"><i class="fa fa-bar-chart" aria-hidden="true"></i></h1>
             <h3 class="text-center">Application-oriented Notebooks</h3>
             <p>Applications in executable <a href="https://jupyter.org/">Jupyter Notebook format</a> that include narratives, simulation
-            steps, and analysis of outputs. providing a higher-level interface for particular
+            steps, and analysis of outputs, providing a higher-level interface for particular
             simulation scenarios.</p>
         </div>
         <div class="col-sm-4">
             <h1 class="text-center"><i class="fa fa-cogs" aria-hidden="true"></i></h1>
             <h3 class="text-center">Extensible by Plugins</h3>
-            <p>The simulator allows the use of plugins to define customized actions,
-              policy, and flow of individuals, to create complex simulation scenarios
-              for your particular applications.
+            <p>Multiple plugins that define different ways to introduce
+            the virus to the population, add and remove of individuals,
+            and various operations such as test and hospitalization, to create complex simulation scenarios
+            for your particular applications.
         </div>
     </div>
 </div>

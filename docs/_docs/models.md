@@ -23,19 +23,6 @@ This simulator simulates the scenario in which
 -   More complex simulation scenarios are provided by a plugin system where actions such as
     contact tracing, sampling can be simulated.
 
-The simulator simulates the epidemic of the population with the introduction of
-infectors. Detailed statistics are captured from the simulations to answer questions
-such as:
-
-1. What is the expected day and distribution for the first person to show
-   symptoms?
-2. How many people are expected to be removed once an outbreak starts?
-3. How effective will self-quarantine before dispatch personnels to an
-   enclosed environment?
-
-The simulator uses the latest knowledge about the spread of COVID-19 and is
-validated against public data. This project will be contantly updated with our
-deepening knowledge on this virus.
 
 
 ## Statistical models
