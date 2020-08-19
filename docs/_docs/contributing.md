@@ -28,3 +28,7 @@ Please
 Please [open a ticket](https://github.com/ictr/covid19-outbreak-simulator/issues)
 to discuss your idea with a specific application scenario. We will be happy to
 guide you through the development of a plugin or write it for you if needed.
+
+## Did you notice typos and other types of improvements that could be made on the documentation?
+
+Please create a pull request that we will be more than happy to merge it.
