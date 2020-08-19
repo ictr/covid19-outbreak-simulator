@@ -3,6 +3,12 @@ title: Installation
 permalink: /docs/installation/
 ---
 
+## Using Docker
+
+If you have docker, you can execute COVID19 Outbreak Simulator directly without installing
+it locally. Please see [Running COVID19 Outbreak Simulator](/docs/cli/) for details.
+
+## Local installation
 
 This simulator is programmed using Python >= 3.6 with `numpy` and `scipy`. With a Python 3.6+
 environment, you can install the simulator with command
