@@ -8,17 +8,62 @@ permalink: /docs/cli/
 If you have docker, you can execute the outbreak simulator directly with command
 
 ```
-$ docker run docker run -it bcmictr/outbreak_simulator_cli [OPTIONS]
+$ docker run -it bcmictr/outbreak_simulator [OPTIONS]
 ```
 
 To make the command easier to use and be consistent with a local installation, you can
 create an alias
 
 ```
-$ alias outbreak_simulator="docker run -it bcmictr/outbreak_simulator_cli"
+$ alias outbreak_simulator="docker run -it bcmictr/outbreak_simulator"
 ```
 
 so that you can execute the docker image directly with command `outbreak_simulator`.
+
+## Running the application notebook
+
+We record [applications of the outbreak simulator](/covid19-outbreak-simulator/applications/FPSO/)
+in [SoS notebooks](https://vatlab.github.io/sos-docs/) which is an extension of [Jupyter notebooks](https://jupyter.org/) that allows
+us to use multiple kernels (e.g. `Python` and `R`) in the same reports.
+We also use [papermill](https://papermill.readthedocs.io/en/latest/)
+to parametrize the notebooks so that you can rerun the notebooks with your own parameters,
+which will execute these applications and generate reports for your particular
+parameters.
+
+You can open and edit the notebooks if you have access to a Jupyter environment
+(e.g. [JupyterLab](https://jupyterlab.readthedocs.io/en/stable/)). However, if
+you only need to rerun the notebooks with your own parameters, you can execute
+them with the following command
+
+```
+$ docker run -it bcmictr/outbreak_simulator_papermill NOTEBOOK [parameters]
+```
+
+where `parameters` should be specified as [papermill parameters](https://papermill.readthedocs.io/en/latest/usage-execute.html).
+
+For example, if you would like to rerun the `FPSO.ipynb` with a larger population
+size, you can
+
+1. Download FPSO.ipynb from the `applications` folder of [our github repository](https://github.com/ictr/covid19-outbreak-simulator/]
+  or checkout the entire repository with command
+
+  ```
+  git clone https://github.com/ictr/covid19-outbreak-simulator.git
+  ```
+
+2. Execute the notebook and optionally convert it to HTML format.
+
+  ```
+  docker run -it bcmictr/outbreak_simulator_notebook FPSO.ipynb FPSO_100.ipynb -p popsize 100
+  ```
+
+  o   docker run -it -v `pwd`:/home/vatlab vatlab/sos-convert FPSO_100.ipynb FPSO_100.html --template sos-report-only
+
+   docker run -it -v `pwd`:/home/vatlab vatlab/sos-convert FPSO_100.ipynb FPSO_100.html --template sos-report-only
+
+
+
+Allowed parameters vary from application to application and are listed in each application notebook.
 
 
 ## Running locally
@@ -127,7 +172,7 @@ optional arguments:
                         number of CPU cores.
 ```
 
-## Examples commands
+## Example commands
 
 ### A small population with the introduction of one carrier
 
