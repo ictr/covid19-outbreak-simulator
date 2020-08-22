@@ -5,43 +5,67 @@ permalink: /docs/cli/
 
 ## Running in Docker
 
-If you have docker, you can execute the outbreak simulator directly with command
+If you have docker installed, you can execute the outbreak simulator directly with command
 
+```shell
+$ docker run -it -v `pwd`:/home/bcmictr bcmictr/outbreak_simulator [OPTIONS]
 ```
-$ docker run -it bcmictr/outbreak_simulator [OPTIONS]
-```
+Here option `-v` is used to map your current directory to the working directory of
+the container so that all output will be written to the current directory.
 
 To make the command easier to use and be consistent with a local installation, you can
 create an alias
 
-```
-$ alias outbreak_simulator="docker run -it bcmictr/outbreak_simulator"
+```shell
+$ alias outbreak_simulator="docker run -it -v `pwd`:/home/bcmictr bcmictr/outbreak_simulator"
 ```
 
 so that you can execute the docker image directly with command `outbreak_simulator`.
 
 ## Running the application notebook
 
-We record [applications of the outbreak simulator](/covid19-outbreak-simulator/applications/FPSO/)
+We record [applications of the outbreak simulator](/covid19-outbreak-simulator/applications/TestFrequency/)
 in [SoS notebooks](https://vatlab.github.io/sos-docs/) which is an extension of [Jupyter notebooks](https://jupyter.org/) that allows
-us to use multiple kernels (e.g. `Python` and `R`) in the same reports.
-We also use [papermill](https://papermill.readthedocs.io/en/latest/)
-to parametrize the notebooks so that you can rerun the notebooks with your own parameters,
-which will execute these applications and generate reports for your particular
-parameters.
+the use of multiple kernels (e.g. `Python` and `R`) in the same reports.
 
-You can open and edit the notebooks if you have access to a Jupyter environment
-(e.g. [JupyterLab](https://jupyterlab.readthedocs.io/en/stable/)). However, if
-you only need to rerun the notebooks with your own parameters, you can execute
-them with the following command
+If you have a Jupyter notebook with SoS kernel installed, you can open the notebooks,
+modify, and run them. Otherwise, you can start a notebook server using
 
-```
-$ docker run -it bcmictr/outbreak_simulator_papermill NOTEBOOK [parameters]
+```shell
+$ docker run -v `pwd`:/home/jovyan -p 8888:8888 bcmictr/outbreak_simulator_notebook
 ```
 
-where `parameters` should be specified as [papermill parameters](https://papermill.readthedocs.io/en/latest/usage-execute.html).
+You should see a URL from the output of the command similar to the following
+...
+    Copy/paste this URL into your browser when you connect for the first time,
+    to login with a token:
+        http://localhost:8888/?token=754a646651c82657725be887a1a2579ab69a702ba80ae4b3
+```
 
-For example, if you would like to rerun the `FPSO.ipynb` with a larger population
+u can then enter the URL in the log message to a browser and start working with a complete
+SoS environment and the simulator installed.
+
+If you simply want to execute the notebook, you can execute them with command
+
+```
+$ docker run -v `pwd`:/home/jovyan --entrypoint sos bcmictr/outbreak_simulator_notebook convert [NOTEBOOK] [OUTPUT] [OPTIONS] --execute [PARAMETERS]
+```
+
+The command executes the same docker image `bcmictr/outbreak_simulator_notebook`, however, instead of
+starting a notebook server, it overrides the `entrypoint` to execute command `sos`, with
+options `convert [NOTEBOOK] [OUTPUT] [--execute [PARAMETERS]]`. Here
+
+* `NOTEBOOK` is the notebook you would like to execute or convert
+* `OUTPUT` is the output notebook, or HTML file if you would like to convert the generated notebook
+  to `HTML` format.
+* `--execute` tells command `sos execute` to execute the notebook with
+  [`sos-papermill`](https://github.com/vatlab/sos-papermill)
+* `OPTIONS` are options to command `sos execute`, which is usually `--template sos-report-only`
+  or `--template sos-report-toc-v2` to specify the style of the output HTML file.
+* `PARAMETERS` are [papermill parameters](https://papermill.readthedocs.io/en/latest/usage-execute.html)
+  if the notebook accept parameters. The parameters should be specified as `key=value` pairs.
+
+For example, if you would like to rerun the notebook `Enclosed.ipynb` with a larger population
 size, you can
 
 1. Download FPSO.ipynb from the `applications` folder of [our github repository](https://github.com/ictr/covid19-outbreak-simulator/]
@@ -54,19 +78,16 @@ size, you can
 2. Execute the notebook and optionally convert it to HTML format.
 
   ```
-  docker run -it bcmictr/outbreak_simulator_notebook FPSO.ipynb FPSO_100.ipynb -p popsize 100
+  $ docker run -v `pwd`:/home/jovyan --entrypoint sos bcmictr/outbreak_simulator_notebook convert \
+    Enclosed.ipynb Enclosed_100.html --template sos-report-only
+    --execute popsize=100
   ```
 
-  o   docker run -it -v `pwd`:/home/vatlab vatlab/sos-convert FPSO_100.ipynb FPSO_100.html --template sos-report-only
-
-   docker run -it -v `pwd`:/home/vatlab vatlab/sos-convert FPSO_100.ipynb FPSO_100.html --template sos-report-only
-
+As you can see, the `--execute` option essentially provides a higher level command line
+interface for `COVID19 Outbreak Simulator` for particular types of applications.
 
 
-Allowed parameters vary from application to application and are listed in each application notebook.
-
-
-## Running locally
+## Running the simulator locally
 
 If you have installed COVID19 Outbreak Simulator locally, or have created an alias
 for the docker command, you can get a list of options with option `-h` as follows:

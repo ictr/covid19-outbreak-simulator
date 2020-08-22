@@ -6,7 +6,7 @@ permalink: /docs/installation/
 ## Using Docker
 
 If you have docker, you can execute COVID19 Outbreak Simulator directly without installing
-it locally. Please see [Running COVID19 Outbreak Simulator](/docs/cli/) for details.
+it locally. Please see [Running COVID19 Outbreak Simulator](/covid19-outbreak-simulator/docs/cli/) for details.
 
 ## Local installation
 
