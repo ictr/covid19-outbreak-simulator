@@ -36,24 +36,31 @@ $ docker run -v `pwd`:/home/jovyan -p 8888:8888 bcmictr/outbreak_simulator_noteb
 ```
 
 You should see a URL from the output of the command similar to the following
-...
+
+```
     Copy/paste this URL into your browser when you connect for the first time,
     to login with a token:
         http://localhost:8888/?token=754a646651c82657725be887a1a2579ab69a702ba80ae4b3
 ```
 
-u can then enter the URL in the log message to a browser and start working with a complete
+You can then enter the URL in the log message to a browser and start working with a complete
 SoS environment and the simulator installed.
 
 If you simply want to execute the notebook, you can execute them with command
 
 ```
-$ docker run -v `pwd`:/home/jovyan --entrypoint sos bcmictr/outbreak_simulator_notebook convert [NOTEBOOK] [OUTPUT] [OPTIONS] --execute [PARAMETERS]
+$ docker run -v `pwd`:/home/jovyan --entrypoint sos bcmictr/outbreak_simulator_notebook \
+  convert [NOTEBOOK] [OUTPUT] [OPTIONS] --execute [PARAMETERS]
 ```
 
 The command executes the same docker image `bcmictr/outbreak_simulator_notebook`, however, instead of
-starting a notebook server, it overrides the `entrypoint` to execute command `sos`, with
-options `convert [NOTEBOOK] [OUTPUT] [--execute [PARAMETERS]]`. Here
+starting a notebook server, it overrides the `entrypoint` to execute command
+
+```
+sos convert [NOTEBOOK] [OUTPUT] [OPTIONS] [--execute [PARAMETERS]]
+```
+
+from the container. Here
 
 * `NOTEBOOK` is the notebook you would like to execute or convert
 * `OUTPUT` is the output notebook, or HTML file if you would like to convert the generated notebook
@@ -68,14 +75,14 @@ options `convert [NOTEBOOK] [OUTPUT] [--execute [PARAMETERS]]`. Here
 For example, if you would like to rerun the notebook `Enclosed.ipynb` with a larger population
 size, you can
 
-1. Download FPSO.ipynb from the `applications` folder of [our github repository](https://github.com/ictr/covid19-outbreak-simulator/]
+* Download FPSO.ipynb from the `applications` folder of [our github repository](https://github.com/ictr/covid19-outbreak-simulator/]
   or checkout the entire repository with command
 
   ```
   git clone https://github.com/ictr/covid19-outbreak-simulator.git
   ```
 
-2. Execute the notebook and optionally convert it to HTML format.
+* Execute the notebook and optionally convert it to HTML format.
 
   ```
   $ docker run -v `pwd`:/home/jovyan --entrypoint sos bcmictr/outbreak_simulator_notebook convert \
