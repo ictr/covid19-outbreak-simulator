@@ -103,25 +103,20 @@ sample_incidence_rate = get_seq('distancing.txt', 'sample_incidence_rate')
 
 <div class="sos_hint">> incidence_rate: DataFrame of shape (46, 10)</div>
 
-
-
-
-    <div class='dataframe_container' style="max-height:400px">
-    <input type="text" class='dataframe_input' id="search_w7a5t6w4" onkeyup="filterDataFrame('w7a5t6w4')" placeholder="Search for names..">
-    <table border="1" id="dataframe_w7a5t6w4" class="sos_dataframe dataframe">
+<table style="width:100%">
   <thead>
-    <tr style="text-align: right;">
-      <th> &nbsp; <i class="fa fa-sort" style="color:lightgray" onclick="sortDataFrame('w7a5t6w4', 0, 'alphabetic')"></th>
-      <th>1 &nbsp; <i class="fa fa-sort" style="color:lightgray" onclick="sortDataFrame('w7a5t6w4', 1, 'numeric')"></th>
-      <th>2 &nbsp; <i class="fa fa-sort" style="color:lightgray" onclick="sortDataFrame('w7a5t6w4', 2, 'numeric')"></th>
-      <th>3 &nbsp; <i class="fa fa-sort" style="color:lightgray" onclick="sortDataFrame('w7a5t6w4', 3, 'numeric')"></th>
-      <th>4 &nbsp; <i class="fa fa-sort" style="color:lightgray" onclick="sortDataFrame('w7a5t6w4', 4, 'numeric')"></th>
-      <th>5 &nbsp; <i class="fa fa-sort" style="color:lightgray" onclick="sortDataFrame('w7a5t6w4', 5, 'numeric')"></th>
-      <th>6 &nbsp; <i class="fa fa-sort" style="color:lightgray" onclick="sortDataFrame('w7a5t6w4', 6, 'numeric')"></th>
-      <th>7 &nbsp; <i class="fa fa-sort" style="color:lightgray" onclick="sortDataFrame('w7a5t6w4', 7, 'numeric')"></th>
-      <th>8 &nbsp; <i class="fa fa-sort" style="color:lightgray" onclick="sortDataFrame('w7a5t6w4', 8, 'numeric')"></th>
-      <th>9 &nbsp; <i class="fa fa-sort" style="color:lightgray" onclick="sortDataFrame('w7a5t6w4', 9, 'numeric')"></th>
-      <th>10 &nbsp; <i class="fa fa-sort" style="color:lightgray" onclick="sortDataFrame('w7a5t6w4', 10, 'numeric')"></th>
+    <tr >
+      <th> </th>
+      <th>1</th>
+      <th>2 </th>
+      <th>3 </th>
+      <th>4 </th>
+      <th>5 </th>
+      <th>6 </th>
+      <th>7 </th>
+      <th>8 </th>
+      <th>9 </th>
+      <th>10</th>
     </tr>
   </thead>
   <tbody>
@@ -724,8 +719,10 @@ sample_incidence_rate = get_seq('distancing.txt', 'sample_incidence_rate')
       <td>0.0005</td>
     </tr>
   </tbody>
-</table></div>
+</table>
 
+
+### Incidence rates
 
 The following figure shows the change of incidence rate for 10 replicate simulations. As you can see, the incidence rates increase rapidly at first. After day 15, due to the increase of social distancing, reflected by lowered production number, the population incidence rates start to decline after a few days of lag.
 
@@ -733,13 +730,6 @@ The following figure shows the change of incidence rate for 10 replicate simulat
 ```Python3
 incidence_rate.plot(xlabel='days', ylabel='incidence rate')
 ```
-
-
-
-
-    <AxesSubplot:xlabel='days', ylabel='incidence rate'>
-
-
 
 
 ![png](/covid19-outbreak-simulator/assets/img/distancing_12_1.png)
@@ -752,22 +742,9 @@ The following figure shows sample incidence rates from 3 of the simulations, est
 sample_incidence_rate[[1, 2, 3]].plot(xlabel='days', ylabel='sample incidence rate')
 ```
 
-
-
-
-    <AxesSubplot:xlabel='days', ylabel='sample incidence rate'>
-
-
-
-
 ![png](/covid19-outbreak-simulator/assets/img/distancing_14_1.png)
 
 
 ## Availability
-
-
-```Python3
-
-```
 
 This notebook is available under the `Applications` directory of the [GitHub repository](https://github.com/ictr/covid19-outbreak-simulator) of the COVID19 Outbreak Simulator. It can be executed with [`sos-papermill`](https://github.com/vatlab/sos-papermill) with the following parameters, or using a docker image `bcmictr/outbreak-simulator-notebook` as described in [here](/covid19-outbreak-simulator/docs/cli/).

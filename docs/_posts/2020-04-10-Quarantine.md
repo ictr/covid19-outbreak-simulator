@@ -109,7 +109,7 @@ plot_time_vs_size('quarantine_7.log', 'Quarantine for 7 days')
 ```
 
 
-![png](/covid19-outbreak-simulator/img/quarantine_11_0.png)
+![png](/covid19-outbreak-simulator/assets/img/quarantine_11_0.png)
 
 
 
@@ -118,7 +118,7 @@ plot_time_vs_size('quarantine_14.log', 'Quarantine for 14 days')
 ```
 
 
-![png](/covid19-outbreak-simulator/img/quarantine_12_0.png)
+![png](/covid19-outbreak-simulator/assets/img/quarantine_12_0.png)
 
 
 As you can see, there are quite some outbreaks happened after 7-day quarantine. The 14-days quarantine avoided a majority of the outbreaks, but there are still some left. Let us check the details.
