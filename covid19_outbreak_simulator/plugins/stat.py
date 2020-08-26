@@ -30,10 +30,10 @@ class stat(BasePlugin):
         res[f'n_active'] = res['n_infected'] - res['n_recovered']
         res[f'n_popsize'] = len(population)
         res[f'incidence_rate'] = '0' if res[
-            f'n_popsize'] == 0 else '{:.4f}'.format(res[f'n_active'] /
+            f'n_popsize'] == 0 else '{:.5f}'.format(res[f'n_active'] /
                                                     res[f'n_popsize'])
         res[f'seroprevalence'] = '0' if res[
-            f'n_popsize'] == 0 else '{:.4f}'.format(res[f'n_infected'] /
+            f'n_popsize'] == 0 else '{:.5f}'.format(res[f'n_infected'] /
                                                     res[f'n_popsize'])
 
         groups = set([x.group for x in population.values()])

@@ -109,7 +109,7 @@ class Simulator(object):
                                            1),
                     model=self.model,
                     logger=self.logger) for idx in range(idx, idx + sz)
-            ])
+            ], subpop=name)
 
         events = defaultdict(list)
         self.logger.id = id

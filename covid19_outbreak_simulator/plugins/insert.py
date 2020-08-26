@@ -46,34 +46,37 @@ class insert(BasePlugin):
             name = ps.split('=', 1)[0] if '=' in ps else ''
             sz = int(ps.split('=', 1)[1]) if '=' in ps else int(ps)
 
-            if name not in population.subpops:
+            if name not in population.subpop_sizes:
                 raise ValueError(f'can only add to existing subpopulations')
 
+            IDs = [f'{name}{idx}' for idx in range(
+                        population.max_ids[name], population.max_ids[name] + sz)]
             population.add([
                 Individual(
-                    f'{name}{idx}',
+                    ID,
                     group=name,
                     susceptibility=getattr(self.simulator.model.params,
                                            f'susceptibility_multiplier_{name}',
                                            1),
                     model=self.simulator.model,
-                    logger=self.logger) for idx in range(
-                        population.subpops[name], population.subpops[name] + sz)
-            ])
+                    logger=self.logger) for ID in IDs
+            ], subpop=name)
 
             n_infected = int(sz * args.prop_of_infected)
-            for idx in range(population.subpops[name],
-                             population.subpops[name] + n_infected):
+            random.shuffle(IDs)
+            infected = IDs[:n_infected]
+            for ID in infected:
                 events.append(
                     Event(
                         time,
                         EventType.INFECTION,
-                        target=f'{name}{idx}',
+                        target=ID,
                         logger=self.logger,
                         by=None,
                         handle_symptomatic=self.simulator.simu_args
                         .handle_symptomatic,
                         leadtime=args.leadtime))
-            population.subpops[name] += sz
+            self.logger.write(f'{self.logger.id}\t{time:.2f}\tINSERT\t.\tsubpop={name},size={sz},n_infected={n_infected},IDs={",".join(IDs)},Infected={",".join(infected)}\n')
+
 
         return events

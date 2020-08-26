@@ -50,7 +50,11 @@ def summarize_simulations(logfile):
         args = None
 
         for line in lines:
-            id, time, event, target, params_field = line.split('\t')
+            try:
+                id, time, event, target, params_field = line.split('\t')
+            except:
+                print(f'INVALID LOG LINE: {line}')
+                continue
             if id == 'id':
                 # skip header
                 continue

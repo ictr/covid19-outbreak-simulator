@@ -280,6 +280,37 @@ optional arguments:
                         current time are ignored.
 ```
 
+
+### Plugin `remove`
+
+```
+% outbreak_simulator --plugin remove -h
+
+usage: --plugin remove [-h] [--start START] [--end END] [--at AT [AT ...]]
+                       [--interval INTERVAL]
+                       [--trigger-by [TRIGGER_BY [TRIGGER_BY ...]]]
+                       popsize [popsize ...]
+
+remove individuals from the population
+
+positional arguments:
+  popsize               Number of individuals to be removed, which can be from the
+                        entire population, or from specific subpopulations (e.g.
+                        nurse=10) if there are subpopulations.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --start START         Start time. Default to 0 no parameter is defined so the plugin
+                        will be called once at the beginning.
+  --end END             End time, default to none, meaning there is no end time.
+  --at AT [AT ...]      Specific time at which the plugin is applied.
+  --interval INTERVAL   Interval at which plugin is applied, it will assume a 0 starting
+                        time if --start is left unspecified.
+  --trigger-by [TRIGGER_BY [TRIGGER_BY ...]]
+                        Events that triggers this plug in.
+
+```
+
 ### Plugin `quarantine`
 
 

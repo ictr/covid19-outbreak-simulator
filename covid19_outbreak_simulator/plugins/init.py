@@ -96,7 +96,7 @@ class init(BasePlugin):
                 isp[name] = value * ir['']
 
         events = []
-        for name, sz in population.subpops.items():
+        for name, sz in population.subpop_sizes.items():
             pop_ir = ir.get(name if name in ir else '', 0.0)
             n_ir = int(sz * pop_ir)
 

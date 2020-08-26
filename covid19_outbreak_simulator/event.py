@@ -64,6 +64,11 @@ class Event(object):
     def apply(self, population):
         if self.action == EventType.INFECTION:
             if self.target is not None:
+                if self.target not in population:
+                    self.logger.write(
+                        f'{self.logger.id}\t{self.time:.2f}\t{EventType.WARNING.name}\t{self.target}\tmsg=INFECTION target no longer exists\n'
+                    )
+                    return []
                 selected = self.target
             else:
                 selected = population.select(exclude=self.target)
@@ -91,12 +96,20 @@ class Event(object):
             # if 'by' individual is removed, or quarantined etc
             return population[selected].infect(self.time, **self.kwargs)
         elif self.action == EventType.QUARANTINE:
+            if self.target not in population:
+                self.logger.write(
+                    f'{self.logger.id}\t{self.time:.2f}\t{EventType.WARNING.name}\t{self.target}\tmsg=QUARANTINE target no longer exists\n'
+                )
+                return []
             self.logger.write(
                 f'{self.logger.id}\t{self.time:.2f}\t{EventType.QUARANTINE.name}\t{self.target}\ttill={self.kwargs["till"]:.2f}\n'
             )
             return population[self.target].quarantine(**self.kwargs)
         elif self.action == EventType.REINTEGRATION:
             if self.target not in population:
+                self.logger.write(
+                    f'{self.logger.id}\t{self.time:.2f}\t{EventType.WARNING.name}\t{self.target}\tmsg=REINTEGRATION target no longer exists\n'
+                )
                 return []
             else:
                 self.logger.write(
@@ -116,7 +129,7 @@ class Event(object):
                 )
             else:
                 self.logger.write(
-                    f'{self.logger.id}\t{self.time:.2f}\t{EventType.SHOW_SYMPTOM.name}\t{self.target}\tsucc=False\n'
+                    f'{self.logger.id}\t{self.time:.2f}\t{EventType.WARNING.name}\t{self.target}\tmsg=SHOW_SYMPTOM target no longer exists\n'
                 )
             return []
         elif self.action == EventType.REMOVAL:
@@ -127,7 +140,7 @@ class Event(object):
                 )
             else:
                 self.logger.write(
-                    f'{self.logger.id}\t{self.time:.2f}\t{EventType.REMOVAL.name}\t{self.target}\tpopsize={len(population)},already_removed=True\n'
+                    f'{self.logger.id}\t{self.time:.2f}\t{EventType.WARNING.name}\t{self.target}\tmsg=REMOVAL target no longer exists\n'
                 )
             return []
         elif self.action == EventType.RECOVER:
@@ -135,6 +148,11 @@ class Event(object):
 
             if not removed:
                 population[self.target].recovered = self.time
+            else:
+                self.logger.write(
+                    f'{self.logger.id}\t{self.time:.2f}\t{EventType.WARNING.name}\t{self.target}\tmsg=RECOVER target no longer exists\n'
+                )
+                return []
 
             n_recovered = len([
                 x for x, ind in population.items()

@@ -3,7 +3,7 @@ import numpy as np
 from numpy.random import choice
 
 from .event import Event, EventType
-
+import re
 
 class Individual(object):
 
@@ -350,23 +350,29 @@ class Population(object):
 
     def __init__(self, popsize, uneven_susceptibility=False):
         self.individuals = {}
-        self.subpops = {(ps.split('=', 1)[0] if '=' in ps else ''):
-                        (int(ps.split('=', 1)[1]) if '=' in ps else int(ps))
-                        for ps in popsize}
+        self.subpop_sizes = {(ps.split('=', 1)[0] if '=' in ps else ''):
+                        0 for ps in popsize}
+        self.max_ids = {x:y for x,y in self.subpop_sizes.items() }
         self.uneven_susceptibility = uneven_susceptibility
+        self.subpop_from_id = re.compile('^(.*?)[\d]+$')
 
-    def add(self, items):
+    def add(self, items, subpop):
         sz = len(self.individuals)
         self.individuals.update({x.id: x for x in items})
         if sz + len(items) != len(self.individuals):
             raise ValueError(f'One or more IDs are already in the population.')
+        self.subpop_sizes[subpop] += len(items)
+        self.max_ids[subpop] += len(items)
 
     @property
     def ids(self):
         return self.individuals.keys()
 
-    def remove(self, item):
+    def remove(self, item, subpop=None):
         self.individuals.pop(item)
+        if subpop is None:
+            subpop = self.subpop_from_id.match(item).group(1)
+        self.subpop_sizes[subpop] -= 1
 
     def __len__(self):
         return len(self.individuals)
