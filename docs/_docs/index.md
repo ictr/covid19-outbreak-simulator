@@ -5,8 +5,8 @@ redirect_from: /docs/index.html
 ---
 
 
-This COVID-19 outbreak simulator is a popolation-based stochastic simulator that simulates the outbreak of COVID-19
-in a population, subject to changes of population (addition and removal of individuals), model (e.g. change of production number
+This COVID-19 outbreak simulator is a popolation-based stochastic simulator that simulates outbreaks of COVID-19
+in populations, subject to changes of population (addition and removal of individuals), model (e.g. change of production number
 to mimic varying level of social distancing), and various preventative (quarantine, testing) and post-outbreak
 opeartions (quarantine, testing, removal of symptomatic individuals etc). With realistic modeling of the course of
 infection of a large number of individuals in the population,

@@ -20,10 +20,12 @@ class community_spread(BasePlugin):
         parser.description = 'Community infection that infect everyone in the population randomly.'
         parser.add_argument(
             '--probability',
-            type=float,
-            default=0.005,
+            nargs='+',
+            default=[0.005],
             help='''The probability of anyone to be affected at a given
             interval, which is usually per day (with option --interval 1).
+            The value of this parameter can be a single probability, or subpopulation
+            specific probabilities specified in the format of 'value name=multiplier`.
             If individuals have different susceptibility specified by option
             --susceptibility, the probability will be multiplied by the
             susceptibility multipliers, The infection events do not have to
@@ -32,10 +34,25 @@ class community_spread(BasePlugin):
         return parser
 
     def apply(self, time, population, args=None):
+        events = []
 
-        if population.uneven_susceptibility:
+        default_p = 0.0
+
+        for prob in args.probability:
+            try:
+                if '=' in prob:
+                    subpop, p = prob.split('=')
+                    if default_p == 0:
+                        raise ValueError('Multiplier applied to default value 0.')
+                    p = float(p) * default_p
+                else:
+                    subpop = ''
+                    p = float(prob)
+                    default_p = p
+            except Exception as e:
+                raise ValueError(f'Invalid parameter --probability for plugin community_spread: {prob}: {e}')
             # drawning random number one by one
-            events = [
+            events += [
                 Event(
                     time,
                     EventType.INFECTION,
@@ -47,27 +64,11 @@ class community_spread(BasePlugin):
                     handle_symptomatic=self.simulator.simu_args
                     .handle_symptomatic)
                 for id, ind in population.individuals.items()
-                if np.random.binomial(1, min(1, args.probability *
-                                      ind.susceptibility), 1)[0]
+                if population.in_subpop(id, subpop) and np.random.binomial(1,
+                    min(1, p *
+                    ind.susceptibility), 1)[0]
             ]
-        else:
-            # drawing random numbers all at once
-            ids = list(population.ids)
-            events = [
-                Event(
-                    time,
-                    EventType.INFECTION,
-                    target=ids[idx],
-                    logger=self.logger,
-                    priority=True,
-                    by=None,
-                    leadtime=0,
-                    handle_symptomatic=self.simulator.simu_args
-                    .handle_symptomatic)
-                for idx, aff in enumerate(
-                    np.random.binomial(1, args.probability, len(population)))
-                if aff
-            ]
+
         self.logger.write(
             f'{self.logger.id}\t{time:.2f}\t{EventType.PLUGIN.name}\t.\tname=community_spread,n_infected={len(events)}\n'
         )

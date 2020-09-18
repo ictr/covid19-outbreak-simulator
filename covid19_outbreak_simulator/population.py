@@ -11,7 +11,7 @@ class Individual(object):
         self.id = id
         self.model = model
         self.group = group
-        self.susceptibility = susceptibility
+        self.susceptibility = 1.0 if susceptibility is None else susceptibility
         self.logger = logger
 
         # these will be set to event happen time
@@ -373,6 +373,9 @@ class Population(object):
         if subpop is None:
             subpop = self.subpop_from_id.match(item).group(1)
         self.subpop_sizes[subpop] -= 1
+
+    def in_subpop(self, item, subpop):
+        return True if not subpop else self.subpop_from_id.match(item).group(1) == subpop
 
     def __len__(self):
         return len(self.individuals)

@@ -200,6 +200,42 @@ optional arguments:
                         number of CPU cores.
 ```
 
+## Specification for subpopulation-specific parameters
+
+`outbreak_simulator` allows the simulation of multiple subpopulations using
+parameter `--popsize`. For example,
+
+```
+--popsize A=100 B=200
+```
+
+specifies two subpopulations `A` and `B` with sizes `100` and `200` respectively.
+
+Subpopulations can have their own parameters (e.g. `--susceptibility`) and they
+are specified by `multipliers` in the format of
+
+```
+--param [default values] name=multiplier
+```
+
+For example,
+
+```
+--symptomatic-r0 1.5 A=1.2 B=0.8
+```
+specifies individuals in subpopulation `A` with symptomatic r0 `1.5*1.2` and
+`1.5*0.8` in subpopulation `B`. `1.5` will be used for unspecified subpopulations.
+
+If you would like to specify value for each subpopulation, you can use
+
+```
+--symptomatic-r0 1 A=1.2 B=0.8
+```
+
+but this would not work for parameters that receive more than one values when
+the multiplier is applied to more than one values.
+
+
 ## Example commands
 
 ### A small population with the introduction of one carrier

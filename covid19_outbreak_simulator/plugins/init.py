@@ -51,18 +51,15 @@ class init(BasePlugin):
         # population prevalence and incidence rate
         ir = {'': 0.0}
         if args.incidence_rate:
-            # the first number must be float
-            try:
-                ir[''] = float(args.incidence_rate[0])
-            except Exception as e:
-                raise ValueError(
-                    f'The first parameter of --initial-incidence-rate should be a float number "{args.incidence_rate[0]}" provided: {e}'
-                )
-            for multiplier in args.incidence_rate[1:]:
+            for multiplier in args.incidence_rate:
                 if '=' not in multiplier:
-                    raise ValueError(
-                        f'The non-first parameter of --initial-incidence-rate should be a float number "{multiplier}" provided.'
-                    )
+                    try:
+                        ir[''] = float(args.incidence_rate[0])
+                        continue
+                    except Exception as e:
+                        raise ValueError(
+                            f'The first parameter of --incidence-rate should be a float number "{args.incidence_rate[0]}" provided: {e}'
+                        )
                 name, value = multiplier.split('=', 1)
                 try:
                     value = float(value)
@@ -70,22 +67,22 @@ class init(BasePlugin):
                     raise ValueError(
                         f'Multiplier should have format name=float_value: {multiplier} provided'
                     )
+                if ir[''] == 0.0:
+                    raise ValueError(f'Multiplier applied to default value of 0.: {args.incidence_rate}')
                 ir[name] = value * ir['']
         #
         isp = {'': 0.0}
         if args.seroprevalence:
             # the first number must be float
-            try:
-                isp[''] = float(args.seroprevalence[0])
-            except Exception as e:
-                raise ValueError(
-                    f'The first parameter of --initial-seroprevalence should be a float number "{args.incidence_rate[0]}" provided: {e}'
-                )
-            for multiplier in args.seroprevalence[1:]:
+            for multiplier in args.seroprevalence:
                 if '=' not in multiplier:
-                    raise ValueError(
-                        f'The non-first parameter of --initial-incidence-rate should be a float number "{multiplier}" provided.'
-                    )
+                    try:
+                        isp[''] = float(args.seroprevalence[0])
+                        continue
+                    except Exception as e:
+                        raise ValueError(
+                            f'The first parameter of --seroprevalence should be a float number "{args.incidence_rate[0]}" provided: {e}'
+                        )
                 name, value = multiplier.split('=', 1)
                 try:
                     value = float(value)
@@ -93,6 +90,8 @@ class init(BasePlugin):
                     raise ValueError(
                         f'Multiplier should have format name=float_value: {multiplier} provided'
                     )
+                if isp[''] == 0.0:
+                    raise ValueError(f'Multiplier applied to default value of 0.: {args.seroprevalence}')
                 isp[name] = value * ir['']
 
         events = []
