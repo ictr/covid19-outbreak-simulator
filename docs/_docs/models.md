@@ -23,7 +23,7 @@ The COVID-19 Outbreak Simulator simulates the spread of SARS-CoV-2 virus in popu
 -   **End of simulation**: The simulation is by default stops after the population is free of virus (all
     infected individuals have been removed), or everyone is infected, or after
     a pre-specified time (e.g. after 10 days).
--   **Output of simulation**: The simulator outputs all events (see [Output from the simulator](http://127.0.0.1:4000/covid19-outbreak-simulator/docs/output/) for details) such as infection and quarantine. A
+-   **Output of simulation**: The simulator outputs all events (see [Output from the simulator](/covid19-outbreak-simulator/docs/output/) for details) such as infection and quarantine. A
     summary report is generated to summarize these events. Further analysis could be performed on both
     the raw log file and summary report.
 

@@ -33,4 +33,4 @@ At a higher level, this simulator provides
 
 ## Contact us
 
-The development of this simulator was largely driven by requests from various industrial, governmental, and academic collaborators. Please feel free to report any bug to our [issue tracker](https://github.com/ictr/covid19-outbreak-simulator), [contribute plugins or analysis scripts](http://127.0.0.1:4000/covid19-outbreak-simulator/docs/contributing/), or [contact us](https://github.com/ictr/covid19-outbreak-simulator/issues) if you would like to simulate any particular scenarios.
+The development of this simulator was largely driven by requests from various industrial, governmental, and academic collaborators. Please feel free to report any bug to our [issue tracker](https://github.com/ictr/covid19-outbreak-simulator), [contribute plugins or analysis scripts](/covid19-outbreak-simulator/docs/contributing/), or [contact us](https://github.com/ictr/covid19-outbreak-simulator/issues) if you would like to simulate any particular scenarios.
