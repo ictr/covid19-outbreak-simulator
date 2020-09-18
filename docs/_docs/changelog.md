@@ -3,6 +3,13 @@ title: Change Log
 permalink: /docs/changelog/
 ---
 
+## Version 0.3.3
+
+* Fix negative recovery time for `leadtime == any`.
+* Improve plugin `insert` for adding individuals to population.
+* Add plugin `community_spread`
+* Add `contrib/report2csv.py`.
+* Fix quarantine with leadtime.
 
 ## Version 0.3.0
 

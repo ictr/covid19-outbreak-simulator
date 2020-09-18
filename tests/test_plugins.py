@@ -139,6 +139,17 @@ def test_plugin_insert():
     ])
 
 
+def test_plugin_remove():
+    main([
+        '--jobs', '1', '--repeats', '100', '--stop-if', 't>10', '--plugin',
+        'remove', '2', '--at', '1'
+    ])
+    main([
+        '--jobs', '1', '--repeats', '100', '--popsize', 'A=100', 'B=100', '--stop-if', 't>10', '--plugin',
+        'remove', 'A=2', '--interval', '1'
+    ])
+
+
 def test_plugin_insert_hetero_pop():
     main([
         '--jobs', '1', '--repeats', '100', '--stop-if', 't>10', '--popsize',
