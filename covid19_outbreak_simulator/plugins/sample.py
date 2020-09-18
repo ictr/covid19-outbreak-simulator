@@ -50,10 +50,10 @@ class sample(BasePlugin):
         stat['n_popsize'] = len(
             [x for s, (x, ind) in zip(samples, population.items()) if s])
         stat['incidence_rate'] = '0' if stat[
-            'n_popsize'] == 0 else '{:.4f}'.format(
+            'n_popsize'] == 0 else '{:.5f}'.format(
                 (stat['n_infected']) / stat['n_popsize'])
         stat['seroprevalence'] = '0' if stat[
-            'n_popsize'] == 0 else '{:.4f}'.format(
+            'n_popsize'] == 0 else '{:.5f}'.format(
                 (stat['n_recovered'] + stat['n_infected']) / stat['n_popsize'])
         param = ','.join(f'{k}={v}' for k, v in stat.items())
         self.logger.write(f'{self.logger.id}\t{time:.2f}\tSAMPLE\t.\t{param}\n')

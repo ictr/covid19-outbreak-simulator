@@ -25,7 +25,7 @@ class stat(BasePlugin):
         ])
         res[f'n_infected'] = len([
             x for x, ind in population.items()
-            if isinstance(ind.infected, float)
+        if isinstance(ind.infected, float)
         ])
         res[f'n_active'] = res['n_infected'] - res['n_recovered']
         res[f'n_popsize'] = len(population)

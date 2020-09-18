@@ -285,7 +285,7 @@ def summarize_simulations(logfile):
                 if len(value) > 1:
                     total = sum(value.values())
                     print(
-                        f'avg_{item}_{time}\t{total/len(value):.4f}, {total/args.repeats:.4f}'
+                        f'avg_{item}_{time}\t{total/len(value):.5f}, {total/args.repeats:.5f}'
                     )
             except:
                 pass
@@ -303,7 +303,7 @@ def summarize_simulations(logfile):
                 if len(value) > 1:
                     total = sum(value.values())
                     print(
-                        f'avg_{item}_{time}\t{total/len(value):.4f}, {total/args.repeats:.4f}'
+                        f'avg_{item}_{time}\t{total/len(value):.5f}, {total/args.repeats:.5f}'
                     )
             except:
                 pass
