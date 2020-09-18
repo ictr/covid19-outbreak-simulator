@@ -10,7 +10,8 @@ The COVID-19 Outbreak Simulator simulates the spread of SARS-CoV-2 virus in popu
     population can be divided into multiple subgroups with different parameters such as infectivity
     and susceptibility.
 -   **Introduction of virus**: One or more virus carriers can be introduced to the population at the
-    beginning of the simulation, after a period of self-quarantine, or continuously during the simulation (community infection).
+    beginning of the simulation, after a period of self-quarantine, or during the simulation (community infection).
+    The introduction of virus can happen once or multiple times.
 -   **Spread of virus**: Infected individual might or might not show symptoms (asymptomatic cases), and
     have varying probability to infect others (determined by a random production number). The infectees
     are chosen by random although some groups can be more or less susceptible. Infection events are

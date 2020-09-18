@@ -85,8 +85,10 @@ size, you can
 * Execute the notebook and optionally convert it to HTML format.
 
   ```
-  $ docker run -v `pwd`:/home/jovyan --entrypoint sos bcmictr/outbreak_simulator_notebook convert \
-    Enclosed.ipynb Enclosed_100.html --template sos-report-only
+  $ cd covid19-outbreak-simulator/applications
+  $ docker run -v `pwd`:/home/jovyan --entrypoint sos \
+    bcmictr/outbreak_simulator_notebook convert \
+    Enclosed.ipynb Enclosed_100.html --template sos-report-only \
     --execute popsize=100
   ```
 

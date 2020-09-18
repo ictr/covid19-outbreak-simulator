@@ -15,12 +15,12 @@ this simulator can be used to simulate a variety of scenarios, and answer questi
 1. What is the expected day and distribution for the first person to show symptoms?
 2. How many people are expected to be removed once an outbreak starts?
 3. How effective will self-quarantine be? Is 7-day quarantine good enough? How about 14 days?
-4. How frequently should we test everyone in a high-risk environment?
+4. How frequent should we test everyone in a high-risk environment?
 
 
 ## Command line and notebook interfaces
 
-At the low level, this simulator provides
+The core simulator provides
 
 * A core simulator that simulates the dynamic of populations over time.
 * A plugin system that provides multiple plugins for different applications.
