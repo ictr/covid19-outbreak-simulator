@@ -5,6 +5,46 @@ import pytest
 import math
 from scipy.stats import norm
 import numpy as np
+from covid19_outbreak_simulator.utils import parse_param_with_multiplier
+
+def test_multiplier():
+    res = parse_param_with_multiplier(['2', 'A=1.2', 'B=0.8'], subpops=['A', 'B'])
+    assert res['A'] == 2*1.2
+    assert res['B'] == 2*0.8
+    assert len(res) == 2
+
+    res = parse_param_with_multiplier(['2', '3', 'A=1.2', 'B=0.8'], subpops=['A', 'B'])
+    assert res['A'] == [2*1.2, 3*1.2]
+    assert res['B'] == [2*0.8, 3*0.8]
+    assert len(res) == 2
+
+    res = parse_param_with_multiplier(['2', 'A=1.2'], subpops=['A', 'B'])
+    assert res['A'] == 2*1.2
+    assert res['B'] == 2
+    assert len(res) == 2
+
+    res = parse_param_with_multiplier(['2'])
+    assert res[''] == 2
+    assert len(res) == 1
+
+    res = parse_param_with_multiplier(['2'], subpops=['A', 'B'])
+    assert res['A'] == 2
+    assert res['B'] == 2
+    assert len(res) == 2
+
+    res = parse_param_with_multiplier(['A=1.2', 'B=0.8'], subpops=['A', 'B'], default=2)
+    assert res['A'] == 2*1.2
+    assert res['B'] == 2*0.8
+    assert len(res) == 2
+
+    with pytest.raises(ValueError):
+        parse_param_with_multiplier(['112b'], subpops=['A', 'B'])
+
+    with pytest.raises(ValueError):
+        parse_param_with_multiplier(['A=1.2', 'B=0.8'], subpops=['A', 'B'])
+
+    with pytest.raises(ValueError):
+        parse_param_with_multiplier(['1', 'A=1.2e'], subpops=['A', 'B'])
 
 
 def test_unknown_param(params):

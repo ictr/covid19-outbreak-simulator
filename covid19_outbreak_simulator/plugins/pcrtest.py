@@ -1,6 +1,6 @@
 from covid19_outbreak_simulator.event import Event, EventType
 from covid19_outbreak_simulator.plugin import BasePlugin
-
+from covid19_outbreak_simulator.utils import parse_param_with_multiplier
 
 class pcrtest(BasePlugin):
 
@@ -13,13 +13,29 @@ class pcrtest(BasePlugin):
         parser.prog = '--plugin pcrtest'
         parser.description = '''PCR-based test that can pick out all active cases.'''
         parser.add_argument(
-            'IDs', nargs='*', help='IDs of individuals to test.')
+            'IDs', nargs='*', help='''IDs of individuals to test. Parameter "proportion"
+            will be ignored with specified IDs for testing''')
         parser.add_argument(
             '--proportion',
-            type=float,
+            nargs='+',
             default=1.0,
             help='''Proportion of individuals to test. Individuals who are tested
-            positive will by default be quarantined.''',
+            positive will by default be quarantined. Multipliers are allowed to specify
+            proportion of tests for each subpopulation.''',
+        )
+        parser.add_argument(
+            '--sensitivity',
+            type=float,
+            default=1.0,
+            help='''Sensitibity of the test. Individuals who carry the virus will have this
+            probability to be detected.''',
+        )
+        parser.add_argument(
+            '--specificity',
+            type=float,
+            default=1.0,
+            help='''Specificity of the test. Individuals who do not carry the virus will have
+            this probability to be tested negative.''',
         )
         parser.add_argument(
             '--handle-positive',
@@ -32,21 +48,32 @@ class pcrtest(BasePlugin):
         return parser
 
     def apply(self, time, population, args=None):
+        def select(ind, counts=None):
+            if counts:
+                if counts[ind.group] > 0:
+                    counts[ind.group] -= 1
+                else:
+                    return False
+            affected = isinstance(ind.infected, float) and not isinstance(ind.recovered, float)
+            if affected:
+                return args.sensitivity == 1 or args.sensitivity > numpy.random.uniform()
+            else:
+                return args.specificity != 1 and args.specificity <= numpy.random.uniform()
+
         if args.IDs:
-            IDs = [
-                x for x in args.IDs
-                if isinstance(population[x].infected, float) and
-                not isinstance(population[x].recovered, float)
-            ]
+            #
+            IDs = [x for x in args.IDs if select(population[x])]
         else:
+            proportions = parse_param_with_multiplier(args.proportion,
+                subpops=population.subpop_sizes.keys())
+            counts = {name:int(size*proportions[name]) for name,size in population.subpop_sizes.items()}
+
             IDs = [
                 x for x, y in population.items()
-                if isinstance(y.infected, float) and
-                not isinstance(y.recovered, float)
+                if select(y, counts)
             ]
-            if args.proportion != 1.0:
-                IDs = IDs[:int(len(IDs) * args.proportion)]
 
+        #print(f'SELECT {" ".join(IDs)}')
         events = []
 
         for ID in IDs:
@@ -72,6 +99,6 @@ class pcrtest(BasePlugin):
                 raise ValueError(
                     'Unsupported action for patients who test positive.')
         self.logger.write(
-            f'{self.logger.id}\t{time:.2f}\t{EventType.PLUGIN.name}\t.\tname=pcrtest,n_detected={len(IDs)}\n'
+            f'{self.logger.id}\t{time:.2f}\t{EventType.PLUGIN.name}\t.\tname=pcrtest,n_detected={len(IDs)},detected={",".join(IDs)}\n'
         )
         return events
