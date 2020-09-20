@@ -37,7 +37,10 @@ def parse_args(args=None):
         nargs='+',
         help='''Production number of symptomatic infectors, should be specified as a single
             fixed number, or a range. Multipliers are allowed to specify symptomatic r0 for
-            each subpopulation.'''
+            each subpopulation. This parameter reflects the infectivity of virus carrier measured
+            by the average number of individuals one infected individual "would" infect if
+            infectivity is not blocked by for example quarantine and susceptibility of
+            infectees.'''
     )
     parser.add_argument(
         '--asymptomatic-r0',

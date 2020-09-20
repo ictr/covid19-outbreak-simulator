@@ -168,11 +168,11 @@ def test_plugin_remove():
 
 def test_plugin_community_spread():
     main([
-        '--jobs', '1', '--repeats', '100', '--stop-if', 't>10', '--plugin',
+        '--jobs', '1', '--repeats', '10', '--stop-if', 't>4', '--plugin',
         'community_spread', '--probability', '0.0001', '--interval', '1'
     ])
     main([
-        '--jobs', '1', '--repeats', '100', '--popsize', 'A=100', 'B=200', '--stop-if', 't>10', '--plugin',
+        '--jobs', '1', '--repeats', '10', '--popsize', 'A=100', 'B=200', '--stop-if', 't>4', '--plugin',
         'community_spread', '--probability', '1', 'A=0.0001', '--interval', '1'
     ])
 
