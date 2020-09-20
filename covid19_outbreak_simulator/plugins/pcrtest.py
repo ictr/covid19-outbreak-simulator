@@ -1,6 +1,7 @@
 from covid19_outbreak_simulator.event import Event, EventType
 from covid19_outbreak_simulator.plugin import BasePlugin
 from covid19_outbreak_simulator.utils import parse_param_with_multiplier
+import numpy
 
 class pcrtest(BasePlugin):
 
@@ -18,7 +19,7 @@ class pcrtest(BasePlugin):
         parser.add_argument(
             '--proportion',
             nargs='+',
-            default=1.0,
+            default=[1.0],
             help='''Proportion of individuals to test. Individuals who are tested
             positive will by default be quarantined. Multipliers are allowed to specify
             proportion of tests for each subpopulation.''',

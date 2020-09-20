@@ -36,21 +36,22 @@ def parse_args(args=None):
         '--symptomatic-r0',
         nargs='+',
         help='''Production number of symptomatic infectors, should be specified as a single
-            fixed number, or a range, and/or multipliers for different groups such as
-            A=1.2. For example "--symptomatic-r0 1.4 2.8 nurse=1.2" means a general R0
-            ranging from 1.4 to 2.8, while nursed has a range from 1.4*1.2 and 2.8*1.2.'''
+            fixed number, or a range. Multipliers are allowed to specify symptomatic r0 for
+            each subpopulation.'''
     )
     parser.add_argument(
         '--asymptomatic-r0',
         nargs='+',
         help='''Production number of asymptomatic infectors, should be specified as a single
-            fixed number, or a range and/or multipliers for different groups''')
+            fixed number or a range. Multipliers are allowed to specify asymptomatic r0 for
+            each subpopulation.''')
     parser.add_argument(
         '--incubation-period',
         nargs='+',
         help='''Incubation period period, should be specified as "lognormal" followed by two
-            numbers as mean and sigma, or "normal" followed by mean and sd, and/or
-            multipliers for different groups. Default to "lognormal 1.621 0.418"'''
+            numbers as mean and sigma, or "normal" followed by mean and sd. Multipliers are
+            allowed to specify incubation period for each subpopulation. Default to
+            "lognormal 1.621 0.418"'''
     )
     parser.add_argument(
         '--repeats',

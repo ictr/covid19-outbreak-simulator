@@ -1,7 +1,7 @@
 import random
 import numpy as np
 from numpy.random import choice
-
+from .utils import as_float
 from .event import Event, EventType
 import re
 
@@ -64,12 +64,7 @@ class Individual(object):
             elif kwargs['leadtime'] == 'asymptomatic':
                 lead_time = np.random.uniform(0, self.incubation_period)
             else:
-                try:
-                    lead_time = float(kwargs['leadtime'])
-                except:
-                    raise ValueError(
-                        f'--leadtime can only be any, asymptomatic, or a fixed number: {kwargs["leadtime"]} provided'
-                    )
+                lead_time = as_float(kwargs['leadtime'], "--leadtime can only be any, asymptomatic, or a fixed number")
         else:
             lead_time = 0
 
@@ -102,12 +97,7 @@ class Individual(object):
             if len(handle_symptomatic) == 1:
                 proportion = 1
             else:
-                try:
-                    proportion = float(handle_symptomatic[1])
-                except Exception:
-                    raise ValueError(
-                        f'Proportion in "--handle-symptomatic remove/keep prop" should be a float number: {handle_symptomatic[1]} provided'
-                    )
+                proportion = as_float(handle_symptomatic[1], "Proportion in --handle-symptomatic remove/keep prop should be a float number")
             if proportion > 1 or proportion < 0:
                 raise ValueError(
                     f'Proportion in "--handle-symptomatic remove/keep prop" should be a float number between 0 and 1: {proportion} provided'
@@ -136,22 +126,12 @@ class Individual(object):
             if handle_symptomatic[0] == 'quarantine':
                 quarantine_duration = 14
             else:
-                try:
-                    quarantine_duration = float(handle_symptomatic[0].split(
-                        '_', 1)[1])
-                except Exception:
-                    raise ValueError(
-                        f'quanrantine duration should be specified as "quarantine_DURATION": {handle_symptomatic[0]} provided'
-                    )
+                quarantine_duration = as_float(handle_symptomatic[0].split(
+                        '_', 1)[1], "quanrantine duration should be specified as quarantine_DURATION")
             if len(handle_symptomatic) == 1:
                 proportion = 1
             else:
-                try:
-                    proportion = float(handle_symptomatic[1])
-                except Exception:
-                    raise ValueError(
-                        f'Proportion in "--handle-symptomatic quarantine_DURATION prop" should be a float number: {handle_symptomatic[1]} provided'
-                    )
+                proportion = as_float(handle_symptomatic[1], "Proportion in --handle-symptomatic quarantine_DURATION prop should be a float number")
             if proportion > 1 or proportion < 0:
                 raise ValueError(
                     f'Proportion in "--handle-symptomatic quarantine_DUURATION prop" should be a float number between 0 and 1: {proportion} provided'
@@ -261,12 +241,7 @@ class Individual(object):
                 # could be anywhere in his incubation period
                 lead_time = np.random.uniform(0, 10)
             else:
-                try:
-                    lead_time = float(kwargs['leadtime'])
-                except:
-                    raise ValueError(
-                        f'--leadtime can only be any, asymptomatic, or a fixed number: {kwargs["leadtime"]} provided'
-                    )
+                lead_time = as_float(kwargs['leadtime'], "--leadtime can only be any, asymptomatic, or a fixed number")
         else:
             lead_time = 0
 

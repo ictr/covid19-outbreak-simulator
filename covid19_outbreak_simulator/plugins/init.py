@@ -2,6 +2,7 @@ import random
 
 from covid19_outbreak_simulator.event import Event, EventType
 from covid19_outbreak_simulator.plugin import BasePlugin
+from covid19_outbreak_simulator.utils import parse_param_with_multiplier
 
 
 class init(BasePlugin):
@@ -22,18 +23,16 @@ class init(BasePlugin):
             nargs='*',
             help='''Incidence rate of the population (default to zero), which should be
             the probability that any individual is currently affected with the virus (not
-            necessarily show any symptom). Multipliers can be specified to set incidence
-            rate of for particular groups (e.g. --initial-incidence-rate 0.1 docter=1.2
-            will set incidence rate to 0.12 for doctors).''')
+            necessarily show any symptom). Multipliers are allowed to specify incidence rate
+            for each subpopulation.''')
         parser.add_argument(
             '--seroprevalence',
             nargs='*',
             help='''Seroprevalence of the population (default to zero). The seroprevalence
             should always be greater than or euqal to initial incidence rate. The difference
             between seroprevalence and incidence rate will determine the "recovered" rate of
-            the population. Multipliers can be specified to set incidence rate of
-            for particular groups (e.g. --initial-incidence-rate 0.1 docter=1.2 will set
-            incidence rate to 0.12 for doctors).''')
+            the population. Multipliers are allowed to specify seroprevalence for each
+            subpopulation.''')
         parser.add_argument(
             '--leadtime',
             help='''With "leadtime" infections are assumed to happen before the simulation.
@@ -49,50 +48,11 @@ class init(BasePlugin):
         idx = 0
 
         # population prevalence and incidence rate
-        ir = {'': 0.0}
-        if args.incidence_rate:
-            for multiplier in args.incidence_rate:
-                if '=' not in multiplier:
-                    try:
-                        ir[''] = float(args.incidence_rate[0])
-                        continue
-                    except Exception as e:
-                        raise ValueError(
-                            f'The first parameter of --incidence-rate should be a float number "{args.incidence_rate[0]}" provided: {e}'
-                        )
-                name, value = multiplier.split('=', 1)
-                try:
-                    value = float(value)
-                except Exception:
-                    raise ValueError(
-                        f'Multiplier should have format name=float_value: {multiplier} provided'
-                    )
-                if ir[''] == 0.0:
-                    raise ValueError(f'Multiplier applied to default value of 0.: {args.incidence_rate}')
-                ir[name] = value * ir['']
+        ir = parse_param_with_multiplier(args.incidence_rate,
+                subpops=population.subpop_sizes.keys(), default=0.0)
         #
-        isp = {'': 0.0}
-        if args.seroprevalence:
-            # the first number must be float
-            for multiplier in args.seroprevalence:
-                if '=' not in multiplier:
-                    try:
-                        isp[''] = float(args.seroprevalence[0])
-                        continue
-                    except Exception as e:
-                        raise ValueError(
-                            f'The first parameter of --seroprevalence should be a float number "{args.incidence_rate[0]}" provided: {e}'
-                        )
-                name, value = multiplier.split('=', 1)
-                try:
-                    value = float(value)
-                except Exception:
-                    raise ValueError(
-                        f'Multiplier should have format name=float_value: {multiplier} provided'
-                    )
-                if isp[''] == 0.0:
-                    raise ValueError(f'Multiplier applied to default value of 0.: {args.seroprevalence}')
-                isp[name] = value * ir['']
+        isp = parse_param_with_multiplier(args.seroprevalence,
+                subpops=population.subpop_sizes.keys(), default=0.0)
 
         events = []
         for name, sz in population.subpop_sizes.items():

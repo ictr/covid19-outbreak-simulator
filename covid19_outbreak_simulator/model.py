@@ -3,6 +3,7 @@ import re
 import numpy as np
 from scipy.optimize import bisect
 from scipy.stats import norm
+from covid19_outbreak_simulator.utils import as_float, as_int
 
 
 class Params:
@@ -52,7 +53,7 @@ class Params:
                 raise ValueError(f'Invalid ID {ID}: Index out of range.')
         else:
             found = False
-            for name, size in self.groups.items():
+            for name in self.groups.keys():
                 if ID.startswith(name) and ID[len(name):].isnumeric():
                     idx = int(ID[len(name):])
                     if idx >= self.groups[name] or idx < 0:
@@ -76,10 +77,7 @@ class Params:
             else:
                 name = ''
                 size = ps
-            try:
-                size = int(size)
-            except Exception:
-                raise ValueError(f'Incorrect popsize {ps}')
+            size = as_int(size)
             if name in self.groups:
                 raise ValueError(f'Group "{name}" has been specified before')
             self.groups[name] = size
@@ -96,38 +94,23 @@ class Params:
         # if asymptomatic_r0 is specified, it should a number of a range...
         pars = [x for x in val if '=' not in x]
         if len(pars) == 1:
-            try:
-                self.set('symptomatic_r0', 'low', float(pars[0]))
-                self.set('symptomatic_r0', 'high', float(pars[0]))
-            except Exception:
-                raise ValueError(
-                    f'The symptomatic_r0 should be a float number, if it is not a multiplier for groups: {pars[0]} provided'
-                )
+            self.set('symptomatic_r0', 'low', as_float(
+                pars[0], "The symptomatic_r0 should be a float number, if it is not a multiplier for groups"))
+            self.set('symptomatic_r0', 'high', as_float(pars[0]))
         elif len(pars) == 2:
-            try:
-                self.set('symptomatic_r0', 'low', float(pars[0]))
-            except Exception:
-                raise ValueError(
-                    f'The symptomatic_r0 should be a float number, if it is not a multiplier for groups: {pars[0]} provided'
-                )
-            try:
-                self.set('symptomatic_r0', 'high', float(pars[1]))
-            except Exception:
-                raise ValueError(
-                    f'The symptomatic_r0 should be a float number, if it is not a multiplier for groups: {pars[1]} provided'
-                )
+            self.set('symptomatic_r0', 'low', as_float(
+                pars[0], "The symptomatic_r0 should be a float number, if it is not a multiplier for groups"))
+            self.set('symptomatic_r0', 'high', as_float(
+                pars[1], "The symptomatic_r0 should be a float number, if it is not a multiplier for groups"))
+
         elif len(pars) > 2:
             raise ValueError(
                 f'The symptomatic_r0 should be one or two float number.')
         #
         for multiplier in [x for x in val if '=' in x]:
             name, value = multiplier.split('=', 1)
-            try:
-                value = float(value)
-            except Exception:
-                raise ValueError(
-                    f'Multiplier should have format name=float_value: {multiplier} provided'
-                )
+            value = as_float(
+                value, "Multiplier should have format name=float_value")
             self.set('symptomatic_r0', f'multiplier_{name}', value)
 
     def set_asymptomatic_r0(self, val):
@@ -136,38 +119,22 @@ class Params:
         # if asymptomatic_r0 is specified, it should a number of a range...
         pars = [x for x in val if '=' not in x]
         if len(pars) == 1:
-            try:
-                self.set('asymptomatic_r0', 'low', float(pars[0]))
-                self.set('asymptomatic_r0', 'high', float(pars[0]))
-            except Exception:
-                raise ValueError(
-                    f'The asymptomatic_r0 should be a float number, if it is not a multiplier for groups: {pars[0]} provided'
-                )
+            self.set('asymptomatic_r0', 'low', as_float(
+                pars[0], "The asymptomatic_r0 should be a float number, if it is not a multiplier for groups"))
+            self.set('asymptomatic_r0', 'high', as_float(pars[0]))
         elif len(pars) == 2:
-            try:
-                self.set('asymptomatic_r0', 'low', float(pars[0]))
-            except Exception:
-                raise ValueError(
-                    f'The asymptomatic_r0 should be a float number, if it is not a multiplier for groups: {pars[0]} provided'
-                )
-            try:
-                self.set('asymptomatic_r0', 'high', float(pars[1]))
-            except Exception:
-                raise ValueError(
-                    f'The asymptomatic_r0 should be a float number, if it is not a multiplier for groups: {pars[1]} provided'
-                )
+            self.set('asymptomatic_r0', 'low', as_float(
+                pars[0], "The asymptomatic_r0 should be a float number, if it is not a multiplier for groups"))
+            self.set('asymptomatic_r0', 'high', as_float(
+                pars[1], "The asymptomatic_r0 should be a float number, if it is not a multiplier for groups"))
         elif len(pars) > 2:
             raise ValueError(
                 f'The asymptomatic_r0 should be one or two float number.')
         #
         for multiplier in [x for x in val if '=' in x]:
             name, value = multiplier.split('=', 1)
-            try:
-                value = float(value)
-            except Exception:
-                raise ValueError(
-                    f'Multiplier should have format name=float_value: {multiplier} provided'
-                )
+            value = as_float(
+                value, "Multiplier should have format name=float_value")
             self.set('asymptomatic_r0', f'multiplier_{name}', value)
 
     def set_incubation_period(self, val):
@@ -184,32 +151,17 @@ class Params:
                 raise ValueError(
                     f'Only normal or lognormal distribution for incubation period is supported. {pars[0]} provided'
                 )
-            try:
-                self.set('incubation_period',
-                         'mean' if pars[0] == 'lognormal' else 'loc',
-                         float(pars[1]))
-            except Exception:
-                raise ValueError(
-                    f'Second parameter of incubation_period should be a float number: {pars[1]} provided'
-                )
-            try:
-                self.set('incubation_period',
-                         'sigma' if pars[0] == 'lognormal' else 'scale',
-                         float(pars[2]))
-            except Exception:
-                raise ValueError(
-                    f'Third parameter of lognormal incubation_period should be a float number: {pars[2]} provided'
-                )
+            self.set('incubation_period',
+                     'mean' if pars[0] == 'lognormal' else 'loc',
+                     as_float(pars[1], "Second parameter of incubation_period should be a float number"))
+            self.set('incubation_period',
+                     'sigma' if pars[0] == 'lognormal' else 'scale',
+                     as_float(pars[2], "Third parameter of lognormal incubation_period should be a float number"))
         # multipliers
         for multiplier in [x for x in val if '=' in x]:
             name, value = multiplier.split('=', 1)
-            try:
-                value = float(value)
-            except Exception:
-                raise ValueError(
-                    f'Multiplier should have format name=float_value: {multiplier} provided'
-                )
-            self.set('incubation_period', f'multiplier_{name}', value)
+            self.set('incubation_period',
+                     f'multiplier_{name}', as_float(value))
 
     def set_susceptibility(self, val):
         if not val:
@@ -220,13 +172,8 @@ class Params:
                     f'Susceptibility has to be specified as name=weight: {multiplier} specified.'
                 )
             name, value = multiplier.split('=', 1)
-            try:
-                value = float(value)
-            except Exception:
-                raise ValueError(
-                    f'Multiplier should have format name=float_value: {multiplier} provided'
-                )
-            self.set('susceptibility', f'multiplier_{name}', value)
+            self.set('susceptibility', f'multiplier_{name}', as_float(
+                value, "Multiplier should have format name=float_value"))
 
     def set_prop_asym_carriers(self, val):
         if not val:
@@ -238,7 +185,7 @@ class Params:
                 f'Paramter prop-asym-carriers expect one or two float value or multipliers: {" ".join(val)} provided'
             )
         if len(pars) == 1:
-            self.set('prop_asym_carriers', 'loc', float(pars[0]))
+            self.set('prop_asym_carriers', 'loc', as_float(pars[0]))
             self.set('prop_asym_carriers', 'scale', 0)
         elif len(pars) == 2:
             if pars[0] > pars[1]:
@@ -253,13 +200,8 @@ class Params:
         #
         for multiplier in [x for x in val if '=' in x]:
             name, value = multiplier.split('=', 1)
-            try:
-                value = float(value)
-            except Exception:
-                raise ValueError(
-                    f'Multiplier should have format name=float_value: {multiplier} provided'
-                )
-            self.set('prop_asym_carriers', f'multiplier_{name}', value)
+            self.set('prop_asym_carriers', f'multiplier_{name}', as_float(
+                value, "Multiplier should have format name=float_value"))
 
     def set_params(self, args):
         # set some default values first

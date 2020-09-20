@@ -1,6 +1,26 @@
 
+def as_float(val, msg=''):
+    try:
+        return float(val)
+    except Exception:
+        raise ValueError(f'A float number is expected{" (" + msg + ")" if msg else ""}: {val} provided')
+
+
+def as_int(val, msg=''):
+    try:
+        return int(val)
+    except Exception:
+        raise ValueError(f'An integer number is expected{" (" + msg + ")" if msg else ""}: {val} provided')
+
+
 def parse_param_with_multiplier(args, subpops=None, default=None):
-    base = [x for x in args if '=' not in x]
+    if args is None:
+        if default is not None:
+            return {'': default}
+        else:
+            raise ValueError('Process multiplier of unspecified parameter')
+
+    base = [x for x in args if not isinstance(x, str) or  '=' not in x]
     if not base:
         if default is None:
             raise ValueError(f'No vase value for multiplier: {" ".join(args)}')
@@ -18,7 +38,7 @@ def parse_param_with_multiplier(args, subpops=None, default=None):
         return {'': base}
 
     res = {x: base for x in subpops}
-    for arg in [x for x in args if '=' in x]:
+    for arg in [x for x in args if isinstance(x, str) and '=' in x]:
         sp, val = arg.split('=', 1)
         if sp not in subpops:
             raise ValueError(f'Invalid subpopulation name {sp}')

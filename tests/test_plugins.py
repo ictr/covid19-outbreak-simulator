@@ -85,6 +85,7 @@ def test_plugin_stat_with_groups():
         '--infectors', 'A0', '--plugin', 'stat', '--interval', '1'
     ])
 
+
 def test_plugin_init():
     main([
         '--jobs', '1', '--repeats', '100', '--plugin', 'init', '--at', '0',
@@ -164,6 +165,7 @@ def test_plugin_remove():
         'remove', 'A=2', '--interval', '1'
     ])
 
+
 def test_plugin_community_spread():
     main([
         '--jobs', '1', '--repeats', '100', '--stop-if', 't>10', '--plugin',
@@ -173,6 +175,7 @@ def test_plugin_community_spread():
         '--jobs', '1', '--repeats', '100', '--popsize', 'A=100', 'B=200', '--stop-if', 't>10', '--plugin',
         'community_spread', '--probability', '1', 'A=0.0001', '--interval', '1'
     ])
+
 
 def test_plugin_insert_hetero_pop():
     main([
