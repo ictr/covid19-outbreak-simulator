@@ -11,7 +11,7 @@ class Individual(object):
         self.id = id
         self.model = model
         self.group = group
-        self.susceptibility = 1.0 if susceptibility is None else susceptibility
+        self.susceptibility = 1.0 if susceptibility is None else min(1, susceptibility)
         self.logger = logger
 
         # these will be set to event happen time
@@ -323,12 +323,11 @@ class Individual(object):
 
 class Population(object):
 
-    def __init__(self, popsize, uneven_susceptibility=False):
+    def __init__(self, popsize):
         self.individuals = {}
         self.subpop_sizes = {(ps.split('=', 1)[0] if '=' in ps else ''):
                         0 for ps in popsize}
         self.max_ids = {x:y for x,y in self.subpop_sizes.items() }
-        self.uneven_susceptibility = uneven_susceptibility
         self.subpop_from_id = re.compile('^(.*?)[\d]+$')
 
     def add(self, items, subpop):
@@ -368,24 +367,11 @@ class Population(object):
         return self.individuals.values()
 
     def select(self, exclude):
-        if self.uneven_susceptibility:
-            # select one non-quarantined indivudal to infect
-            ids = [(id, ind.susceptibility)
-                   for id, ind in self.individuals.items()
-                   if id != exclude and not ind.quarantined]
-
-            if not ids:
-                return None
-
-            weights = np.array([x[1] for x in ids])
-            weights = weights / sum(weights)
-            return ids[choice(len(ids), 1, p=weights)[0]][0]
-        else:
-            # select one non-quarantined indivudal to infect
-            ids = [
-                id for id, ind in self.individuals.items()
-                if id != exclude and not ind.quarantined
-            ]
-            if not ids:
-                return None
-            return random.choice(ids)
+        # select one non-quarantined indivudal to infect
+        ids = [
+            id for id, ind in self.individuals.items()
+            if id != exclude and not ind.quarantined
+        ]
+        if not ids:
+            return None
+        return random.choice(ids)

@@ -82,9 +82,7 @@ class Simulator(object):
         self.model.draw_prop_asym_carriers()
 
         # collection of individuals
-        population = Population(
-            popsize=self.simu_args.popsize,
-            uneven_susceptibility=self.simu_args.susceptibility is not None)
+        population = Population(popsize=self.simu_args.popsize)
         idx = 0
 
         for ps in self.simu_args.popsize:
@@ -105,6 +103,8 @@ class Simulator(object):
                     name + str(idx),
                     group=name,
                     susceptibility=getattr(self.model.params,
+                                           f'susceptibility_mean',
+                                           1) * getattr(self.model.params,
                                            f'susceptibility_multiplier_{name}',
                                            1),
                     model=self.model,

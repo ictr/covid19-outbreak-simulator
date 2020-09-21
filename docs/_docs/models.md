@@ -14,9 +14,9 @@ The COVID-19 Outbreak Simulator simulates the spread of SARS-CoV-2 virus in popu
     The introduction of virus can happen once or multiple times.
 -   **Spread of virus**: Infected individual might or might not show symptoms (asymptomatic cases), and
     have varying probability to infect others (determined by a random production number). The infectees
-    are chosen by random although some groups can be more or less susceptible. Infection events are
-    pre-simulated but may not actually happen if the virus carrier is quarantined or removed, or if the
-    infectee has already been inected. *Currently we assume no second infection*, but this could change if more cases of recurrent infection are reported.
+    are chosen by random although individuals can have different "neighborhood" and some subpopulationss
+    can be more or less susceptible. Infection events are pre-simulated but may not actually happen if
+    the virus carrier is quarantined or removed, or if the infectee has already been inected.
 -   **Handling of infected individuals**: Individuals are by default removed from from the population
     (separated, quarantined, hospitalized, or deceased, as long as he or she can no longer infect
     others) after they show symptoms, but options are provided to act otherwise (e.g. quarantine after
@@ -31,10 +31,11 @@ The COVID-19 Outbreak Simulator simulates the spread of SARS-CoV-2 virus in popu
 
 **Limitations of the simulator**
 
-* The simulator does not simulate "contact" or "geographic locations", so it is not yet possible
-  to similate scenarios such as "contact centers" such as supermarkets and schools.
+* The simulator does not simulate "contact" or "geographic locations". Although it has a ceonvept of
+  neighborhood, it can only simulate scenrios when **each subpopulation is well-mixed** and have the
+  same probability of being infected.
 
-## Concepts
+### Concepts
 
 **Infectivity** is modeled as the cummulative transmissibility of an infected individual during the
 course of infection, and is controlled by parameters `symptomatic_r0` and `asymptomatic_r0`. For

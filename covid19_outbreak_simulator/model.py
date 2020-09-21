@@ -164,16 +164,24 @@ class Params:
                      f'multiplier_{name}', as_float(value))
 
     def set_susceptibility(self, val):
+        print(val)
         if not val:
             return
-        for multiplier in val:
-            if '=' not in multiplier:
-                raise ValueError(
-                    f'Susceptibility has to be specified as name=weight: {multiplier} specified.'
-                )
+        base = [x for x in val if not isinstance(x, str) or '=' not in x]
+        if not base:
+            self.set('susceptibility', 'mean', 1.0)
+        elif len(base) > 1:
+            raise ValueError('Susceptibility should be a single number.')
+        else:
+            base_val = as_float(base[0], 'Susceptibility should be a float number')
+            if base_val > 1 or base_val < 0:
+                raise ValueError('suscepbility should be betwee 0 and 1: {base_val}')
+            self.set('susceptibility', 'mean', base_val)
+
+        for multiplier in [x for x in val if isinstance(x, str) and '=' in x]:
             name, value = multiplier.split('=', 1)
             self.set('susceptibility', f'multiplier_{name}', as_float(
-                value, "Multiplier should have format name=float_value"))
+                value, "Invalid multiplier for susceptibility."))
 
     def set_prop_asym_carriers(self, val):
         if not val:

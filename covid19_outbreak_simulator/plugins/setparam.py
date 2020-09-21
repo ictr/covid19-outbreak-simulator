@@ -17,11 +17,9 @@ class setparam(BasePlugin):
         parser.add_argument(
             '--susceptibility',
             nargs='+',
-            help='''Weight of susceptibility. The default value is 1, meaning everyone is
-                equally susceptible. With options such as
-                "--susceptibility nurse=1.2 patients=0.8" you can give weights to different
-                groups of people so that they have higher or lower probabilities to be
-                infected.''')
+            help='''Probability of being infected if an infection event happens, default to 1.
+            With options such as "--susceptibility nurse=0.8 patients=1" you can model a scenario
+            when nurses are better prepared and protected than patients.''')
         parser.add_argument(
             '--symptomatic-r0',
             nargs='+',

@@ -56,6 +56,8 @@ class insert(BasePlugin):
                     ID,
                     group=name,
                     susceptibility=getattr(self.simulator.model.params,
+                                           f'susceptibility_mean',
+                                           1) * getattr(self.simulator.model.params,
                                            f'susceptibility_multiplier_{name}',
                                            1),
                     model=self.simulator.model,

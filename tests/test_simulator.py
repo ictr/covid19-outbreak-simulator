@@ -56,11 +56,9 @@ def test_option_susceptibility():
             ['--popsize', 'A=500', 'B=300', '--susceptibility', 'A=1f'])
         params = Params(args)
 
-    # not as multiplier
-    with pytest.raises(ValueError):
-        args = parse_args(
-            ['--popsize', 'A=500', 'B=300', '--susceptibility', '0.8'])
-        params = Params(args)
+    args = parse_args(
+        ['--popsize', 'A=500', 'B=300', '--susceptibility', '0.8'])
+    params = Params(args)
 
 
 def test_option_symptomatic_r0():
@@ -326,7 +324,7 @@ def test_main_incubation_period():
 def test_main_susceptibility():
     main([
         '--jobs', '1', '--repeats', '10', '--popsize', 'A=100', 'B=200',
-        '--susceptibility', 'A=0.08', 'B=1.2', '--infectors', 'B1', 'B2'
+        '--susceptibility', 'A=0.08', 'B=1', '--infectors', 'B1', 'B2'
     ])
 
 

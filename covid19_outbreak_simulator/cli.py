@@ -25,13 +25,20 @@ def parse_args(args=None):
         group specific parameters. The IDs of these individuals will be nurse0, nurse1
         etc. ''')
     parser.add_argument(
+        '--neighborhood',
+        nargs='*',
+        help='''Number of "neighbors" from subpopulation "B" for individuals in
+        aubpopulation "A", specified as "A-B=n". For example, "A-A=0" avoids infection
+        within subpopulation "A", "A-A=10 A-B=5" will make infections twiece as likely
+        to happen within subpopulation A then to subpopulation B, regardless of size of
+        subpopulations A and B.'''
+    )
+    parser.add_argument(
         '--susceptibility',
         nargs='+',
-        help='''Weight of susceptibility. The default value is 1, meaning everyone is
-            equally susceptible. With options such as
-            "--susceptibility nurse=1.2 patients=0.8" you can give weights to different
-            groups of people so that they have higher or lower probabilities to be
-            infected.''')
+        help='''Probability of being infected if an infection event happens, default to 1.
+            With options such as "--susceptibility nurse=0.8 patients=1" you can model a scenario
+            when nurses are better prepared and protected than patients.''')
     parser.add_argument(
         '--symptomatic-r0',
         nargs='+',

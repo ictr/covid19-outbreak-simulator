@@ -335,7 +335,7 @@ This simulation can be written as
 
 ```sh
 $ outbreak_simulator --popsize A=2000 B=500 --rep 10 --handle-symptomatic quarantine_14 1 \
-  --susceptibility A=1.2 --symptomatic-r0 A=1.2 B=0.8 --logfile hetero.log \
+  --susceptibility B=0.8 --symptomatic-r0 A=1.2 B=0.8 --logfile hetero.log \
   --stop-if 't>40' \
   --plugin stat --interval 1 \
   --plugin insert A=5 --prop-of-infected 0.5 --interval 1 \
@@ -360,6 +360,6 @@ with two patients carrying the virus with the following options:
 $ outbreak_simulator --popsize nurse=10 patient=100 \
     --symptomatic-r0 nurse=1.5 patient=0.8 \
     --asymptomatic-r0 nurse=1.5 patient=0.8 \
-    --susceptibility nurse=1.2 patient=0.8 \
+    --susceptibility nurse=0.8 patient=1 \
     --infector patient0 patient1
 ```
