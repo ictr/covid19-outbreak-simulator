@@ -1,6 +1,7 @@
+import copy
 import random
 import numpy as np
-from numpy.random import choice
+from numpy.random import choice, rand
 from .utils import as_float
 from .event import Event, EventType
 import re
@@ -315,6 +316,12 @@ class Individual(object):
             )
             return []
 
+        if self.susceptibility < 1 and rand() > self.susceptibility:
+            by_id = '.' if kwargs['by'] is None else kwargs['by']
+            self.logger.write(
+                f'{self.logger.id}\t{time:.2f}\t{EventType.INFECTION_FAILED.name}\t{self.id}\tby={by_id}\n'
+            )
+
         if self.model.draw_is_asymptomatic():
             return self.asymptomatic_infect(time, **kwargs)
         else:
@@ -323,19 +330,77 @@ class Individual(object):
 
 class Population(object):
 
-    def __init__(self, popsize):
+    def __init__(self, popsize, model, vicinity, logger):
         self.individuals = {}
-        self.subpop_sizes = {(ps.split('=', 1)[0] if '=' in ps else ''):
+        self.group_sizes = {(ps.split('=', 1)[0] if '=' in ps else ''):
                         0 for ps in popsize}
-        self.max_ids = {x:y for x,y in self.subpop_sizes.items() }
+        self.max_ids = {x:y for x,y in self.group_sizes.items() }
         self.subpop_from_id = re.compile('^(.*?)[\d]+$')
+        self.vicinity = self.parse_vicinity(vicinity)
+
+        idx = 0
+
+        for ps in popsize:
+            if '=' in ps:
+                # this is named population size
+                name, sz = ps.split('=', 1)
+            else:
+                name = ''
+                sz = ps
+            try:
+                sz = int(sz)
+            except Exception:
+                raise ValueError(
+                    f'Named population size should be name=int: {ps} provided')
+
+            self.add([
+                Individual(
+                    name + str(idx),
+                    group=name,
+                    susceptibility=getattr(model.params,
+                                           f'susceptibility_mean',
+                                           1) * getattr(model.params,
+                                           f'susceptibility_multiplier_{name}',
+                                           1),
+                    model=model,
+                    logger=logger) for idx in range(idx, idx + sz)
+            ], subpop=name)
+
+    def parse_vicinity(self, params):
+        if not params:
+            return {}
+
+        res = {}
+        for param in params:
+            matched = re.match('^(.*)-(.*)=(\d+)$', param)
+            if matched:
+                infector_sp = matched.group(1)
+                infectee_sp = matched.group(2)
+                neighbor_size = int(matched.group(3))
+            else:
+                matched = re.match('^(.*)=(\d+)$', param)
+                if matched:
+                    infector_sp = ''
+                    infectee_sp = matched.group(1)
+                    neighbor_size = int(matched.group(2))
+                if not matched:
+                    raise ValueError(f'Vicinity should be specified as "INFECTOR_SO-INFECTEE_SP=SIZE": {param} specified')
+            if infector_sp and infector_sp not in self.group_sizes:
+                raise ValueError(f'Unrecognized group {infector_sp}')
+            if infectee_sp not in self.group_sizes:
+                raise ValueError(f'Unrecognized group {infectee_sp}')
+            if infector_sp in res:
+                res[infector_sp][infectee_sp] = neighbor_size
+            else:
+                res[infector_sp] = {infectee_sp: neighbor_size}
+        return res
 
     def add(self, items, subpop):
         sz = len(self.individuals)
         self.individuals.update({x.id: x for x in items})
         if sz + len(items) != len(self.individuals):
             raise ValueError(f'One or more IDs are already in the population.')
-        self.subpop_sizes[subpop] += len(items)
+        self.group_sizes[subpop] += len(items)
         self.max_ids[subpop] += len(items)
 
     @property
@@ -346,7 +411,7 @@ class Population(object):
         self.individuals.pop(item)
         if subpop is None:
             subpop = self.subpop_from_id.match(item).group(1)
-        self.subpop_sizes[subpop] -= 1
+        self.group_sizes[subpop] -= 1
 
     def in_subpop(self, item, subpop):
         return True if not subpop else self.subpop_from_id.match(item).group(1) == subpop
@@ -366,12 +431,45 @@ class Population(object):
     def values(self):
         return self.individuals.values()
 
-    def select(self, exclude):
+    def select(self, infector=None):
         # select one non-quarantined indivudal to infect
-        ids = [
-            id for id, ind in self.individuals.items()
-            if id != exclude and not ind.quarantined
-        ]
+        #
+        if infector is not None and infector not in self.individuals:
+            raise RuntimeError(f'Can not select infectee if since infector {infector} no longer exists.')
+
+        # if not cicinity is defines, or
+        # if infection is from community and '' not in vicinity, or
+        # with infector but self.vicinity does not have this case.
+        if not self.vicinity or (infector is None and '' not in self.vicinity) or \
+            (infector is not None and self.individuals[infector].group not in self.vicinity):
+            ids = [
+                id for id, ind in self.individuals.items()
+                if infector != ind.id and not ind.quarantined
+            ]
+        else:
+            # quota from each group.
+            groups = list(self.group_sizes.keys())
+
+            if infector in self.individuals:
+                freq = copy.deepcopy(self.vicinity[self.individuals[infector].group])
+            else:
+                freq = copy.deepcopy(self.vicinity[''])
+
+            for grp in self.group_sizes.keys():
+                if grp not in freq:
+                    freq[grp] = self.group_sizes[grp]
+                    # now, we know the number of qualified invidiauls from each
+                    # group, but we still have excluded and quarantined....
+            total = sum(freq.values())
+            freq = {x:y/total for x,y in freq.items()}
+            # first determine which group ...
+            grp = choice(groups, 1, p=[freq[x] for x in groups])
+
+            # then select a random individual from the group.
+            ids = [id for id, ind in self.individuals.items()
+                if ind.group == grp and infector != ind.id and not ind.quarantined
+            ]
+
         if not ids:
             return None
-        return random.choice(ids)
+        return choice(ids)

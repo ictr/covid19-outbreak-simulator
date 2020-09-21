@@ -46,8 +46,8 @@ class insert(BasePlugin):
             name = ps.split('=', 1)[0] if '=' in ps else ''
             sz = int(ps.split('=', 1)[1]) if '=' in ps else int(ps)
 
-            if name not in population.subpop_sizes:
-                raise ValueError(f'can only add to existing subpopulations')
+            if name not in population.group_sizes:
+                raise ValueError(f'can only add to existing groups')
 
             IDs = [f'{name}{idx}' for idx in range(
                         population.max_ids[name], population.max_ids[name] + sz)]

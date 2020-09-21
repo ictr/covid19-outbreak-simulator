@@ -25,13 +25,15 @@ def parse_args(args=None):
         group specific parameters. The IDs of these individuals will be nurse0, nurse1
         etc. ''')
     parser.add_argument(
-        '--neighborhood',
+        '--vicinity',
         nargs='*',
-        help='''Number of "neighbors" from subpopulation "B" for individuals in
+        help='''Number of "neighbors" from group "B" for individuals in
         aubpopulation "A", specified as "A-B=n". For example, "A-A=0" avoids infection
-        within subpopulation "A", "A-A=10 A-B=5" will make infections twiece as likely
-        to happen within subpopulation A then to subpopulation B, regardless of size of
-        subpopulations A and B.'''
+        within group "A", "A-A=10 A-B=5" will make infections twiece as likely
+        to happen within group A then to group B, regardless of size of
+        groups A and B. As a specifial case, 'A=10` etc refers to cases when
+        infection happens from outside of the simulated population (community
+        infection).'''
     )
     parser.add_argument(
         '--susceptibility',
@@ -44,7 +46,7 @@ def parse_args(args=None):
         nargs='+',
         help='''Production number of symptomatic infectors, should be specified as a single
             fixed number, or a range. Multipliers are allowed to specify symptomatic r0 for
-            each subpopulation. This parameter reflects the infectivity of virus carrier measured
+            each group. This parameter reflects the infectivity of virus carrier measured
             by the average number of individuals one infected individual "would" infect if
             infectivity is not blocked by for example quarantine and susceptibility of
             infectees.'''
@@ -54,13 +56,13 @@ def parse_args(args=None):
         nargs='+',
         help='''Production number of asymptomatic infectors, should be specified as a single
             fixed number or a range. Multipliers are allowed to specify asymptomatic r0 for
-            each subpopulation.''')
+            each group.''')
     parser.add_argument(
         '--incubation-period',
         nargs='+',
         help='''Incubation period period, should be specified as "lognormal" followed by two
             numbers as mean and sigma, or "normal" followed by mean and sd. Multipliers are
-            allowed to specify incubation period for each subpopulation. Default to
+            allowed to specify incubation period for each group. Default to
             "lognormal 1.621 0.418"'''
     )
     parser.add_argument(

@@ -22,8 +22,8 @@ class remove(BasePlugin):
             'popsize',
             nargs='+',
             help='''Number of individuals to be removed, which can be from
-            the entire population, or from specific subpopulations
-            (e.g. nurse=10) if there are subpopulations.''')
+            the entire population, or from specific groups
+            (e.g. nurse=10) if there are groups.''')
         return parser
 
     def apply(self, time, population, args=None):
@@ -32,7 +32,7 @@ class remove(BasePlugin):
             name = ps.split('=', 1)[0] if '=' in ps else ''
             sz = int(ps.split('=', 1)[1]) if '=' in ps else int(ps)
 
-            if name not in population.subpop_sizes:
+            if name not in population.group_sizes:
                 raise ValueError(f'Subpopulation {name} does not exist')
 
             IDs = [x for x in population.ids if x.startswith(name) and x[len(name):].isnumeric()]

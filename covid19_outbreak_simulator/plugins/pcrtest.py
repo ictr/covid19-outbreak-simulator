@@ -22,7 +22,7 @@ class pcrtest(BasePlugin):
             default=[1.0],
             help='''Proportion of individuals to test. Individuals who are tested
             positive will by default be quarantined. Multipliers are allowed to specify
-            proportion of tests for each subpopulation.''',
+            proportion of tests for each group.''',
         )
         parser.add_argument(
             '--sensitivity',
@@ -66,8 +66,8 @@ class pcrtest(BasePlugin):
             IDs = [x for x in args.IDs if select(population[x])]
         else:
             proportions = parse_param_with_multiplier(args.proportion,
-                subpops=population.subpop_sizes.keys())
-            counts = {name:int(size*proportions[name]) for name,size in population.subpop_sizes.items()}
+                subpops=population.group_sizes.keys())
+            counts = {name:int(size*proportions[name]) for name,size in population.group_sizes.items()}
 
             IDs = [
                 x for x, y in population.items()

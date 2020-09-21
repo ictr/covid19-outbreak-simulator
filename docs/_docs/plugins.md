@@ -295,8 +295,8 @@ remove individuals from the population
 
 positional arguments:
   popsize               Number of individuals to be removed, which can be from the
-                        entire population, or from specific subpopulations (e.g.
-                        nurse=10) if there are subpopulations.
+                        entire population, or from specific groups (e.g.
+                        nurse=10) if there are groups.
 
 optional arguments:
   -h, --help            show this help message and exit

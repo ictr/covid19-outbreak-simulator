@@ -63,23 +63,24 @@ class Event(object):
 
     def apply(self, population):
         if self.action == EventType.INFECTION:
+            if 'by' not in self.kwargs:
+                raise ValueError('Parameter by is required for INECTION event.')
             if self.target is not None:
                 if self.target not in population:
                     self.logger.write(
                         f'{self.logger.id}\t{self.time:.2f}\t{EventType.WARNING.name}\t{self.target}\tmsg=INFECTION target no longer exists\n'
                     )
                     return []
-                selected = self.target
+                infectee = self.target
             else:
-                selected = population.select(exclude=self.target)
+                infectee = population.select(infector=self.kwargs['by'])
 
-                if not selected:
+                if not infectee:
                     self.logger.write(
                         f'{self.logger.id}\t{self.time:.2f}\t{EventType.INFECTION_FAILED.name}\t{self.target}\tby={self.kwargs["by"]}\n'
                     )
                     return []
-            if 'by' not in self.kwargs:
-                raise ValueError('Parameter by is required for INECTION event.')
+
             if self.kwargs['by'] in population:
                 by_ind = population[self.kwargs['by']]
                 if by_ind.quarantined and by_ind.quarantined >= self.time:
@@ -94,7 +95,7 @@ class Event(object):
                 return []
             #
             # if 'by' individual is removed, or quarantined etc
-            return population[selected].infect(self.time, **self.kwargs)
+            return population[infectee].infect(self.time, **self.kwargs)
         elif self.action == EventType.QUARANTINE:
             if self.target not in population:
                 self.logger.write(

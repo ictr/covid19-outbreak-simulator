@@ -25,7 +25,7 @@ class community_spread(BasePlugin):
             default=[0.005],
             help='''The probability of anyone to be affected at a given
             interval, which is usually per day (with option --interval 1).
-            Multipliers are allowed to specify probability for each subpopulation.
+            Multipliers are allowed to specify probability for each group.
             If individuals have different susceptibility specified by option
             --susceptibility, the probability will be multiplied by the
             susceptibility multipliers, The infection events do not have to
@@ -37,7 +37,7 @@ class community_spread(BasePlugin):
         events = []
 
         probability = parse_param_with_multiplier(args.probability,
-            subpops=population.subpop_sizes.keys())
+            subpops=population.group_sizes.keys())
 
         for subpop, prob in probability.items():
             # drawning random number one by one

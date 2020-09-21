@@ -14,7 +14,7 @@ The COVID-19 Outbreak Simulator simulates the spread of SARS-CoV-2 virus in popu
     The introduction of virus can happen once or multiple times.
 -   **Spread of virus**: Infected individual might or might not show symptoms (asymptomatic cases), and
     have varying probability to infect others (determined by a random production number). The infectees
-    are chosen by random although individuals can have different "neighborhood" and some subpopulationss
+    are chosen by random although individuals can have different "vicinity" and some groupss
     can be more or less susceptible. Infection events are pre-simulated but may not actually happen if
     the virus carrier is quarantined or removed, or if the infectee has already been inected.
 -   **Handling of infected individuals**: Individuals are by default removed from from the population
@@ -32,7 +32,7 @@ The COVID-19 Outbreak Simulator simulates the spread of SARS-CoV-2 virus in popu
 **Limitations of the simulator**
 
 * The simulator does not simulate "contact" or "geographic locations". Although it has a ceonvept of
-  neighborhood, it can only simulate scenrios when **each subpopulation is well-mixed** and have the
+  vicinity, it can only simulate scenrios when **each group is well-mixed** and have the
   same probability of being infected.
 
 ### Concepts
@@ -43,13 +43,13 @@ example, if one individual is symptomatic and has `sympatomatc_r0=2`, then he wi
 infect two people. The time that the carrier will infect others will be simulated according to
 transmissibility distributions when an infected becomes infected.
 
-**Neiborhood** determines the number of surrounding individuals from different subpopulations, and
-is determined by parameter neightborhood. **Neighorhood only specifies sizes, not physical locations,
-so this parameter only impact probabilities of being infected**. For example, if an individual is from subpopulation `A` with `--neighborhood A-B=50`, he will be able to infect
-everyone from subpopulation `A` and `50` individuals from subpopulation `B`. Similarly,
-`--neighborhood A-B=0` will make individuals from subpopulation A only infect another individual
-from subpopulation `A` (if there are only two subpopulations), and `--neightborhood A-A=5 A-B=10`
-basically says anyone from `A` will be twice more likely to infect someone from subpopulation `B`.
+**Vicinity** determines the number of surrounding individuals from different groups, and
+is determined by parameter `vicinity`. **Vivinity only specifies sizes, not physical locations,
+so this parameter only impact probabilities of being infected**. For example, if an individual is from group `A` with `--vicinity A-B=50`, he will be able to infect
+everyone from group `A` and `50` individuals from group `B`. Similarly,
+`--vicinity A-B=0` will make individuals from group A only infect another individual
+from group `A` (if there are only two groups), and `--neightborhood A-A=5 A-B=10`
+basically says anyone from `A` will be twice more likely to infect someone from group `B`.
 
 **susceptibility** determine how likely the individual who are selected will actually become
 infected, which can be used to simulate level of self-protection. For example, in a population
@@ -88,7 +88,7 @@ everyone is susceptible at probability 1 (infection will always succeed). Note t
 not a fixed number and is the average number of a population. It will vary from population to population, and over time with changing parameters such as social distancing.
 * Asymptomatic carrier will not show symptom throughout their course of infection, but their infectiousness (transmissibility) would be much smaller than symptomatic carriers.
 
-### Infection process: Infectivity, neighborhood, and susceptibility
+### Infection process: Infectivity, vicinity, and susceptibility
 
 Infection is simulated in `covid10-outbreak-simulator` as follows:
 

@@ -202,16 +202,16 @@ optional arguments:
                         number of CPU cores.
 ```
 
-## Specification for subpopulation-specific parameters
+## Specification for group-specific parameters
 
-`outbreak_simulator` allows the simulation of multiple subpopulations using
+`outbreak_simulator` allows the simulation of multiple groups using
 parameter `--popsize`. For example,
 
 ```
 --popsize A=100 B=200
 ```
 
-specifies two subpopulations `A` and `B` with sizes `100` and `200` respectively.
+specifies two groups `A` and `B` with sizes `100` and `200` respectively.
 
 Subpopulations can have their own parameters (e.g. `--susceptibility`) and they
 are specified by `multipliers` in the format of
@@ -225,10 +225,10 @@ For example,
 ```
 --symptomatic-r0 1.5 A=1.2 B=0.8
 ```
-specifies individuals in subpopulation `A` with symptomatic r0 `1.5*1.2` and
-`1.5*0.8` in subpopulation `B`. `1.5` will be used for unspecified subpopulations.
+specifies individuals in group `A` with symptomatic r0 `1.5*1.2` and
+`1.5*0.8` in group `B`. `1.5` will be used for unspecified groups.
 
-If you would like to specify value for each subpopulation, you can use
+If you would like to specify value for each group, you can use
 
 ```
 --symptomatic-r0 1 A=1.2 B=0.8
@@ -328,7 +328,7 @@ $ outbreak_simulator  --popsize 34993 -j1 --rep 1 --handle-symptomatic quarantin
 
 ### Heterogeneous situation
 
-Now, let us assume that we have a population with two subpopulations `A` and `B`, be they workers and guest, doctors and patients. Now let us assume that subpopulation `A` is more
+Now, let us assume that we have a population with two groups `A` and `B`, be they workers and guest, doctors and patients. Now let us assume that group `A` is more
 susceptible (more contact with others), and more infectious. Let us also assume that
 there is a intermediate inflow of `A` to the population, half of them would be carriers.
 This simulation can be written as

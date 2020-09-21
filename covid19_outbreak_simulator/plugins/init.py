@@ -24,7 +24,7 @@ class init(BasePlugin):
             help='''Incidence rate of the population (default to zero), which should be
             the probability that any individual is currently affected with the virus (not
             necessarily show any symptom). Multipliers are allowed to specify incidence rate
-            for each subpopulation.''')
+            for each group.''')
         parser.add_argument(
             '--seroprevalence',
             nargs='*',
@@ -32,7 +32,7 @@ class init(BasePlugin):
             should always be greater than or euqal to initial incidence rate. The difference
             between seroprevalence and incidence rate will determine the "recovered" rate of
             the population. Multipliers are allowed to specify seroprevalence for each
-            subpopulation.''')
+            group.''')
         parser.add_argument(
             '--leadtime',
             help='''With "leadtime" infections are assumed to happen before the simulation.
@@ -49,13 +49,13 @@ class init(BasePlugin):
 
         # population prevalence and incidence rate
         ir = parse_param_with_multiplier(args.incidence_rate,
-                subpops=population.subpop_sizes.keys(), default=0.0)
+                subpops=population.group_sizes.keys(), default=0.0)
         #
         isp = parse_param_with_multiplier(args.seroprevalence,
-                subpops=population.subpop_sizes.keys(), default=0.0)
+                subpops=population.group_sizes.keys(), default=0.0)
 
         events = []
-        for name, sz in population.subpop_sizes.items():
+        for name, sz in population.group_sizes.items():
             pop_ir = ir.get(name if name in ir else '', 0.0)
             n_ir = int(sz * pop_ir)
 

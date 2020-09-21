@@ -41,7 +41,7 @@ def parse_param_with_multiplier(args, subpops=None, default=None):
     for arg in [x for x in args if isinstance(x, str) and '=' in x]:
         sp, val = arg.split('=', 1)
         if sp not in subpops:
-            raise ValueError(f'Invalid subpopulation name {sp}')
+            raise ValueError(f'Invalid group name {sp}')
         try:
             val = float(val)
         except:

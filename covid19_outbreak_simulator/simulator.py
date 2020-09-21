@@ -82,34 +82,8 @@ class Simulator(object):
         self.model.draw_prop_asym_carriers()
 
         # collection of individuals
-        population = Population(popsize=self.simu_args.popsize)
-        idx = 0
-
-        for ps in self.simu_args.popsize:
-            if '=' in ps:
-                # this is named population size
-                name, sz = ps.split('=', 1)
-            else:
-                name = ''
-                sz = ps
-            try:
-                sz = int(sz)
-            except Exception:
-                raise ValueError(
-                    f'Named population size should be name=int: {ps} provided')
-
-            population.add([
-                Individual(
-                    name + str(idx),
-                    group=name,
-                    susceptibility=getattr(self.model.params,
-                                           f'susceptibility_mean',
-                                           1) * getattr(self.model.params,
-                                           f'susceptibility_multiplier_{name}',
-                                           1),
-                    model=self.model,
-                    logger=self.logger) for idx in range(idx, idx + sz)
-            ], subpop=name)
+        population = Population(popsize=self.simu_args.popsize, model=self.model,
+            vicinity=self.simu_args.vicinity, logger=self.logger)
 
         events = defaultdict(list)
         self.logger.id = id
