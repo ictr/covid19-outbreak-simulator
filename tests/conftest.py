@@ -1,7 +1,8 @@
 import pytest
 
 from covid19_outbreak_simulator.model import Params, Model
-from covid19_outbreak_simulator.simulator import Simulator, Individual
+from covid19_outbreak_simulator.simulator import Simulator
+from covid19_outbreak_simulator.population import Individual, Population
 from argparse import Namespace
 
 
@@ -40,3 +41,13 @@ def individual(default_model, logger):
 @pytest.fixture
 def individual_factory(default_model, logger):
     return lambda id: Individual(id, 'group 2', 1.2, default_model, logger)
+
+
+@pytest.fixture
+def population_factory(default_model, logger):
+    def get_population(**kwargs):
+        return Population(popsize=kwargs.pop('popsize', ['100']),
+            model=default_model, logger=logger,
+            vicinity=kwargs.pop('vicinity', None))
+
+    return get_population
