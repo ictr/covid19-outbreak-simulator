@@ -36,7 +36,28 @@ def test_quarantine_error(individual):
 
 def test_infect(individual):
     individual.model.draw_prop_asym_carriers()
-    individual.infect(5.0, by=None)
+    #
+    res = []
+    for x in range(1000):
+        individual.infected = None
+        res += individual.infect(5.0, by=None)
+    regular = len(res)
+    assert res
+
+    individual.susceptibility = 0
+    res = []
+    for x in range(100):
+        individual.infected = None
+        res += individual.infect(5.0, by=None)
+    assert not res
+
+    # 80% of infection events would fail
+    individual.susceptibility = 0.2
+    res = []
+    for x in range(1000):
+        individual.infected = None
+        res += individual.infect(5.0, by=None)
+    assert len(res) > regular * 0.10 and len(res) < regular * 0.30
 
 
 def test_infect_infected(individual_factory):

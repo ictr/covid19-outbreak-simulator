@@ -319,8 +319,9 @@ class Individual(object):
         if self.susceptibility < 1 and rand() > self.susceptibility:
             by_id = '.' if kwargs['by'] is None else kwargs['by']
             self.logger.write(
-                f'{self.logger.id}\t{time:.2f}\t{EventType.INFECTION_FAILED.name}\t{self.id}\tby={by_id}\n'
+                f'{self.logger.id}\t{time:.2f}\t{EventType.INFECTION_FAILED.name}\t{self.id}\tby={by_id},reson=susceptibility\n'
             )
+            return []
 
         if self.model.draw_is_asymptomatic():
             return self.asymptomatic_infect(time, **kwargs)

@@ -37,36 +37,36 @@ The COVID-19 Outbreak Simulator simulates the spread of SARS-CoV-2 virus in popu
 
 ### Concepts
 
-**Infectivity** is modeled as the cummulative transmissibility of an infected individual during the
+* **Infectivity** is modeled as the cummulative transmissibility of an infected individual during the
 course of infection, and is controlled by parameters `symptomatic_r0` and `asymptomatic_r0`. For
 example, if one individual is symptomatic and has `sympatomatc_r0=2`, then he will on average
 infect two people. The time that the carrier will infect others will be simulated according to
 transmissibility distributions when an infected becomes infected.
 
-**Vicinity** determines the number of surrounding individuals from different groups, and
+* **Vicinity** determines the number of surrounding individuals from different groups, and
 is determined by parameter `vicinity`. **Vivinity only specifies sizes, not physical locations,
 so this parameter only impact probabilities of being infected**. For example, if an individual is from group `A` with `--vicinity A-B=50`, he will be able to infect
 everyone from group `A` and `50` individuals from group `B`. Similarly,
 `--vicinity A-B=0` will make individuals from group A only infect another individual
-from group `A` (if there are only two groups), and `--neightborhood A-A=5 A-B=10`
+from group `A` (if there are only two groups), and `--vicinity A-A=5 A-B=10`
 basically says anyone from `A` will be twice more likely to infect someone from group `B`.
 
-**susceptibility** determine how likely the individual who are selected will actually become
+* **susceptibility** determine how likely the individual who are selected will actually become
 infected, which can be used to simulate level of self-protection. For example, in a population
 with `doctors` and `patients`, `doctors` might be less susceptibility due to higher level
 of awareness and protection, although they may have a lot higher numbers of attempted
 infections.
 
-**incubation period** is the time before a symptomatic carrier shows symptom. This has nothing
+* **incubation period** is the time before a symptomatic carrier shows symptom. This has nothing
 to do with transmissibility because asympatomatic and presympatomatic carriers can infect
 others.
 
-**leadtime** is used to determine at which stage an individual in his or her course of infection
+* **leadtime** is used to determine at which stage an individual in his or her course of infection
 when he is introduced to the population. `leadtime=any` means any time, `leadtime=asymptomatic`
 means anytime before incuration period for sympatomatic carriers, or anytime for asymptomatic
 carriers.
 
-**interval** of simulation determines the time scale of simulation, which is by default `1/24`
+* **interval** of simulation determines the time scale of simulation, which is by default `1/24`
 meaning that all events can happen at each hour.
 
 
@@ -92,29 +92,34 @@ not a fixed number and is the average number of a population. It will vary from 
 
 Infection is simulated in `covid10-outbreak-simulator` as follows:
 
-1. An individual is infected, by others from the population or by community infection.
-2. He is determined to be symptomatic or asymptomatic dependening on parameter `prop-asym-carriers`
+1. An individual is infected, by another carrier from the population or by community infection.
+2. The infectee is randomly determined to be symptomatic or asymptomatic dependening on parameter `prop-asym-carriers`
 3. An R0 value is drawn from `symptomatic-r0` or `asymptomatic-r0`, from which zero or
-  more infection events will be **planned**.
+  more infection events will be **scheduled**.
 4. At the time of infection, a groups of potential infectees will be selected according
-  to `neightborhood`, and an individual will be randomly selected. If the carrier is quarantined
-  or removed, no one will be chosen so the infection will fail.
+  to parameter `vicinity`, and an individual will be randomly selected as the infectee.
+  If the carrier is quarantined or removed, no one will be chosen so the infection will fail.
 5. If the selected indivdiual is not fully suscepbible (determined by parameter `susceptibility`),
   a random number will be used to determine if he will be infected. If the infectee was
-  infected before, he or she will not be infected again.
+  infected before, he or she will not be infected again. Otherwise, infection will be successful
+  and trigger more infection events.
 
-An infection can trigger the following events:
+An `INFECTION` event can trigger the following events:
 
-1. At the time of infection the infector (carrier) is quarantined or removed. In this case
-  an `INFECTION_AVOIDED` event will be recorded.
+1. No infection will happen if at the time of infection the infector (carrier) is quarantined
+  or removed. In this case an `INFECTION_AVOIDED` event will be recorded.
 2. An infectee is randomly chosen but he or she has an `susceptibility` value less than 1,
   and is randomly determined to be not infected. In this case an `INFECTION_FAILED` event
-  will be registered. Another rarer case of `INFECTION_AVOIDED` is when no one is available
+  will be registered. Another rarer case of `INFECTION_FAILED` is when no one is available
   to be infected.
 3. An infectee is randomly chosen, but he or she has already been infected before. In this
   case and `INFECTION_IGNORED` event will be recorded.
 4. If the selected individual is infected, an `INFECTION` event will happen and trigger
   the next infection process.
+
+Therefore, whereas `symptomatic_r0` and `asymptomatic_r0` determines the average number of
+infectees during the course of infection, the actual number of infectees is affected by many
+factors such as quarantine, testing, population seroprevalence, and is usually lower.
 
 ### Distribution of incubation period
 

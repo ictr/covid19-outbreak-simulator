@@ -65,7 +65,25 @@ class Event(object):
         if self.action == EventType.INFECTION:
             if 'by' not in self.kwargs:
                 raise ValueError('Parameter by is required for INECTION event.')
+
+            if self.kwargs['by'] is not None:
+                # if infector is removed or quarantined
+                if self.kwargs['by'] not in population:
+                    self.logger.write(
+                        f'{self.logger.id}\t{self.time:.2f}\t{EventType.INFECTION_AVOIDED.name}\t.\tby={self.kwargs["by"]},reason=REMOVED\n'
+                    )
+                    return []
+                #
+                by_ind = population[self.kwargs['by']]
+                if by_ind.quarantined and by_ind.quarantined >= self.time:
+                    self.logger.write(
+                        f'{self.logger.id}\t{self.time:.2f}\t{EventType.INFECTION_AVOIDED.name}\t.\tby={by_ind.id},reason=QUARANTINED\n'
+                    )
+                    return []
+
+            # determin einfectee
             if self.target is not None:
+                # if the target is preselected (e.g. through init plugin or infector)
                 if self.target not in population:
                     self.logger.write(
                         f'{self.logger.id}\t{self.time:.2f}\t{EventType.WARNING.name}\t{self.target}\tmsg=INFECTION target no longer exists\n'
@@ -73,28 +91,15 @@ class Event(object):
                     return []
                 infectee = self.target
             else:
+                # select infectee from the population, subject to vicinity of infector
                 infectee = population.select(infector=self.kwargs['by'])
 
                 if not infectee:
                     self.logger.write(
-                        f'{self.logger.id}\t{self.time:.2f}\t{EventType.INFECTION_FAILED.name}\t{self.target}\tby={self.kwargs["by"]}\n'
+                        f'{self.logger.id}\t{self.time:.2f}\t{EventType.INFECTION_FAILED.name}\t{self.target}\tby={self.kwargs["by"]},reson=no_infectee\n'
                     )
                     return []
-
-            if self.kwargs['by'] in population:
-                by_ind = population[self.kwargs['by']]
-                if by_ind.quarantined and by_ind.quarantined >= self.time:
-                    self.logger.write(
-                        f'{self.logger.id}\t{self.time:.2f}\t{EventType.INFECTION_AVOIDED.name}\t.\tby={by_ind.id},reason=QUARANTINED\n'
-                    )
-                    return []
-            elif self.kwargs['by'] is not None:
-                self.logger.write(
-                    f'{self.logger.id}\t{self.time:.2f}\t{EventType.INFECTION_AVOIDED.name}\t.\tby={self.kwargs["by"]},reason=REMOVED\n'
-                )
-                return []
             #
-            # if 'by' individual is removed, or quarantined etc
             return population[infectee].infect(self.time, **self.kwargs)
         elif self.action == EventType.QUARANTINE:
             if self.target not in population:
