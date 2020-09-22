@@ -237,6 +237,14 @@ If you would like to specify value for each group, you can use
 but this would not work for parameters that receive more than one values when
 the multiplier is applied to more than one values.
 
+If there are multiple groups with similar names, wildcard characters `*`, `?` and
+`[range]` could be used to specify multiple gorups using shell filename matching rules.
+For example,
+
+```
+--symptomatic-r0 class*=0.6
+```
+can be used to specifymultiplier for  `class1`, `class2`, etc.
 
 ## Example commands
 

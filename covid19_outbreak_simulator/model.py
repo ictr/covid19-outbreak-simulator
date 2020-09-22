@@ -4,7 +4,7 @@ import numpy as np
 from scipy.optimize import bisect
 from scipy.stats import norm
 from covid19_outbreak_simulator.utils import as_float, as_int
-
+from fnmatch import fnmatch
 
 class Params:
 
@@ -66,10 +66,6 @@ class Params:
         for ps in val:
             if '=' in ps:
                 name, size = ps.split('=', 1)
-                if name[-1].isnumeric():
-                    raise ValueError(
-                        f'Group names that end with numbers are not allowed. {name}'
-                    )
             else:
                 name = ''
                 size = ps
@@ -83,6 +79,17 @@ class Params:
             return
         for ID in val:
             self.check_id(ID)
+
+    def _set_multiplier(self, multiplier, param_name):
+        name, value = multiplier.split('=', 1)
+        value = as_float(
+            value, "Multiplier should have format name=float_value")
+        names = [x for x in self.groups.keys() if fnmatch(x, name)]
+        if not names:
+            raise ValueError(f'Invalid group name {name} in multiplier {multiplier}')
+        for name in names:
+            self.set(param_name, f'multiplier_{name}', value)
+
 
     def set_symptomatic_r0(self, val):
         if not val:
@@ -104,10 +111,7 @@ class Params:
                 f'The symptomatic_r0 should be one or two float number.')
         #
         for multiplier in [x for x in val if '=' in x]:
-            name, value = multiplier.split('=', 1)
-            value = as_float(
-                value, "Multiplier should have format name=float_value")
-            self.set('symptomatic_r0', f'multiplier_{name}', value)
+            self._set_multiplier(multiplier, 'symptomatic_r0')
 
     def set_asymptomatic_r0(self, val):
         if not val:
@@ -128,10 +132,7 @@ class Params:
                 f'The asymptomatic_r0 should be one or two float number.')
         #
         for multiplier in [x for x in val if '=' in x]:
-            name, value = multiplier.split('=', 1)
-            value = as_float(
-                value, "Multiplier should have format name=float_value")
-            self.set('asymptomatic_r0', f'multiplier_{name}', value)
+            self._set_multiplier(multiplier, 'asymptomatic_r0')
 
     def set_incubation_period(self, val):
         if not val:
@@ -155,12 +156,9 @@ class Params:
                      as_float(pars[2], "Third parameter of lognormal incubation_period should be a float number"))
         # multipliers
         for multiplier in [x for x in val if '=' in x]:
-            name, value = multiplier.split('=', 1)
-            self.set('incubation_period',
-                     f'multiplier_{name}', as_float(value))
+            self._set_multiplier(multiplier, 'incubation_period')
 
     def set_susceptibility(self, val):
-        print(val)
         if not val:
             return
         base = [x for x in val if not isinstance(x, str) or '=' not in x]
@@ -175,9 +173,7 @@ class Params:
             self.set('susceptibility', 'mean', base_val)
 
         for multiplier in [x for x in val if isinstance(x, str) and '=' in x]:
-            name, value = multiplier.split('=', 1)
-            self.set('susceptibility', f'multiplier_{name}', as_float(
-                value, "Invalid multiplier for susceptibility."))
+            self._set_multiplier(multiplier, 'susceptibility')
 
     def set_prop_asym_carriers(self, val):
         if not val:
@@ -203,9 +199,8 @@ class Params:
                 f'Parameter prop-asym-carriers accepts one or two numbers.')
         #
         for multiplier in [x for x in val if '=' in x]:
-            name, value = multiplier.split('=', 1)
-            self.set('prop_asym_carriers', f'multiplier_{name}', as_float(
-                value, "Multiplier should have format name=float_value"))
+            self._set_multiplier(multiplier, 'prop_asym_carriers')
+
 
     def set_params(self, args):
         # set some default values first

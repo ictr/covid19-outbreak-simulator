@@ -1,3 +1,4 @@
+from fnmatch import fnmatch
 
 def as_float(val, msg=''):
     try:
@@ -11,7 +12,6 @@ def as_int(val, msg=''):
         return int(val)
     except Exception:
         raise ValueError(f'An integer number is expected{" (" + msg + ")" if msg else ""}: {val} provided')
-
 
 def parse_param_with_multiplier(args, subpops=None, default=None):
     if args is None:
@@ -40,16 +40,21 @@ def parse_param_with_multiplier(args, subpops=None, default=None):
     res = {x: base for x in subpops}
     for arg in [x for x in args if isinstance(x, str) and '=' in x]:
         sp, val = arg.split('=', 1)
-        if sp not in subpops:
+        if sp.startswith('!'):
+            sps = [x for x in subpops if not fnmatch(x, sp[1:])]
+        else:
+            sps = [x for x in subpops if fnmatch(x, sp)]
+
+        if not sps:
             raise ValueError(f'Invalid group name {sp}')
         try:
             val = float(val)
         except:
             raise ValueError(f'Invalid multiplier: {val}')
         #
-        if isinstance(base, (list, tuple)):
-            res[sp] = [x * val for x in base]
-        else:
-            res[sp] = base * val
-
+        for sp in sps:
+            if isinstance(base, (list, tuple)):
+                res[sp] = [x * val for x in base]
+            else:
+                res[sp] = base * val
     return res
