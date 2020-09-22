@@ -49,12 +49,11 @@ class insert(BasePlugin):
             if name not in population.group_sizes:
                 raise ValueError(f'can only add to existing groups')
 
-            IDs = [f'{name}{idx}' for idx in range(
+            IDs = [f'{name}_{idx}' if name else str(idx) for idx in range(
                         population.max_ids[name], population.max_ids[name] + sz)]
             population.add([
                 Individual(
                     ID,
-                    group=name,
                     susceptibility=getattr(self.simulator.model.params,
                                            f'susceptibility_mean',
                                            1) * getattr(self.simulator.model.params,

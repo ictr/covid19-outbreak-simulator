@@ -221,7 +221,7 @@ def test_option_infectors():
     args = parse_args(['--infectors', '10'])
     params = Params(args)
 
-    args = parse_args(['--popsize', 'A=10', 'B=10', '--infectors', 'A1', 'B2'])
+    args = parse_args(['--popsize', 'A=10', 'B=10', '--infectors', 'A_1', 'B_2'])
     params = Params(args)
 
     with pytest.raises(ValueError):
@@ -230,11 +230,11 @@ def test_option_infectors():
 
     with pytest.raises(ValueError):
         args = parse_args(
-            ['--popsize', 'A=10', 'B=10', '--infectors', 'C1', 'C2'])
+            ['--popsize', 'A=10', 'B=10', '--infectors', 'C_1', 'C_2'])
         params = Params(args)
 
     with pytest.raises(ValueError):
-        args = parse_args(['--popsize', 'A=10', 'B=10', '--infectors', 'A10'])
+        args = parse_args(['--popsize', 'A=10', 'B=10', '--infectors', 'A_10'])
         params = Params(args)
 
 
@@ -306,7 +306,7 @@ def test_main_asymptomatic():
     main(['--jobs', '1', '--repeats', '100', '--asymptomatic-r0', '0.5', '1.5'])
     main([
         '--jobs', '1', '--repeats', '100', '--popsize', 'A=100', 'B=50',
-        '--asymptomatic-r0', '0.5', '1.5', 'A=1.2', '--infector', 'A0'
+        '--asymptomatic-r0', '0.5', '1.5', 'A=1.2', '--infector', 'A_0'
     ])
 
 
@@ -324,7 +324,7 @@ def test_main_incubation_period():
 def test_main_susceptibility():
     main([
         '--jobs', '1', '--repeats', '10', '--popsize', 'A=100', 'B=200',
-        '--susceptibility', 'A=0.08', 'B=1', '--infectors', 'B1', 'B2'
+        '--susceptibility', 'A=0.08', 'B=1', '--infectors', 'B_1', 'B_2'
     ])
 
 

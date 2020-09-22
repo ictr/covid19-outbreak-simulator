@@ -2,7 +2,6 @@ import random
 
 from covid19_outbreak_simulator.event import Event, EventType
 from covid19_outbreak_simulator.plugin import BasePlugin
-from covid19_outbreak_simulator.population import Individual
 
 
 class remove(BasePlugin):
@@ -38,6 +37,6 @@ class remove(BasePlugin):
             IDs = [x for x in population.ids if x.startswith(name) and x[len(name):].isnumeric()]
             random.shuffle(IDs)
             for ID in IDs[:sz]:
-                population.remove(ID, subpop=name)
+                population.remove(ID)
             self.logger.write(f'{self.logger.id}\t{time:.2f}\tREMOVE\t.\tsubpop={name},size={sz},IDs={",".join(IDs[:sz])}\n')
         return events

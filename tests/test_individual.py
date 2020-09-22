@@ -1,11 +1,11 @@
 import pytest
 from itertools import product
-from covid19_outbreak_simulator.simulator import Individual
+from covid19_outbreak_simulator.population import Individual
 from covid19_outbreak_simulator.event import EventType
 
 
 def test_individual(default_model, logger):
-    ind = Individual(0, 'group 1', 1.2, default_model, logger)
+    ind = Individual('group1_0', 1.2, default_model, logger)
 
     assert ind.infected is False
     assert ind.quarantined is False
@@ -61,8 +61,8 @@ def test_infect(individual):
 
 
 def test_infect_infected(individual_factory):
-    ind = individual_factory(id=1)
-    ind1 = individual_factory(id=3)
+    ind = individual_factory(id='1')
+    ind1 = individual_factory(id='3')
     ind.model.draw_prop_asym_carriers()
     ind.infected = 5.5
 

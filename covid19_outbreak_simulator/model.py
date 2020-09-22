@@ -52,17 +52,13 @@ class Params:
             if int(ID) >= self.groups[''] or int(ID) < 0:
                 raise ValueError(f'Invalid ID {ID}: Index out of range.')
         else:
-            found = False
-            for name in self.groups.keys():
-                if ID.startswith(name) and ID[len(name):].isnumeric():
-                    idx = int(ID[len(name):])
-                    if idx >= self.groups[name] or idx < 0:
-                        raise ValueError(
-                            f'Invalid ID {ID}: Index out of range.')
-                    found = True
-                    break
-            if not found:
+            if '_' not in ID:
+                raise ValueError(f'index or group_index is expected for individual ID: {ID} provided')
+            grp, idx = ID.rsplit('_')
+            if grp not in self.groups:
                 raise ValueError(f'Invalid ID {ID}')
+            if int(idx) >= self.groups[grp] or int(idx) < 0:
+                raise ValueError(f'Invalid ID {idx}: Index out of range.')
 
     def set_popsize(self, val):
         if not val:

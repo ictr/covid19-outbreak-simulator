@@ -35,12 +35,12 @@ def simulator(params, logger):
 
 @pytest.fixture
 def individual(default_model, logger):
-    return Individual('0', 'group', 0.8, default_model, logger)
+    return Individual('group_0', 0.8, default_model, logger)
 
 
 @pytest.fixture
 def individual_factory(default_model, logger):
-    return lambda id: Individual(id, 'group 2', 1.2, default_model, logger)
+    return lambda id: Individual(id, 1.2, default_model, logger)
 
 
 @pytest.fixture

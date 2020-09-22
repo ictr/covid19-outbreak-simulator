@@ -1,6 +1,5 @@
 from datetime import datetime
 import subprocess
-import sys
 
 from collections import defaultdict
 from importlib import import_module
@@ -8,7 +7,7 @@ from itertools import groupby
 
 from .event import Event, EventType
 from .model import Model
-from .population import Individual, Population
+from .population import Population
 
 
 def load_plugins(args, simulator=None):

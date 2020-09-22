@@ -53,7 +53,7 @@ class community_spread(BasePlugin):
                     handle_symptomatic=self.simulator.simu_args
                     .handle_symptomatic)
                 for id, ind in population.individuals.items()
-                if population.in_subpop(id, subpop) and np.random.binomial(1,
+                if population[id].group == subpop and np.random.binomial(1,
                     min(1, prob *
                     ind.susceptibility), 1)[0]
             ]

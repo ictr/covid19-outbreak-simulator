@@ -1,8 +1,5 @@
 from enum import Enum
 
-import numpy as np
-
-
 class EventType(Enum):
     # START
     START = 0

@@ -77,8 +77,8 @@ class init(BasePlugin):
             )
             for idx, sts in zip(range(0, sz), pop_status):
                 if sts == 2:
-                    population[name + str(idx)].infected = -10.0
-                    population[name + str(idx)].recovered = -2.0
+                    population[f'{name}_{idx}' if name else str(idx)].infected = -10.0
+                    population[f'{name}_{idx}' if name else str(idx)].recovered = -2.0
                 if sts == 1:
                     events.append(
                         Event(

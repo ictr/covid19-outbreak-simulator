@@ -1,5 +1,4 @@
 import copy
-import random
 import numpy as np
 from numpy.random import choice, rand
 from .utils import as_float
@@ -8,10 +7,9 @@ import re
 
 class Individual(object):
 
-    def __init__(self, id, group, susceptibility, model, logger):
+    def __init__(self, id, susceptibility, model, logger):
         self.id = id
         self.model = model
-        self.group = group
         self.susceptibility = 1.0 if susceptibility is None else min(1, susceptibility)
         self.logger = logger
 
@@ -24,6 +22,10 @@ class Individual(object):
 
         self.r0 = None
         self.incubation_period = None
+
+    @property
+    def group(self):
+        return self.id.rsplit('_', 1)[0] if '_' in self.id else ''
 
     def __str__(self):
         return self.id
@@ -356,8 +358,7 @@ class Population(object):
 
             self.add([
                 Individual(
-                    name + str(idx),
-                    group=name,
+                    f'{name}_{idx}' if name else str(idx),
                     susceptibility=getattr(model.params,
                                            f'susceptibility_mean',
                                            1) * getattr(model.params,
@@ -409,10 +410,9 @@ class Population(object):
         return self.individuals.keys()
 
     def remove(self, item, subpop=None):
+        self.group_sizes[self.individuals[item].group] -= 1
         self.individuals.pop(item)
-        if subpop is None:
-            subpop = self.subpop_from_id.match(item).group(1)
-        self.group_sizes[subpop] -= 1
+
 
     def in_subpop(self, item, subpop):
         return True if not subpop else self.subpop_from_id.match(item).group(1) == subpop

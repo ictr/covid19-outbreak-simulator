@@ -53,7 +53,7 @@ def test_plugin_pre_quarantine():
     ])
     main([
         '--jobs', '1', '--repeats', '100', '--popsize', 'A=100', 'B=200',
-        '--infector', 'A2', 'A7', '--plugin', 'quarantine', 'A2', 'A7',
+        '--infector', 'A_2', 'A_7', '--plugin', 'quarantine', 'A_2', 'A_7',
         '--duration', '7'
     ])
 
@@ -82,7 +82,7 @@ def test_plugin_stat():
 def test_plugin_stat_with_groups():
     main([
         '--jobs', '1', '--popsize', 'A=200', 'B=100', '--repeats', '100',
-        '--infectors', 'A0', '--plugin', 'stat', '--interval', '1'
+        '--infectors', 'A_0', '--plugin', 'stat', '--interval', '1'
     ])
 
 
@@ -190,6 +190,6 @@ def test_plugin_pcrtest():
     main(['--jobs', '1', '--repeats', '100', '--plugin', 'pcrtest', '1', '2'])
     main([
         '--jobs', '1', '--repeats', '100', '--popsize', 'A=100', 'B=200',
-        '--infector', 'A2', 'A7', '--plugin', 'pcrtest', 'A2', 'A7',
+        '--infector', 'A_2', 'A_7', '--plugin', 'pcrtest', 'A_2', 'A_7',
         '--handle-positive', 'quarantine_7'
     ])
