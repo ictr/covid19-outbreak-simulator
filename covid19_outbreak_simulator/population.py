@@ -388,19 +388,23 @@ class Population(object):
                     neighbor_size = int(matched.group(2))
                 if not matched:
                     raise ValueError(f'Vicinity should be specified as "INFECTOR_SO-INFECTEE_SP=SIZE": {param} specified')
-            if infector_sp and '*' not in infector_sp and infector_sp not in self.group_sizes:
-                raise ValueError(f'Unrecognized group {infector_sp}')
-            if '*' not in infectee_sp and infectee_sp not in self.group_sizes:
-                raise ValueError(f'Unrecognized group {infectee_sp}')
 
-            if '*' in infector_sp:
+            if infector_sp == '':
+                infector_sps = ['']
+            elif infector_sp.startswith('!'):
+                infector_sps = [x for x in self.group_sizes.keys() if not fnmatch(x, infector_sp[1:])]
+            else:
                 infector_sps = [x for x in self.group_sizes.keys() if fnmatch(x, infector_sp)]
+
+            if infectee_sp.startswith('!'):
+                infectee_sps = [x for x in self.group_sizes.keys() if not fnmatch(x, infectee_sp[1:])]
             else:
-                infector_sps = [infector_sp]
-            if '*' in infectee_sp:
                 infectee_sps = [x for x in self.group_sizes.keys() if fnmatch(x, infectee_sp)]
-            else:
-                infectee_sps = [infectee_sp]
+
+            if infector_sp != '' and not infector_sps:
+                raise ValueError(f'Unrecognized group {infector_sp}')
+            if not infectee_sps:
+                raise ValueError(f'Unrecognized group {infectee_sp}')
 
             for infector_sp in infector_sps:
                 for infectee_sp in infectee_sps:

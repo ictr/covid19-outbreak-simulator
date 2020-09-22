@@ -33,7 +33,8 @@ def parse_args(args=None):
         to happen within group A then to group B, regardless of size of
         groups A and B. As specifial cases, 'A=10` etc refers to cases when
         infection happens from outside of the simulated population (community
-        infection), and "*" can be used to refer to multiple groups'''
+        infection), and "*", "?" and "[]" (range) can be used to refer to multiple
+        groups using the same rules as filename expansion, and !name as "not".'''
     )
     parser.add_argument(
         '--susceptibility',
