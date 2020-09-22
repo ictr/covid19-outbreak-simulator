@@ -1,6 +1,7 @@
 import copy
 import numpy as np
 from numpy.random import choice, rand
+from fnmatch import fnmatch
 from .utils import as_float
 from .event import Event, EventType
 import re
@@ -359,7 +360,7 @@ class Population(object):
             self.add([
                 Individual(
                     f'{name}_{idx}' if name else str(idx),
-                    susceptibility=getattr(model.params,
+                        susceptibility=getattr(model.params,
                                            f'susceptibility_mean',
                                            1) * getattr(model.params,
                                            f'susceptibility_multiplier_{name}',
@@ -387,14 +388,26 @@ class Population(object):
                     neighbor_size = int(matched.group(2))
                 if not matched:
                     raise ValueError(f'Vicinity should be specified as "INFECTOR_SO-INFECTEE_SP=SIZE": {param} specified')
-            if infector_sp and infector_sp not in self.group_sizes:
+            if infector_sp and '*' not in infector_sp and infector_sp not in self.group_sizes:
                 raise ValueError(f'Unrecognized group {infector_sp}')
-            if infectee_sp not in self.group_sizes:
+            if '*' not in infectee_sp and infectee_sp not in self.group_sizes:
                 raise ValueError(f'Unrecognized group {infectee_sp}')
-            if infector_sp in res:
-                res[infector_sp][infectee_sp] = neighbor_size
+
+            if '*' in infector_sp:
+                infector_sps = [x for x in self.group_sizes.keys() if fnmatch(x, infector_sp)]
             else:
-                res[infector_sp] = {infectee_sp: neighbor_size}
+                infector_sps = [infector_sp]
+            if '*' in infectee_sp:
+                infectee_sps = [x for x in self.group_sizes.keys() if fnmatch(x, infectee_sp)]
+            else:
+                infectee_sps = [infectee_sp]
+
+            for infector_sp in infector_sps:
+                for infectee_sp in infectee_sps:
+                    if infector_sp in res:
+                        res[infector_sp][infectee_sp] = neighbor_size
+                    else:
+                        res[infector_sp] = {infectee_sp: neighbor_size}
         return res
 
     def add(self, items, subpop):
@@ -409,13 +422,9 @@ class Population(object):
     def ids(self):
         return self.individuals.keys()
 
-    def remove(self, item, subpop=None):
+    def remove(self, item):
         self.group_sizes[self.individuals[item].group] -= 1
         self.individuals.pop(item)
-
-
-    def in_subpop(self, item, subpop):
-        return True if not subpop else self.subpop_from_id.match(item).group(1) == subpop
 
     def __len__(self):
         return len(self.individuals)

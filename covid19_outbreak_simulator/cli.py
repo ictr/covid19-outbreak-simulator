@@ -31,9 +31,9 @@ def parse_args(args=None):
         aubpopulation "A", specified as "A-B=n". For example, "A-A=0" avoids infection
         within group "A", "A-A=10 A-B=5" will make infections twiece as likely
         to happen within group A then to group B, regardless of size of
-        groups A and B. As a specifial case, 'A=10` etc refers to cases when
+        groups A and B. As specifial cases, 'A=10` etc refers to cases when
         infection happens from outside of the simulated population (community
-        infection).'''
+        infection), and "*" can be used to refer to multiple groups'''
     )
     parser.add_argument(
         '--susceptibility',
