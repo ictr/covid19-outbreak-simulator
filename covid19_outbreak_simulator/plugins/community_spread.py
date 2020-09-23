@@ -57,8 +57,10 @@ class community_spread(BasePlugin):
                     min(1, prob *
                     ind.susceptibility), 1)[0]
             ]
+        IDs = [x.target for x in events]
+        ID_list = f',infected={",".join(IDs)}' if IDs else ''
 
         self.logger.write(
-            f'{self.logger.id}\t{time:.2f}\t{EventType.PLUGIN.name}\t.\tname=community_spread,n_infected={len(events)}\n'
+            f'{self.logger.id}\t{time:.2f}\t{EventType.PLUGIN.name}\t.\tname=community_spread,n_infected={len(events)}{ID_list}\n'
         )
         return events

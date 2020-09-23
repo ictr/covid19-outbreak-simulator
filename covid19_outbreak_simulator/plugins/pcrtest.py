@@ -19,7 +19,6 @@ class pcrtest(BasePlugin):
         parser.add_argument(
             '--proportion',
             nargs='+',
-            default=[1.0],
             help='''Proportion of individuals to test. Individuals who are tested
             positive will by default be quarantined. Multipliers are allowed to specify
             proportion of tests for each group.''',
@@ -49,7 +48,12 @@ class pcrtest(BasePlugin):
         return parser
 
     def apply(self, time, population, args=None):
+        false_positive = 0
+        false_negative = 0
+
         def select(ind, counts=None):
+            nonlocal false_positive
+            nonlocal false_negative
             if counts:
                 if counts[ind.group] > 0:
                     counts[ind.group] -= 1
@@ -57,16 +61,21 @@ class pcrtest(BasePlugin):
                     return False
             affected = isinstance(ind.infected, float) and not isinstance(ind.recovered, float)
             if affected:
-                return args.sensitivity == 1 or args.sensitivity > numpy.random.uniform()
+                res = args.sensitivity == 1 or args.sensitivity > numpy.random.uniform()
+                if not res:
+                    false_positive += 1
+                return res
             else:
-                return args.specificity != 1 and args.specificity <= numpy.random.uniform()
+                res = args.specificity != 1 and args.specificity <= numpy.random.uniform()
+                if res:
+                    false_negative += 1
+                return res
 
         if args.IDs:
-            #
             IDs = [x for x in args.IDs if select(population[x])]
         else:
             proportions = parse_param_with_multiplier(args.proportion,
-                subpops=population.group_sizes.keys())
+                subpops=population.group_sizes.keys(), default=1.0)
             counts = {name:int(size*proportions[name]) for name,size in population.group_sizes.items()}
 
             IDs = [
@@ -99,7 +108,9 @@ class pcrtest(BasePlugin):
             else:
                 raise ValueError(
                     'Unsupported action for patients who test positive.')
+
+        detected_IDs = f',detected={",".join(IDs)}' if IDs else ''
         self.logger.write(
-            f'{self.logger.id}\t{time:.2f}\t{EventType.PLUGIN.name}\t.\tname=pcrtest,n_detected={len(IDs)},detected={",".join(IDs)}\n'
+            f'{self.logger.id}\t{time:.2f}\t{EventType.PLUGIN.name}\t.\tname=pcrtest,n_detected={len(IDs)},false_positive={false_positive},false_negative={false_negative}{detected_IDs}\n'
         )
         return events
