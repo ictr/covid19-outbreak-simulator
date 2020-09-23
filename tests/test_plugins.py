@@ -42,7 +42,7 @@ def test_plugin_trigger():
     ])
 
 
-def test_plugin_pre_quarantine():
+def test_plugin_quarantine():
     main([
         '--jobs', '1', '--repeats', '100', '--plugin', 'quarantine',
         '--duration', '7'
@@ -57,21 +57,39 @@ def test_plugin_pre_quarantine():
         '--duration', '7'
     ])
 
-
-def test_plugin_pre_quarantine_with_proportion():
     main([
-        '--jobs', '1', '--repeats', '100', '--plugin', 'quarantine', '1', '2',
+        '--jobs', '1', '--repeats', '100', '--plugin', 'quarantine',
         '--duration', '7', '--proportion', '0.8'
     ])
 
+    main([
+        '--jobs', '1', '--popsize', 'A=100', 'B=200', '--repeats', '100', '--plugin', 'quarantine',
+        '--duration', '7', '--proportion', 'A=1', 'B=0', '--target', 'all'
+    ])
 
-def test_plugin_pre_quarantine_error():
+    main([
+        '--jobs', '1', '--popsize', 'A=100', 'B=200', '--infector', 'A_10',
+        '--repeats', '100', '--plugin', 'quarantine',
+        '--duration', '7', '--proportion', 'A=1', 'B=0', '--target', 'infected'
+    ])
+
     with pytest.raises((Exception, SystemExit)):
         main([
             '--jobs', '1', '--repeats', '100', '--plugin', 'quarantine', '1',
             '2a', '--duration', '7'
         ])
 
+    with pytest.raises((Exception, SystemExit)):
+        main([
+            '--jobs', '1', '--repeats', '100', '--plugin', 'quarantine', '1',
+            '2', '--proportion', '0.5'
+        ])
+
+    with pytest.raises((Exception, SystemExit)):
+        main([
+            '--jobs', '1', '--repeats', '100', '--plugin', 'quarantine', '--proportion', '0.5',
+            '--target', 'somethingelse'
+        ])
 
 def test_plugin_stat():
     main([
