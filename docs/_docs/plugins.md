@@ -40,7 +40,7 @@ will be called.
 ```sh
 % outbreak_simulator --plugin -h
 
-usage: --plugin [-h] [--start START] [--end END] [--at AT [AT ...]]
+usage: --plugin [-h] [--disable] [--start START] [--end END] [--at AT [AT ...]]
                 [--interval INTERVAL]
                 [--trigger-by [TRIGGER_BY [TRIGGER_BY ...]]]
 
@@ -48,6 +48,7 @@ A plugin for covid19-outbreak-simulator
 
 optional arguments:
   -h, --help            show this help message and exit
+  --disable             Disable the plugin if this parameter is specified.
   --start START         Start time. Default to 0 no parameter is defined so
                         the plugin will be called once at the beginning.
   --end END             End time, default to none, meaning there is no end
@@ -67,7 +68,7 @@ optional arguments:
 ```sh
 % outbreak_simulator --plugin init -h
 
-usage: --plugin init [-h] [--start START] [--end END] [--at AT [AT ...]]
+usage: --plugin init [-h] [--disable] [--start START] [--end END] [--at AT [AT ...]]
                      [--interval INTERVAL]
                      [--trigger-by [TRIGGER_BY [TRIGGER_BY ...]]]
                      [--incidence-rate [INCIDENCE_RATE [INCIDENCE_RATE ...]]]
@@ -78,6 +79,7 @@ Initialize population with initial prevalence and seroprevalence
 
 optional arguments:
   -h, --help            show this help message and exit
+  --disable             Disable the plugin if this parameter is specified.
   --start START         Start time. Default to 0 no parameter is defined so
                         the plugin will be called once at the beginning.
   --end END             End time, default to none, meaning there is no end
@@ -122,7 +124,7 @@ optional arguments:
 ```
 % outbreak_simulator --plugin setparam -h
 
-usage: --plugin setparam [-h] [--start START] [--end END] [--at AT [AT ...]]
+usage: --plugin setparam [-h] [--disable] [--start START] [--end END] [--at AT [AT ...]]
                          [--interval INTERVAL]
                          [--trigger-by [TRIGGER_BY [TRIGGER_BY ...]]]
                          [--susceptibility SUSCEPTIBILITY [SUSCEPTIBILITY ...]]
@@ -136,6 +138,7 @@ Change parameters of simulation.
 
 optional arguments:
   -h, --help            show this help message and exit
+  --disable             Disable the plugin if this parameter is specified.
   --start START         Start time. Default to 0 no parameter is defined so
                         the plugin will be called once at the beginning.
   --end END             End time, default to none, meaning there is no end
@@ -189,7 +192,7 @@ optional arguments:
 ### Plugin `stat`
 
 ```sh
-usage: --plugin stat [-h] [--start START] [--end END] [--at AT [AT ...]]
+usage: --plugin stat [-h] [--disable] [--start START] [--end END] [--at AT [AT ...]]
                      [--interval INTERVAL]
                      [--trigger-by [TRIGGER_BY [TRIGGER_BY ...]]]
 
@@ -197,6 +200,7 @@ Print STAT information
 
 optional arguments:
   -h, --help            show this help message and exit
+  --disable             Disable the plugin if this parameter is specified.
   --start START         Start time. Default to 0 no parameter is defined so
                         the plugin will be called once at the beginning.
   --end END             End time, default to none, meaning there is no end
@@ -212,7 +216,7 @@ optional arguments:
 ### Plugin `sample`
 
 ```sh
-usage: --plugin sample [-h] [--start START] [--end END] [--at AT [AT ...]]
+usage: --plugin sample [-h] [--disable] [--start START] [--end END] [--at AT [AT ...]]
                        [--interval INTERVAL]
                        [--trigger-by [TRIGGER_BY [TRIGGER_BY ...]]]
                        (--proportion PROPORTION | --size SIZE)
@@ -221,6 +225,7 @@ Draw random sample from the population
 
 optional arguments:
   -h, --help            show this help message and exit
+  --disable             Disable the plugin if this parameter is specified.
   --start START         Start time. Default to 0 no parameter is defined so
                         the plugin will be called once at the beginning.
   --end END             End time, default to none, meaning there is no end
@@ -241,7 +246,7 @@ optional arguments:
 ```
 % outbreak_simulator --plugin insert -h
 
-usage: --plugin insert [-h] [--start START] [--end END] [--at AT [AT ...]]
+usage: --plugin insert [-h] [--disable] [--start START] [--end END] [--at AT [AT ...]]
                        [--interval INTERVAL]
                        [--trigger-by [TRIGGER_BY [TRIGGER_BY ...]]]
                        [--prop-of-infected PROP_OF_INFECTED]
@@ -256,6 +261,7 @@ positional arguments:
 
 optional arguments:
   -h, --help            show this help message and exit
+  --disable             Disable the plugin if this parameter is specified.
   --start START         Start time. Default to 0 no parameter is defined so
                         the plugin will be called once at the beginning.
   --end END             End time, default to none, meaning there is no end
@@ -286,7 +292,7 @@ optional arguments:
 ```
 % outbreak_simulator --plugin remove -h
 
-usage: --plugin remove [-h] [--start START] [--end END] [--at AT [AT ...]]
+usage: --plugin remove [-h] [--disable] [--start START] [--end END] [--at AT [AT ...]]
                        [--interval INTERVAL]
                        [--trigger-by [TRIGGER_BY [TRIGGER_BY ...]]]
                        popsize [popsize ...]
@@ -300,6 +306,7 @@ positional arguments:
 
 optional arguments:
   -h, --help            show this help message and exit
+  --disable             Disable the plugin if this parameter is specified.
   --start START         Start time. Default to 0 no parameter is defined so the plugin
                         will be called once at the beginning.
   --end END             End time, default to none, meaning there is no end time.
@@ -315,12 +322,11 @@ optional arguments:
 
 
 ```sh
-% outbreak_simulator --plugin quarantine -h
-
-usage: --plugin quarantine [-h] [--start START] [--end END] [--at AT [AT ...]]
-                           [--interval INTERVAL]
+usage: --plugin quarantine [-h] [--disable] [--start START] [--end END]
+                           [--at AT [AT ...]] [--interval INTERVAL]
                            [--trigger-by [TRIGGER_BY [TRIGGER_BY ...]]]
-                           [--proportion PROPORTION] [--duration DURATION]
+                           [--proportion [PROPORTION [PROPORTION ...]]]
+                           [--target {infected,all}] [--duration DURATION]
                            [IDs [IDs ...]]
 
 Quarantine specified or all infected individuals for specified durations.
@@ -330,20 +336,31 @@ positional arguments:
 
 optional arguments:
   -h, --help            show this help message and exit
-  --start START         Start time. Default to 0 no parameter is defined so
-                        the plugin will be called once at the beginning.
+  --disable             Disable the plugin if this parameter is specified.
+  --start START         Start time. Default to 0 no parameter is defined
+                        so the plugin will be called once at the
+                        beginning.
   --end END             End time, default to none, meaning there is no end
                         time.
   --at AT [AT ...]      Specific time at which the plugin is applied.
-  --interval INTERVAL   Interval at which plugin is applied, it will assume a
-                        0 starting time if --start is left unspecified.
+  --interval INTERVAL   Interval at which plugin is applied, it will
+                        assume a 0 starting time if --start is left
+                        unspecified.
   --trigger-by [TRIGGER_BY [TRIGGER_BY ...]]
                         Events that triggers this plug in.
-  --proportion PROPORTION
-                        Proportion of active cases to quarantine. Default to
-                        all, but can be set to a lower value to indicate
-                        incomplete quarantine. This option does not apply to
-                        cases when IDs are explicitly specified.
+  --proportion [PROPORTION [PROPORTION ...]]
+                        Proportion of individuals or active cases
+                        (parameter --who) to quarantine. Default to all,
+                        but can be set to a lower value to indicate
+                        incomplete quarantine. This option does not apply
+                        to cases when IDs are explicitly specified.
+                        Multipliers are allowed to specify proportions for
+                        each subpopulation.
+  --target {infected,all}
+                        Who to quarantine, which can be "infected"
+                        (default) which are people who are currently
+                        infected and not recovered, and "all" which are
+                        all people specified.
   --duration DURATION   Days of quarantine
 ```
 
@@ -351,39 +368,57 @@ optional arguments:
 
 ```
 % outbreak_simulator --plugin pcrtest -h
-usage: --plugin pcrtest [-h] [--start START] [--end END] [--at AT [AT ...]]
-                        [--interval INTERVAL]
+
+usage: --plugin pcrtest [-h] [--disable] [--start START] [--end END]
+                        [--at AT [AT ...]] [--interval INTERVAL]
                         [--trigger-by [TRIGGER_BY [TRIGGER_BY ...]]]
-                        [--proportion PROPORTION]
+                        [--proportion PROPORTION [PROPORTION ...]]
+                        [--sensitivity SENSITIVITY]
+                        [--specificity SPECIFICITY]
                         [--handle-positive HANDLE_POSITIVE]
                         [IDs [IDs ...]]
 
 PCR-based test that can pick out all active cases.
 
 positional arguments:
-  IDs                   IDs of individuals to test.
+  IDs                   IDs of individuals to test. Parameter "proportion"
+                        will be ignored with specified IDs for testing
 
 optional arguments:
   -h, --help            show this help message and exit
-  --start START         Start time. Default to 0 no parameter is defined so
-                        the plugin will be called once at the beginning.
+  --disable             Disable the plugin if this parameter is specified.
+  --start START         Start time. Default to 0 no parameter is defined
+                        so the plugin will be called once at the
+                        beginning.
   --end END             End time, default to none, meaning there is no end
                         time.
   --at AT [AT ...]      Specific time at which the plugin is applied.
-  --interval INTERVAL   Interval at which plugin is applied, it will assume a
-                        0 starting time if --start is left unspecified.
+  --interval INTERVAL   Interval at which plugin is applied, it will
+                        assume a 0 starting time if --start is left
+                        unspecified.
   --trigger-by [TRIGGER_BY [TRIGGER_BY ...]]
                         Events that triggers this plug in.
-  --proportion PROPORTION
-                        Proportion of individuals to test. Individuals who are
-                        tested positive will by default be quarantined.
+  --proportion PROPORTION [PROPORTION ...]
+                        Proportion of individuals to test. Individuals who
+                        are tested positive will by default be
+                        quarantined. Multipliers are allowed to specify
+                        proportion of tests for each group.
+  --sensitivity SENSITIVITY
+                        Sensitibity of the test. Individuals who carry the
+                        virus will have this probability to be detected.
+  --specificity SPECIFICITY
+                        Specificity of the test. Individuals who do not
+                        carry the virus will have this probability to be
+                        tested negative.
   --handle-positive HANDLE_POSITIVE
                         How to handle individuals who are tested positive,
-                        which should be "remove" (remove from population), and
-                        "quarantine" (put aside until it recovers). Quarantine
-                        can be specified as "quarantine_7" etc to specify
-                        duration of quarantine. Default to "remove", meaning
-                        all symptomatic cases will be removed from population.
+                        which should be "remove" (remove from population),
+                        and "quarantine" (put aside until it recovers).
+                        Quarantine can be specified as "quarantine_7" etc
+                        to specify duration of quarantine. Individuals
+                        that are already in quarantine will continue to be
+                        quarantined. Default to "remove", meaning all
+                        symptomatic cases will be removed from population.
 
 ```
 
@@ -397,35 +432,42 @@ values if option `--susceptibility` is specified.
 ```
 % outbreak_simulator --plugin community_spread -h
 
-usage: --plugin community_spread [-h] [--start START] [--end END]
-                                 [--at AT [AT ...]] [--interval INTERVAL]
+usage: --plugin community_spread [-h] [--disable] [--start START]
+                                 [--end END] [--at AT [AT ...]]
+                                 [--interval INTERVAL]
                                  [--trigger-by [TRIGGER_BY [TRIGGER_BY ...]]]
-                                 [--probability PROBABILITY]
+                                 [--probability PROBABILITY [PROBABILITY ...]]
 
 Community infection that infect everyone in the population randomly.
 
 optional arguments:
   -h, --help            show this help message and exit
-  --start START         Start time. Default to 0 no parameter is defined so
-                        the plugin will be called once at the beginning.
+  --disable             Disable the plugin if this parameter is specified.
+  --start START         Start time. Default to 0 no parameter is defined
+                        so the plugin will be called once at the
+                        beginning.
   --end END             End time, default to none, meaning there is no end
                         time.
   --at AT [AT ...]      Specific time at which the plugin is applied.
-  --interval INTERVAL   Interval at which plugin is applied, it will assume a
-                        0 starting time if --start is left unspecified.
+  --interval INTERVAL   Interval at which plugin is applied, it will
+                        assume a 0 starting time if --start is left
+                        unspecified.
   --trigger-by [TRIGGER_BY [TRIGGER_BY ...]]
                         Events that triggers this plug in.
-  --probability PROBABILITY
-                        The probability of anyone to be affected at a given
-                        interval, which is usually per day (with option
-                        --interval 1). If individuals have different
-                        susceptibility specified by option --susceptibility,
-                        the probability will be multiplied by the
-                        susceptibility multipliers, The infection events do
-                        not have to cause actual infection because the
-                        individual might be in quarantine, or has been
-                        infected. The default value of this parameter is
-                        0.005.
+  --probability PROBABILITY [PROBABILITY ...]
+                        The probability of anyone to be affected at a
+                        given interval, which is usually per day (with
+                        option --interval 1). Multipliers are allowed to
+                        specify probability for each group. If individuals
+                        have different susceptibility specified by option
+                        --susceptibility, the probability will be
+                        multiplied by the susceptibility multipliers, The
+                        infection events do not have to cause actual
+                        infection because the individual might be in
+                        quarantine, or has been infected. The default
+                        value of this parameter is 0.005. Note that
+                        individuals currently in quarantine will not be
+                        affected by community infection.
 ```
 
 ## Implementation of plugins

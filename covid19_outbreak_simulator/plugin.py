@@ -44,6 +44,10 @@ class BasePlugin(object):
     def get_parser(self):
         parser = argparse.ArgumentParser(
             '--plugin', description='A plugin for covid19-outbreak-simulator')
+        parser.add_argument('--disable',
+            action='store_true',
+            help='Disable the plugin if this parameter is specified.'
+        )
         parser.add_argument(
             '--start',
             type=float,
@@ -71,6 +75,9 @@ class BasePlugin(object):
 
     def get_plugin_events(self, args):
         events = []
+
+        if args.disabled:
+            raise RuntimeError(f'Disabled plugin should not be triggered')
 
         if args.interval is not None and args.interval <= 0:
             return events
