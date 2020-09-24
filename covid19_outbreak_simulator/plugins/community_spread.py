@@ -30,7 +30,9 @@ class community_spread(BasePlugin):
             --susceptibility, the probability will be multiplied by the
             susceptibility multipliers, The infection events do not have to
             cause actual infection because the individual might be in quarantine,
-            or has been infected. The default value of this parameter is 0.005.''')
+            or has been infected. The default value of this parameter is 0.005.
+            Note that individuals currently in quarantine will not be affected
+            by community infection.''')
         return parser
 
     def apply(self, time, population, args=None):
@@ -53,9 +55,8 @@ class community_spread(BasePlugin):
                     handle_symptomatic=self.simulator.simu_args
                     .handle_symptomatic)
                 for id, ind in population.individuals.items()
-                if population[id].group == subpop and np.random.binomial(1,
-                    min(1, prob *
-                    ind.susceptibility), 1)[0]
+                if population[id].group == subpop and not population[id].quarantined and np.random.binomial(1,
+                    min(1, prob * ind.susceptibility), 1)[0]
             ]
         IDs = [x.target for x in events]
         ID_list = f',infected={",".join(IDs)}' if IDs else ''

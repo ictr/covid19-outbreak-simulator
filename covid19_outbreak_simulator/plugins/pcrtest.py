@@ -43,7 +43,8 @@ class pcrtest(BasePlugin):
             help='''How to handle individuals who are tested positive, which should be
                 "remove" (remove from population), and "quarantine" (put aside until
                 it recovers). Quarantine can be specified as "quarantine_7" etc to specify
-                duration of quarantine. Default to "remove", meaning all symptomatic cases
+                duration of quarantine. Individuals that are already in quarantine will
+                continue to be quarantined. Default to "remove", meaning all symptomatic cases
                 will be removed from population.''')
         return parser
 
@@ -98,13 +99,14 @@ class pcrtest(BasePlugin):
                     duration = 14
                 else:
                     duration = int(args.handle_positive.split('_', 1)[1])
-                events.append(
-                    Event(
-                        time,
-                        EventType.QUARANTINE,
-                        target=ID,
-                        logger=self.logger,
-                        till=time + duration))
+                if not population[ID].quarantined:
+                    events.append(
+                        Event(
+                            time,
+                            EventType.QUARANTINE,
+                            target=ID,
+                            logger=self.logger,
+                            till=time + duration))
             else:
                 raise ValueError(
                     'Unsupported action for patients who test positive.')
