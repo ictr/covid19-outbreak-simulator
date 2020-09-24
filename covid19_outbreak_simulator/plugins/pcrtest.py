@@ -64,12 +64,12 @@ class pcrtest(BasePlugin):
             if affected:
                 res = args.sensitivity == 1 or args.sensitivity > numpy.random.uniform()
                 if not res:
-                    false_positive += 1
+                    false_negative += 1
                 return res
             else:
                 res = args.specificity != 1 and args.specificity <= numpy.random.uniform()
                 if res:
-                    false_negative += 1
+                    false_positive += 1
                 return res
 
         if args.IDs:
