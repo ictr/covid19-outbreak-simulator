@@ -59,7 +59,7 @@ class BasePlugin(object):
             help='''End time, default to none, meaning there is no end time.''')
         parser.add_argument(
             '--at',
-            nargs='+',
+            nargs='*',
             type=float,
             help='''Specific time at which the plugin is applied.''')
         parser.add_argument(
