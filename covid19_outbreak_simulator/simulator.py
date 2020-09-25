@@ -43,7 +43,7 @@ def load_plugins(args, simulator=None):
         #
         if not hasattr(obj, 'apply'):
             raise ValueError('No "apply" function is defined for plugin')
-        if not args.disabled:
+        if not args.disable:
             plugins.append([obj, args])
     return plugins
 

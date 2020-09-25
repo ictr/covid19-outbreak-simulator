@@ -76,7 +76,7 @@ class BasePlugin(object):
     def get_plugin_events(self, args):
         events = []
 
-        if args.disabled:
+        if args.disable:
             raise RuntimeError(f'Disabled plugin should not be triggered')
 
         if args.interval is not None and args.interval <= 0:

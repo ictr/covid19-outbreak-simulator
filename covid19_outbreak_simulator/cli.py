@@ -25,6 +25,12 @@ def parse_args(args=None):
         group specific parameters. The IDs of these individuals will be nurse0, nurse1
         etc. ''')
     parser.add_argument(
+        '--track-events',
+        nargs='+',
+        help='''List events to track, default to track all events. Event START and ERROR
+        will always be tracked.'''
+    )
+    parser.add_argument(
         '--vicinity',
         nargs='*',
         help='''Number of "neighbors" from group "B" for individuals in
@@ -132,6 +138,21 @@ def parse_args(args=None):
     )
     return parser.parse_args(args)
 
+class FilteredStringIO(StringIO):
+    def __init__(self, id, track_events=None):
+        super(FilteredStringIO, self).__init__()
+        self.id = id
+        self._track_events = track_events
+        if self._track_events is not None:
+            self._track_events = set(self._track_events)
+            for evt in ('START', 'ERRPR'):
+                if evt not in self._track_events:
+                    self._track_events.add(evt)
+
+
+    def write(self, text):
+        if not self._track_events or text.split('\t')[2] in self._track_events:
+            super(FilteredStringIO, self).write(text)
 
 class Worker(multiprocessing.Process):
 
@@ -152,8 +173,7 @@ class Worker(multiprocessing.Process):
             if id is None:
                 self.task_queue.task_done()
                 break
-            with StringIO() as logger:
-                logger.id = id
+            with FilteredStringIO(id, track_events = self.simu_args.track_events) as logger:
                 simu = Simulator(
                     params=self.params,
                     logger=logger,
