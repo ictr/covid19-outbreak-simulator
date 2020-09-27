@@ -23,15 +23,15 @@ The simulation could be performed with the following command
 
 ```
 outbreak_simulator --rep 10000 --popsize {ps} --handle-symptomatic remove --stop-if 't>90' --logfile p{ps}_t{ti}.log \
-        --plugin community_spread --probability 0.005 --interval 1  \
-        --plugin pcrtest --interval {ti} --proportion 1 --handle-positive remove \
+        --plugin community_infection --probability 0.005 --interval 1  \
+        --plugin testing --interval {ti} --proportion 1 --handle-positive remove \
         --plugin stat --at 14 90
 ```
 
 where
 * Simulation will last 90 days.
-* Plugin `community_spread` infects everyone at a given probability at given interval
-* Plugin `pcrtest` tests everyone (`proportion=1`) and remove infected individuals.
+* Plugin `community_infection` infects everyone at a given probability at given interval
+* Plugin `testing` tests everyone (`proportion=1`) and remove infected individuals.
 * Plugin `stat` to output population statistics.
 
 Here we use [`sos workflow`](https://vatlab.github.io) to execute simulations for population size (`ps`) 10, 20, 30, 40, and testing frequency (`ti`) 0 (no test at all), 3 (every 3 days), 7, and 14.
@@ -43,8 +43,8 @@ input: for_each=[dict(ps=[10, 20, 30, 40]), dict(ti=[0, 3, 7, 14])]
 task: queue='localhost'
 sh: expand=True, template_name='conda', env_name='ictr'
     outbreak_simulator --rep 10000 --popsize {ps} --handle-symptomatic remove --stop-if 't>90' --logfile p{ps}_t{ti}.log \
-        --plugin community_spread --probability 0.0022 --interval 1  \
-        --plugin pcrtest --interval {ti} --proportion 1 --handle-positive remove \
+        --plugin community_infection --probability 0.0022 --interval 1  \
+        --plugin testing --interval {ti} --proportion 1 --handle-positive remove \
         --plugin stat --at 14 90
 
 ```

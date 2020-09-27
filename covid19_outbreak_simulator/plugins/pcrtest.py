@@ -3,15 +3,15 @@ from covid19_outbreak_simulator.plugin import BasePlugin
 from covid19_outbreak_simulator.utils import parse_param_with_multiplier
 import numpy
 
-class pcrtest(BasePlugin):
+class testing(BasePlugin):
 
     def __init__(self, *args, **kwargs):
         # this will set self.simualtor, self.logger
-        super(pcrtest, self).__init__(*args, **kwargs)
+        super(testing, self).__init__(*args, **kwargs)
 
     def get_parser(self):
-        parser = super(pcrtest, self).get_parser()
-        parser.prog = '--plugin pcrtest'
+        parser = super(testing, self).get_parser()
+        parser.prog = '--plugin testing'
         parser.description = '''PCR-based test that can pick out all active cases.'''
         parser.add_argument(
             'IDs', nargs='*', help='''IDs of individuals to test. Parameter "proportion"
@@ -36,6 +36,13 @@ class pcrtest(BasePlugin):
             default=1.0,
             help='''Specificity of the test. Individuals who do not carry the virus will have
             this probability to be tested negative.''',
+        )
+        parser.add_argument(
+            '--turnaround-time',
+            type=float,
+            default=0,
+            help='''Time interval from the time of submission of process to the time of the
+                completion of the process.''',
         )
         parser.add_argument(
             '--handle-positive',
@@ -93,7 +100,7 @@ class pcrtest(BasePlugin):
             if args.handle_positive == 'remove':
                 events.append(
                     Event(
-                        time, EventType.REMOVAL, target=ID, logger=self.logger))
+                        time + args.turnaround_time, EventType.REMOVAL, target=ID, logger=self.logger))
             elif args.handle_positive.startswith('quarantine'):
                 if args.handle_positive == 'quarantine':
                     duration = 14
@@ -102,7 +109,7 @@ class pcrtest(BasePlugin):
                 if not population[ID].quarantined:
                     events.append(
                         Event(
-                            time,
+                            time + args.turnaround_time,
                             EventType.QUARANTINE,
                             target=ID,
                             logger=self.logger,
@@ -113,6 +120,6 @@ class pcrtest(BasePlugin):
 
         detected_IDs = f',detected={",".join(IDs)}' if IDs else ''
         self.logger.write(
-            f'{self.logger.id}\t{time:.2f}\t{EventType.PLUGIN.name}\t.\tname=pcrtest,n_detected={len(IDs)},false_positive={false_positive},false_negative={false_negative}{detected_IDs}\n'
+            f'{self.logger.id}\t{time:.2f}\t{EventType.PLUGIN.name}\t.\tname=testing,n_detected={len(IDs)},false_positive={false_positive},false_negative={false_negative}{detected_IDs}\n'
         )
         return events

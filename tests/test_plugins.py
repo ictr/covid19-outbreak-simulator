@@ -184,14 +184,14 @@ def test_plugin_remove():
     ])
 
 
-def test_plugin_community_spread():
+def test_plugin_community_infection():
     main([
         '--jobs', '1', '--repeats', '10', '--stop-if', 't>4', '--plugin',
-        'community_spread', '--probability', '0.0001', '--interval', '1'
+        'community_infection', '--probability', '0.0001', '--interval', '1'
     ])
     main([
         '--jobs', '1', '--repeats', '10', '--popsize', 'A=100', 'B=200', '--stop-if', 't>4', '--plugin',
-        'community_spread', '--probability', '1', 'A=0.0001', '--interval', '1'
+        'community_infection', '--probability', '1', 'A=0.0001', '--interval', '1'
     ])
 
 
@@ -203,11 +203,16 @@ def test_plugin_insert_hetero_pop():
     ])
 
 
-def test_plugin_pcrtest():
-    main(['--jobs', '1', '--repeats', '100', '--plugin', 'pcrtest'])
-    main(['--jobs', '1', '--repeats', '100', '--plugin', 'pcrtest', '1', '2'])
+def test_plugin_testing():
+    main(['--jobs', '1', '--repeats', '100', '--plugin', 'testing'])
+
+    main(['--jobs', '1', '--repeats', '100', '--plugin', 'testing', '1', '2'])
+
     main([
         '--jobs', '1', '--repeats', '100', '--popsize', 'A=100', 'B=200',
-        '--infector', 'A_2', 'A_7', '--plugin', 'pcrtest', 'A_2', 'A_7',
+        '--infector', 'A_2', 'A_7', '--plugin', 'testing', 'A_2', 'A_7',
         '--handle-positive', 'quarantine_7'
     ])
+
+    main(['--jobs', '1', '--repeats', '100', '--plugin', 'testing', '1', '2',
+        '--turnaround-time', '2'])

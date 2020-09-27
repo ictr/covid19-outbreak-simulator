@@ -6,18 +6,18 @@ from covid19_outbreak_simulator.plugin import BasePlugin
 from covid19_outbreak_simulator.utils import parse_param_with_multiplier
 
 
-class community_spread(BasePlugin):
+class community_infection(BasePlugin):
 
     # events that will trigger this plugin
     apply_at = 'before_core_events'
 
     def __init__(self, *args, **kwargs):
         # this will set self.simualtor, self.logger
-        super(community_spread, self).__init__(*args, **kwargs)
+        super(community_infection, self).__init__(*args, **kwargs)
 
     def get_parser(self):
-        parser = super(community_spread, self).get_parser()
-        parser.prog = '--plugin community_spread'
+        parser = super(community_infection, self).get_parser()
+        parser.prog = '--plugin community_infection'
         parser.description = 'Community infection that infect everyone in the population randomly.'
         parser.add_argument(
             '--probability',
@@ -62,6 +62,6 @@ class community_spread(BasePlugin):
         ID_list = f',infected={",".join(IDs)}' if IDs else ''
 
         self.logger.write(
-            f'{self.logger.id}\t{time:.2f}\t{EventType.PLUGIN.name}\t.\tname=community_spread,n_infected={len(events)}{ID_list}\n'
+            f'{self.logger.id}\t{time:.2f}\t{EventType.PLUGIN.name}\t.\tname=community_infection,n_infected={len(events)}{ID_list}\n'
         )
         return events

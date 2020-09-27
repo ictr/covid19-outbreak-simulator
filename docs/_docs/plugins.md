@@ -364,12 +364,12 @@ optional arguments:
   --duration DURATION   Days of quarantine
 ```
 
-### Plugin `pcrtest`
+### Plugin `testing`
 
 ```
-% outbreak_simulator --plugin pcrtest -h
+% outbreak_simulator --plugin testing -h
 
-usage: --plugin pcrtest [-h] [--disable] [--start START] [--end END]
+usage: --plugin testing [-h] [--disable] [--start START] [--end END]
                         [--at AT [AT ...]] [--interval INTERVAL]
                         [--trigger-by [TRIGGER_BY [TRIGGER_BY ...]]]
                         [--proportion PROPORTION [PROPORTION ...]]
@@ -422,7 +422,7 @@ optional arguments:
 
 ```
 
-### Plugin `community_spread`
+### Plugin `community_infection`
 
 This plugin models community infection where everyone has a pre-specified probabilty
 of getting affected. The probability will be multiplies by population-specific susceptibility
@@ -430,9 +430,9 @@ values if option `--susceptibility` is specified.
 
 
 ```
-% outbreak_simulator --plugin community_spread -h
+% outbreak_simulator --plugin community_infection -h
 
-usage: --plugin community_spread [-h] [--disable] [--start START]
+usage: --plugin community_infection [-h] [--disable] [--start START]
                                  [--end END] [--at AT [AT ...]]
                                  [--interval INTERVAL]
                                  [--trigger-by [TRIGGER_BY [TRIGGER_BY ...]]]

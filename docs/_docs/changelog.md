@@ -7,7 +7,7 @@ permalink: /docs/changelog/
 
 * Fix negative recovery time for `leadtime == any`.
 * Improve plugin `insert` for adding individuals to population.
-* Add plugin `community_spread`
+* Add plugin `community_infection`
 * Add `contrib/report2csv.py`.
 * Fix quarantine with leadtime.
 
