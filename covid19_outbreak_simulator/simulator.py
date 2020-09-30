@@ -175,22 +175,28 @@ class Simulator(object):
             # if self.simu_args.handle_symptomatic and all(
             #         x.infected for x in population.values()):
             #     break
-        remaing_events = defaultdict(int)
+        remaining_events = defaultdict(int)
+        infected_by = set()
         for time, events_at_time in events.items():
             for event in events_at_time:
                 if event.action.name in ('SHOW_SYMPTOM', 'RECOVER', 'REMOVAL') and event.target not in population:
                     continue
-                if event.action.name in ('INFECTION') and event.kwargs['by'] not in population:
-                    continue
-                remaing_events[event.action.name] += 1
-        remaing_events = ','.join(f'{x}:{y}' for x,y in remaing_events.items())
+                if event.action.name in ('INFECTION'):
+                    if event.kwargs['by'] in population:
+                        infected_by.add(event.kwargs['by'])
+                    else:
+                        continue
+                remaining_events[event.action.name] += 1
+        if infected_by:
+            remaining_events['INFECTION'] = f"{remaining_events['INFECTION']} (by {len(infected_by)} infectors)"
+        remaining_events = ','.join(f'{x}:{y}' for x,y in remaining_events.items())
         res = {
             'popsize': len(population),
             'prop_asym': f'{self.model.params.prop_asym_carriers:.3f}',
             'time': datetime.now().strftime("%m/%d/%Y-%H:%M:%S"),
         }
-        if remaing_events:
-            res['remaining_events'] = remaing_events
+        if remaining_events:
+            res['remaining_events'] = remaining_events
         if self.simu_args.stop_if:
             res['stop_if'] = ''.join(self.simu_args.stop_if)
         params = ','.join([f'{x}={y}' for x, y in res.items()])
