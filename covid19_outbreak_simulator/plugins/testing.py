@@ -74,7 +74,7 @@ class testing(BasePlugin):
             affected = isinstance(ind.infected, float) and not isinstance(ind.recovered, float)
             if affected:
                 if len(args.sensitivity) == 2:
-                    if args.sensitivity[1] > 0 and ind.viral_load(time) < args.sensitivity[1]:
+                    if ind.viral_load(time) <= args.sensitivity[1]:
                         false_negative += 1
                         return False
 
