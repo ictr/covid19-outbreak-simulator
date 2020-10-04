@@ -290,6 +290,7 @@ class Individual(object):
             trans_prob,
             infect_params,
         ) = self.model.get_asymptomatic_transmissibility_probability(self.r0)
+
         self.infect_params = infect_params
 
         if lead_time > 0:
@@ -350,6 +351,33 @@ class Individual(object):
             f'{self.logger.id}\t{time:.2f}\t{EventType.INFECTION.name}\t{self.id}\t{",".join(params)}\n'
         )
         return evts
+
+    def transmissibility(self, time):
+        # return transmissibility at specified time
+        interval = time - self.infected
+        if not self.infect_params:
+            raise ValueError(
+                "This transmissibility model does not record infection parameters."
+            )
+
+        infect_time, peak_time, duration, peak_transmissibility = self.infect_params
+        if interval < infect_time:
+            return 0
+        elif interval < peak_time:
+            return (
+                peak_transmissibility
+                * (interval - infect_time)
+                / (peak_time - infect_time)
+            )
+        else:
+            # assuming that viral load will decrease a lot slower than transmissibility
+            # we use 2 * duration to simulate this effect
+            return max(
+                0,
+                peak_transmissibility
+                * (duration - interval)
+                / (duration - peak_time),
+            )
 
     def viral_load(self, time):
         # return transmissibility at specified time

@@ -219,22 +219,24 @@ class Params:
                 infectivity days after incubation period."""
             )
         else:
-            self.symptomatic_transmissibility_model = val
+            self.symptomatic_transmissibility_model = [val[0],
+                as_float(val[1]), as_float(val[2]), as_float(val[3]), as_float(val[4])]
 
     def set_asymptomatic_transmissibility_model(self, val):
         if not val or val[0] == "normal":
-            self.symptomatic_transmissibility_model = ["normal"]
+            self.asymptomatic_transmissibility_model = ["normal"]
         elif val[0] != "piecewise":
             raise ValueError("Only a normal and a piecewise model is supported")
         elif len(val) != 5:
             raise ValueError(
-                """Parameter --symptomatic-transmissibility-model should be
+                """Parameter --asymptomatic-transmissibility-model should be
                 specified as modename with time for start of infectivity [proportional
                 to total duration), time for peak of infectivity (proportion), and rage of
                 infectivity days after infection."""
             )
         else:
-            self.symptomatic_transmissibility_model = val
+            self.asymptomatic_transmissibility_model = [val[0],
+                as_float(val[1]), as_float(val[2]), as_float(val[3]), as_float(val[4])]
 
     def set_susceptibility(self, val):
         if not val:

@@ -52,40 +52,46 @@ class testing(BasePlugin):
             '--handle-positive',
             default='remove',
             help='''How to handle individuals who are tested positive, which should be
-                "remove" (remove from population), and "quarantine" (put aside until
-                it recovers). Quarantine can be specified as "quarantine_7" etc to specify
-                duration of quarantine. Individuals that are already in quarantine will
-                continue to be quarantined. Default to "remove", meaning all symptomatic cases
+                "keep" (do not do anything), "remove" (remove from population), and "quarantine"
+                (put aside until it recovers). Quarantine can be specified as "quarantine_7" etc
+                to specify  duration of quarantine. Individuals that are already in quarantine
+                will continue to be quarantined. Default to "remove", meaning all symptomatic cases
                 will be removed from population.''')
         return parser
 
     def apply(self, time, population, args=None):
-        false_positive = 0
-        false_negative = 0
+        n_false_positive = 0
+        n_false_negative = 0
+        n_tested = 0
+        n_lod_false_negative = 0
 
         def select(ind, counts=None):
-            nonlocal false_positive
-            nonlocal false_negative
+            nonlocal n_tested
+            nonlocal n_false_positive
+            nonlocal n_false_negative
+            nonlocal n_lod_false_negative
             if counts:
                 if counts[ind.group] > 0:
                     counts[ind.group] -= 1
                 else:
                     return False
+            n_tested += 1
             affected = isinstance(ind.infected, float) and not isinstance(ind.recovered, float)
             if affected:
                 if len(args.sensitivity) == 2:
                     if ind.viral_load(time) <= args.sensitivity[1]:
-                        false_negative += 1
+                        print(f'VIRUAL LOAD {time} is {ind.viral_load(time)} with sensitivity {args.sensitivity[1]}')
+                        n_lod_false_negative += 1
                         return False
 
-                res = args.sensitivity[0] == 1 or float(args.sensitivity[0] > numpy.random.uniform()
+                res = args.sensitivity[0] == 1 or float(args.sensitivity[0]) > numpy.random.uniform()
                 if not res:
-                    false_negative += 1
+                    n_false_negative += 1
                 return res
             else:
                 res = args.specificity != 1 and args.specificity <= numpy.random.uniform()
                 if res:
-                    false_positive += 1
+                    n_false_positive += 1
                 return res
 
         if args.IDs:
@@ -123,12 +129,12 @@ class testing(BasePlugin):
                             target=ID,
                             logger=self.logger,
                             till=time + duration))
-            else:
+            elif args.handle_positive != 'keep':
                 raise ValueError(
                     'Unsupported action for patients who test positive.')
 
         detected_IDs = f',detected={",".join(IDs)}' if IDs else ''
         self.logger.write(
-            f'{self.logger.id}\t{time:.2f}\t{EventType.PLUGIN.name}\t.\tname=testing,n_detected={len(IDs)},false_positive={false_positive},false_negative={false_negative}{detected_IDs}\n'
+            f'{self.logger.id}\t{time:.2f}\t{EventType.PLUGIN.name}\t.\tname=testing,n_tesetd={n_tested},n_detected={len(IDs)},n_false_positive={n_false_positive},n_false_negative={n_false_negative},n_lod_false_negative={n_lod_false_negative}{detected_IDs}\n'
         )
         return events
