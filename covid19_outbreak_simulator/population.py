@@ -51,6 +51,16 @@ class Individual(object):
             group=self.group
         )
 
+        #
+        # infect others
+        (
+            x_grid,
+            trans_prob,
+            infect_params,
+        ) = self.model.get_symptomatic_transmission_probability(
+            self.incubation_period, self.r0
+        )
+
         by = kwargs.get("by", None)
 
         if "leadtime" in kwargs and kwargs["leadtime"] is not None:
@@ -59,7 +69,7 @@ class Individual(object):
                     "leadtime is only allowed during initialization of infection event (no by option.)"
                 )
             if kwargs["leadtime"] == "any":
-                lead_time = np.random.uniform(0, self.incubation_period * 2 / 3 + 8)
+                lead_time = np.random.uniform(0, x_grid[-1])
             elif kwargs["leadtime"] == "asymptomatic":
                 lead_time = np.random.uniform(0, self.incubation_period)
             else:
@@ -170,15 +180,6 @@ class Individual(object):
             raise ValueError(
                 f'Unrecognizable symptomatic case handling method: {" ".join(handle_symptomatic)}'
             )
-        #
-        # infect others
-        (
-            x_grid,
-            trans_prob,
-            infect_params,
-        ) = self.model.get_symptomatic_transmission_probability(
-            self.incubation_period, self.r0
-        )
 
         self.infect_params = infect_params
         # infect only before removal or quarantine
@@ -258,9 +259,13 @@ class Individual(object):
         self.r0 = self.model.draw_random_r0(symptomatic=False)
         self.incubation_period = -1
 
-        by = kwargs.get(
-            "by",
-        )
+        by = kwargs.get("by")
+
+        (
+            x_grid,
+            trans_prob,
+            infect_params,
+        ) = self.model.get_asymptomatic_transmissibility_probability(self.r0)
 
         if "leadtime" in kwargs and kwargs["leadtime"] is not None:
             if by is not None:
@@ -271,12 +276,12 @@ class Individual(object):
             if kwargs["leadtime"] in ("any", "asymptomatic"):
                 # this is the first infection, the guy should be asymptomatic, but
                 # could be anywhere in his incubation period
-                lead_time = np.random.uniform(0, 10)
+                lead_time = np.random.uniform(0, x_grid[-1])
             else:
-                lead_time = as_float(
+                lead_time = min(as_float(
                     kwargs["leadtime"],
                     "--leadtime can only be any, asymptomatic, or a fixed number",
-                )
+                ),  x_grid[-1])
         else:
             lead_time = 0
 
@@ -285,16 +290,12 @@ class Individual(object):
         # REMOVAL ...
         evts = []
         #
-        (
-            x_grid,
-            trans_prob,
-            infect_params,
-        ) = self.model.get_asymptomatic_transmissibility_probability(self.r0)
-
         self.infect_params = infect_params
 
         if lead_time > 0:
             idx = int(lead_time / self.model.params.simulation_interval)
+            if idx >= len(trans_prob):
+                idx -= 1
             trans_prob = trans_prob[idx:]
             x_grid = x_grid[idx:]
             x_grid = x_grid - x_grid[0]
@@ -374,9 +375,7 @@ class Individual(object):
             # we use 2 * duration to simulate this effect
             return max(
                 0,
-                peak_transmissibility
-                * (duration - interval)
-                / (duration - peak_time),
+                peak_transmissibility * (duration - interval) / (duration - peak_time),
             )
 
     def viral_load(self, time):

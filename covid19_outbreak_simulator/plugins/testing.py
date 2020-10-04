@@ -80,7 +80,6 @@ class testing(BasePlugin):
             if affected:
                 if len(args.sensitivity) == 2:
                     if ind.viral_load(time) <= args.sensitivity[1]:
-                        print(f'VIRUAL LOAD {time} is {ind.viral_load(time)} with sensitivity {args.sensitivity[1]}')
                         n_lod_false_negative += 1
                         return False
 
