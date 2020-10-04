@@ -139,3 +139,12 @@ def test_asymptomatic_infect(individual_factory, by, handle_symptomatic,
         assert ind1.infected == 5.0
     assert ind1.r0 is not None
     assert ind1.incubation_period is not None
+
+
+def test_transmissibility(individual_factory):
+    ind = individual_factory(id='1')
+    res = ind.symptomatic_infect(
+        5.0,
+        by=None,
+        handle_symptomatic='remove',
+        leadtime=0)

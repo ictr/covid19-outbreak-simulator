@@ -436,7 +436,7 @@ class Model(object):
             y = np.concatenate(
                 [dist_left.pdf(x[:idx]) * scale, dist_right.pdf(x[idx:])]
             )
-        return x, y / sum(y) * R0
+        return x, y / sum(y) * R0, None
 
     def get_piecewise_symptomatic_transmission_probability(self, incu, R0):
         """Transmission probability.
@@ -494,7 +494,8 @@ class Model(object):
                 lambda y: (duration - y) / (duration - peak_time),
             ],
         )
-        return x, y / sum(y) * R0
+        y = y / sum(y) * R0
+        return x, y, (infect_time, peak_time, duration, max(y))
 
     def get_normal_asymptomatic_transmissibility_probability(self, R0):
         """Asymptomatic Transmission probability.
@@ -514,7 +515,7 @@ class Model(object):
         dist = norm(4.8, self.sd_5)
         x = np.linspace(0, 12, int(12 / self.params.simulation_interval))
         y = dist.pdf(x)
-        return x, y / sum(y) * R0
+        return x, y / sum(y) * R0, None
 
     def get_piecewise_asymptomatic_transmissibility_probability(self, R0):
         """Asymptomatic Transmission probability.
@@ -555,4 +556,5 @@ class Model(object):
                 lambda y: (duration - y) / (duration - peak_time),
             ],
         )
-        return x, y / sum(y) * R0
+        y = y / sum(y) * R0
+        return x, y, (infect_time, peak_time, duration, max(y))

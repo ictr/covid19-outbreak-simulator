@@ -25,10 +25,14 @@ class testing(BasePlugin):
         )
         parser.add_argument(
             '--sensitivity',
+            nargs='+',
             type=float,
-            default=1.0,
+            default=[1.0, 0.0],
             help='''Sensitibity of the test. Individuals who carry the virus will have this
-            probability to be detected.''',
+            probability to be detected. If a second paramter is set, it is intepreted
+            as a Limit of Detection value in terms of transmissibility probability.
+            The overall sensibility will be lower with a positive LOD value so it is
+            advised to perform a test run to obtain the true sensitivity.''',
         )
         parser.add_argument(
             '--specificity',
@@ -69,7 +73,12 @@ class testing(BasePlugin):
                     return False
             affected = isinstance(ind.infected, float) and not isinstance(ind.recovered, float)
             if affected:
-                res = args.sensitivity == 1 or args.sensitivity > numpy.random.uniform()
+                if len(args.sensitivity) == 2:
+                    if args.sensitivity[1] > 0 and ind.viral_load(time) < args.sensitivity[1]:
+                        false_negative += 1
+                        return False
+
+                res = args.sensitivity[0] == 1 or float(args.sensitivity[0] > numpy.random.uniform()
                 if not res:
                     false_negative += 1
                 return res
