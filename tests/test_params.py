@@ -137,7 +137,7 @@ def draw_random_incubation_period(default_model):
         scale=default_model.params.incubation_period_sigma) < 0.001
 
 
-def test_get_symptomatic_transmission_probability(default_model):
+def test_get_normal_symptomatic_transmission_probability(default_model):
 
     incu = default_model.draw_random_incubation_period()
     R0 = default_model.draw_random_r0(symptomatic=True)
@@ -153,14 +153,54 @@ def test_get_symptomatic_transmission_probability(default_model):
     assert math.fabs(sum(r) / N) - R0 < 0.05
 
 
-def test_get_asymptomatic_transmission_probability(default_model):
+def test_get_normal_asymptomatic_transmission_probability(default_model):
 
     R0 = default_model.draw_random_r0(symptomatic=False)
 
     N = 10000
     r = []
     for i in range(N):
-        x_grid, prob = default_model.get_asymptomatic_transmission_probability(
+        x_grid, prob = default_model.get_asymptomatic_transmissibility_probability(
+            R0)
+        infected = np.random.binomial(1, prob, len(x_grid))
+        r.append(sum(infected))
+    #
+    assert math.fabs(sum(r) / N) - R0 < 0.05
+
+
+
+def test_get_piecewise_symptomatic_transmission_probability(default_model):
+
+    default_model.params.set_symptomatic_transmissibility_model(
+        ['piecewise', 0.2, 0.7, 6, 9]
+    )
+
+    incu = default_model.draw_random_incubation_period()
+    R0 = default_model.draw_random_r0(symptomatic=True)
+
+    N = 10000
+    r = []
+    for i in range(N):
+        x_grid, prob = default_model.get_symptomatic_transmission_probability(
+            incu, R0)
+        infected = np.random.binomial(1, prob, len(x_grid))
+        r.append(sum(infected))
+    #
+    assert math.fabs(sum(r) / N) - R0 < 0.05
+
+
+def test_get_piecewise_asymptomatic_transmission_probability(default_model):
+
+    default_model.params.set_asymptomatic_transmissibility_model(
+        ['piecewise', 0.2, 0.7, 6, 9]
+    )
+
+    R0 = default_model.draw_random_r0(symptomatic=False)
+
+    N = 10000
+    r = []
+    for i in range(N):
+        x_grid, prob = default_model.get_asymptomatic_transmissibility_probability(
             R0)
         infected = np.random.binomial(1, prob, len(x_grid))
         r.append(sum(infected))

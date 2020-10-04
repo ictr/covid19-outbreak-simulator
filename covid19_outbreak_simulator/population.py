@@ -254,7 +254,7 @@ class Individual(object):
         # REMOVAL ...
         evts = []
         #
-        x_grid, trans_prob = self.model.get_asymptomatic_transmission_probability(
+        x_grid, trans_prob = self.model.get_asymptomatic_transmissibility_probability(
             self.r0)
 
         if lead_time > 0:

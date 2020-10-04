@@ -65,6 +65,31 @@ def parse_args(args=None):
             fixed number or a range. Multipliers are allowed to specify asymptomatic r0 for
             each group.''')
     parser.add_argument(
+        '--symptomatic-transmissibility-model',
+        nargs='+',
+        help='''Model used for asymptomatic cases with parameters. The default model
+            normal has a duration of 8 days after incubation, and a peak happens at 2/3 of
+            incubation. The piece wise model has a proportion for the start of infection
+            (relative to incubation period), a proportion for the peak of infectivity (
+            relative to incubation period), and a range of days after the
+            onset of symptoms. The models should be specified as "normal" (no parameter is
+            allowed), or model name with parameters such as "piecewise 0.1 0.3 7 9".
+        '''
+    )
+    parser.add_argument(
+        '--asymptomatic-transmissibility-model',
+        nargs='+',
+        help='''Model used for asymptomatic cases with parameters. The default model
+            normal has a duration of 12 and peaks at 4.8 day. The piecewise model has
+            a proportion for the start of infection,  a proportion for the peak of
+            infectivity, and a range of days after the infection (no incubation period
+            when compared to the symptomatic case). The models should be specified as "normal"
+            (no parameter is allowed), or model name with parameters such as
+            "piecewise 0.1 0.3 5 7".
+        '''
+    )
+
+    parser.add_argument(
         '--incubation-period',
         nargs='+',
         help='''Incubation period period, should be specified as "lognormal" followed by two
