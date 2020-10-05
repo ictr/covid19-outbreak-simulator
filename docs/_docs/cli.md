@@ -103,11 +103,14 @@ for the docker command, you can get a list of options with option `-h` as follow
 
 ```
 $  outbreak_simulator -h
-
 usage: outbreak_simulator [-h] [--popsize POPSIZE [POPSIZE ...]]
+                          [--track-events TRACK_EVENTS [TRACK_EVENTS ...]]
+                          [--vicinity [VICINITY [VICINITY ...]]]
                           [--susceptibility SUSCEPTIBILITY [SUSCEPTIBILITY ...]]
                           [--symptomatic-r0 SYMPTOMATIC_R0 [SYMPTOMATIC_R0 ...]]
                           [--asymptomatic-r0 ASYMPTOMATIC_R0 [ASYMPTOMATIC_R0 ...]]
+                          [--symptomatic-transmissibility-model SYMPTOMATIC_TRANSMISSIBILITY_MODEL [SYMPTOMATIC_TRANSMISSIBILITY_MODEL ...]]
+                          [--asymptomatic-transmissibility-model ASYMPTOMATIC_TRANSMISSIBILITY_MODEL [ASYMPTOMATIC_TRANSMISSIBILITY_MODEL ...]]
                           [--incubation-period INCUBATION_PERIOD [INCUBATION_PERIOD ...]]
                           [--repeats REPEATS]
                           [--handle-symptomatic [HANDLE_SYMPTOMATIC [HANDLE_SYMPTOMATIC ...]]]
@@ -127,30 +130,68 @@ optional arguments:
                         "--popsize nurse=10 patient=100". The names will be
                         used for setting group specific parameters. The IDs of
                         these individuals will be nurse0, nurse1 etc.
+  --track-events TRACK_EVENTS [TRACK_EVENTS ...]
+                        List events to track, default to track all events.
+                        Event START and ERROR will always be tracked.
+  --vicinity [VICINITY [VICINITY ...]]
+                        Number of "neighbors" from group "B" for individuals
+                        in aubpopulation "A", specified as "A-B=n". For
+                        example, "A-A=0" avoids infection within group "A",
+                        "A-A=10 A-B=5" will make infections twiece as likely
+                        to happen within group A then to group B, regardless
+                        of size of groups A and B. As specifial cases, 'A=10`
+                        etc refers to cases when infection happens from
+                        outside of the simulated population (community
+                        infection), and "*", "?" and "[]" (range) can be used
+                        to refer to multiple groups using the same rules as
+                        filename expansion, and !name as "not".
   --susceptibility SUSCEPTIBILITY [SUSCEPTIBILITY ...]
-                        Weight of susceptibility. The default value is 1,
-                        meaning everyone is equally susceptible. With options
-                        such as "--susceptibility nurse=1.2 patients=0.8" you
-                        can give weights to different groups of people so that
-                        they have higher or lower probabilities to be
-                        infected.
+                        Probability of being infected if an infection event
+                        happens, default to 1. With options such as "--
+                        susceptibility nurse=0.8 patients=1" you can model a
+                        scenario when nurses are better prepared and protected
+                        than patients.
   --symptomatic-r0 SYMPTOMATIC_R0 [SYMPTOMATIC_R0 ...]
                         Production number of symptomatic infectors, should be
-                        specified as a single fixed number, or a range, and/or
-                        multipliers for different groups such as A=1.2. For
-                        example "--symptomatic-r0 1.4 2.8 nurse=1.2" means a
-                        general R0 ranging from 1.4 to 2.8, while nursed has a
-                        range from 1.4*1.2 and 2.8*1.2.
+                        specified as a single fixed number, or a range.
+                        Multipliers are allowed to specify symptomatic r0 for
+                        each group. This parameter reflects the infectivity of
+                        virus carrier measured by the average number of
+                        individuals one infected individual "would" infect if
+                        infectivity is not blocked by for example quarantine
+                        and susceptibility of infectees.
   --asymptomatic-r0 ASYMPTOMATIC_R0 [ASYMPTOMATIC_R0 ...]
                         Production number of asymptomatic infectors, should be
-                        specified as a single fixed number, or a range and/or
-                        multipliers for different groups
+                        specified as a single fixed number or a range.
+                        Multipliers are allowed to specify asymptomatic r0 for
+                        each group.
+  --symptomatic-transmissibility-model SYMPTOMATIC_TRANSMISSIBILITY_MODEL [SYMPTOMATIC_TRANSMISSIBILITY_MODEL ...]
+                        Model used for asymptomatic cases with parameters. The
+                        default model normal has a duration of 8 days after
+                        incubation, and a peak happens at 2/3 of incubation.
+                        The piece wise model has a proportion for the start of
+                        infection (relative to incubation period), a
+                        proportion for the peak of infectivity ( relative to
+                        incubation period), and a range of days after the
+                        onset of symptoms. The models should be specified as
+                        "normal" (no parameter is allowed), or model name with
+                        parameters such as "piecewise 0.1 0.3 7 9".
+  --asymptomatic-transmissibility-model ASYMPTOMATIC_TRANSMISSIBILITY_MODEL [ASYMPTOMATIC_TRANSMISSIBILITY_MODEL ...]
+                        Model used for asymptomatic cases with parameters. The
+                        default model normal has a duration of 12 and peaks at
+                        4.8 day. The piecewise model has a proportion for the
+                        start of infection, a proportion for the peak of
+                        infectivity, and a range of days after the infection
+                        (no incubation period when compared to the symptomatic
+                        case). The models should be specified as "normal" (no
+                        parameter is allowed), or model name with parameters
+                        such as "piecewise 0.1 0.3 5 7".
   --incubation-period INCUBATION_PERIOD [INCUBATION_PERIOD ...]
                         Incubation period period, should be specified as
                         "lognormal" followed by two numbers as mean and sigma,
-                        or "normal" followed by mean and sd, and/or
-                        multipliers for different groups. Default to
-                        "lognormal 1.621 0.418"
+                        or "normal" followed by mean and sd. Multipliers are
+                        allowed to specify incubation period for each group.
+                        Default to "lognormal 1.621 0.418"
   --repeats REPEATS     Number of replicates to simulate. An ID starting from
                         1 will be assinged to each replicate and as the first
                         columns in the log file.
@@ -168,7 +209,7 @@ optional arguments:
                         like to introduce multiple infectees to the
                         population, or if you have named groups, you will have
                         to specify the IDs of carrier such as --infectors
-                        nurse1 nurse2.
+                        nurse_1 nurse_2.
   --interval INTERVAL   Interval of simulation, default to 1/24, by hour
   --logfile LOGFILE     logfile
   --prop-asym-carriers [PROP_ASYM_CARRIERS [PROP_ASYM_CARRIERS ...]]

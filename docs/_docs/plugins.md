@@ -370,11 +370,12 @@ optional arguments:
 % outbreak_simulator --plugin testing -h
 
 usage: --plugin testing [-h] [--disable] [--start START] [--end END]
-                        [--at AT [AT ...]] [--interval INTERVAL]
+                        [--at [AT [AT ...]]] [--interval INTERVAL]
                         [--trigger-by [TRIGGER_BY [TRIGGER_BY ...]]]
                         [--proportion PROPORTION [PROPORTION ...]]
-                        [--sensitivity SENSITIVITY]
+                        [--sensitivity SENSITIVITY [SENSITIVITY ...]]
                         [--specificity SPECIFICITY]
+                        [--turnaround-time TURNAROUND_TIME]
                         [--handle-positive HANDLE_POSITIVE]
                         [IDs [IDs ...]]
 
@@ -387,39 +388,45 @@ positional arguments:
 optional arguments:
   -h, --help            show this help message and exit
   --disable             Disable the plugin if this parameter is specified.
-  --start START         Start time. Default to 0 no parameter is defined
-                        so the plugin will be called once at the
-                        beginning.
+  --start START         Start time. Default to 0 no parameter is defined so
+                        the plugin will be called once at the beginning.
   --end END             End time, default to none, meaning there is no end
                         time.
-  --at AT [AT ...]      Specific time at which the plugin is applied.
-  --interval INTERVAL   Interval at which plugin is applied, it will
-                        assume a 0 starting time if --start is left
-                        unspecified.
+  --at [AT [AT ...]]    Specific time at which the plugin is applied.
+  --interval INTERVAL   Interval at which plugin is applied, it will assume a
+                        0 starting time if --start is left unspecified.
   --trigger-by [TRIGGER_BY [TRIGGER_BY ...]]
                         Events that triggers this plug in.
   --proportion PROPORTION [PROPORTION ...]
-                        Proportion of individuals to test. Individuals who
-                        are tested positive will by default be
-                        quarantined. Multipliers are allowed to specify
-                        proportion of tests for each group.
-  --sensitivity SENSITIVITY
+                        Proportion of individuals to test. Individuals who are
+                        tested positive will by default be quarantined.
+                        Multipliers are allowed to specify proportion of tests
+                        for each group.
+  --sensitivity SENSITIVITY [SENSITIVITY ...]
                         Sensitibity of the test. Individuals who carry the
-                        virus will have this probability to be detected.
+                        virus will have this probability to be detected. If a
+                        second paramter is set, it is intepreted as a Limit of
+                        Detection value in terms of transmissibility
+                        probability. The overall sensibility will be lower
+                        with a positive LOD value so it is advised to perform
+                        a test run to obtain the true sensitivity.
   --specificity SPECIFICITY
-                        Specificity of the test. Individuals who do not
-                        carry the virus will have this probability to be
-                        tested negative.
+                        Specificity of the test. Individuals who do not carry
+                        the virus will have this probability to be tested
+                        negative.
+  --turnaround-time TURNAROUND_TIME
+                        Time interval from the time of submission of process
+                        to the time of the completion of the process.
   --handle-positive HANDLE_POSITIVE
                         How to handle individuals who are tested positive,
-                        which should be "remove" (remove from population),
-                        and "quarantine" (put aside until it recovers).
-                        Quarantine can be specified as "quarantine_7" etc
-                        to specify duration of quarantine. Individuals
-                        that are already in quarantine will continue to be
-                        quarantined. Default to "remove", meaning all
-                        symptomatic cases will be removed from population.
-
+                        which should be "keep" (do not do anything), "remove"
+                        (remove from population), and "quarantine" (put aside
+                        until it recovers). Quarantine can be specified as
+                        "quarantine_7" etc to specify duration of quarantine.
+                        Individuals that are already in quarantine will
+                        continue to be quarantined. Default to "remove",
+                        meaning all symptomatic cases will be removed from
+                        population.
 ```
 
 ### Plugin `community_infection`
