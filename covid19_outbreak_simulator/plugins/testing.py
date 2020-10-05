@@ -27,7 +27,7 @@ class testing(BasePlugin):
             '--sensitivity',
             nargs='+',
             type=float,
-            default=[1.0, 0.0],
+            default=[1.0],
             help='''Sensitibity of the test. Individuals who carry the virus will have this
             probability to be detected. If a second paramter is set, it is intepreted
             as a Limit of Detection value in terms of transmissibility probability.
