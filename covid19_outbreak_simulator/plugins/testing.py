@@ -65,7 +65,9 @@ class testing(BasePlugin):
         n_recovered = 0
         n_false_positive = 0
         n_false_negative = 0
+        n_false_negative_in_recovered = 0
         n_tested = 0
+        n_false_negative_lod = 0
 
         def select(ind, counts=None):
             nonlocal n_tested
@@ -74,6 +76,8 @@ class testing(BasePlugin):
             nonlocal n_recovered
             nonlocal n_false_positive
             nonlocal n_false_negative
+            nonlocal n_false_negative_in_recovered
+            nonlocal n_false_negative_lod
 
             if counts:
                 if counts[ind.group] > 0:
@@ -83,16 +87,20 @@ class testing(BasePlugin):
             n_tested += 1
             affected = isinstance(ind.infected, float)
             if affected:
+                lod_sensitivity = ind.test_sensitivity(time, args.sensitivity[1]) if len(args.sensitivity) == 2 else 1
+                sensitivity = lod_sensitivity * args.sensitivity[0]
+                res = sensitivity == 1 or sensitivity > numpy.random.uniform()
+
                 if isinstance(ind.recovered, float):
                     n_recovered += 1
+                    if not res:
+                        n_false_negative_in_recovered += 1
                 else:
                     n_infected += 1
-
-                sensitivity = (ind.test_sensitivity(time, args.sensitivity[1]) if len(args.sensitivity) == 2 else 1 ) * float(args.sensitivity[0])
-
-                res = sensitivity == 1 or sensitivity > numpy.random.uniform()
-                if not res:
-                    n_false_negative += 1
+                    if not res:
+                        n_false_negative += 1
+                        if lod_sensitivity < 1:
+                            n_false_negative_lod += 1
                 return res
             else:
                 n_uninfected += 1
@@ -141,8 +149,21 @@ class testing(BasePlugin):
                 raise ValueError(
                     'Unsupported action for patients who test positive.')
 
-        detected_IDs = f',detected={",".join(IDs)}' if IDs else ''
+        res = dict(
+            n_tested=n_tested,
+            n_infected=n_infected,
+            n_uninfected=n_uninfected,
+            n_recovered=n_recovered,
+            n_detected=len(IDs),
+            n_false_positive=n_false_positive,
+            n_false_negative=n_false_negative,
+            n_false_negative_lod=n_false_negative_lod,
+            n_false_negative_in_recovered=n_false_negative_in_recovered
+        )
+        if IDs:
+            res['detected_IDs'] = ",".join(IDs)
+        res_str = ','.join(f'{k}={v}' for k,v in res.items())
         self.logger.write(
-            f'{self.logger.id}\t{time:.2f}\t{EventType.PLUGIN.name}\t.\tname=testing,n_tested={n_tested},n_infected={n_infected},n_uninfected={n_uninfected},n_recovered={n_recovered},n_detected={len(IDs)},n_false_positive={n_false_positive},n_false_negative={n_false_negative}{detected_IDs}\n'
+            f'{self.logger.id}\t{time:.2f}\t{EventType.PLUGIN.name}\t.\tname=testing,{res_str}\n'
         )
         return events
