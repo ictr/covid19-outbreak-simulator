@@ -52,7 +52,8 @@ def parse_args(args=None):
         '--symptomatic-r0',
         nargs='+',
         help='''Production number of symptomatic infectors, should be specified as a single
-            fixed number, or a range. Multipliers are allowed to specify symptomatic r0 for
+            fixed number, or 2.5%% and 97.5%% quantile of a normal distribution from which individual
+            production number will be drawn. Multipliers are allowed to specify symptomatic r0 for
             each group. This parameter reflects the infectivity of virus carrier measured
             by the average number of individuals one infected individual "would" infect if
             infectivity is not blocked by for example quarantine and susceptibility of
@@ -62,18 +63,18 @@ def parse_args(args=None):
         '--asymptomatic-r0',
         nargs='+',
         help='''Production number of asymptomatic infectors, should be specified as a single
-            fixed number or a range. Multipliers are allowed to specify asymptomatic r0 for
+            fixed number or or 2.5%% and 97.5%% quantile of a normal distribution from which individual
+            production number will be drawn. Multipliers are allowed to specify asymptomatic r0 for
             each group.''')
     parser.add_argument(
         '--symptomatic-transmissibility-model',
         nargs='+',
         help='''Model used for asymptomatic cases with parameters. The default model
             normal has a duration of 8 days after incubation, and a peak happens at 2/3 of
-            incubation. The piece wise model has a proportion for the start of infection
-            (relative to incubation period), a proportion for the peak of infectivity (
-            relative to incubation period), and a range of days after the
-            onset of symptoms. The models should be specified as "normal" (no parameter is
-            allowed), or model name with parameters such as "piecewise 0.1 0.3 7 9".
+            incubation. An alternative piece wise model has a stage of no infectivity, a stage
+            for increasing and a stage for decreasing infectivity. The proportion of stages
+            and time after incubation period are controlled by a lognormal distribution.
+            Parameters to this model could be specified but not recommended.
         '''
     )
     parser.add_argument(
@@ -81,11 +82,10 @@ def parse_args(args=None):
         nargs='+',
         help='''Model used for asymptomatic cases with parameters. The default model
             normal has a duration of 12 and peaks at 4.8 day. The piecewise model has
-            a proportion for the start of infection,  a proportion for the peak of
-            infectivity, and a range of days after the infection (no incubation period
-            when compared to the symptomatic case). The models should be specified as "normal"
-            (no parameter is allowed), or model name with parameters such as
-            "piecewise 0.1 0.3 5 7".
+            a stage of no infectivity, a stage for increasing and a stage for decreasing
+            infectivity. The proportion of stages and the overall duration are controlled
+            by a lognormal distribution. Parameters to this model could be specified but
+            not recommended.
         '''
     )
 

@@ -60,34 +60,43 @@ class testing(BasePlugin):
         return parser
 
     def apply(self, time, population, args=None):
+        n_infected = 0
+        n_uninfected = 0
+        n_recovered = 0
         n_false_positive = 0
         n_false_negative = 0
         n_tested = 0
-        n_lod_false_negative = 0
 
         def select(ind, counts=None):
             nonlocal n_tested
+            nonlocal n_infected
+            nonlocal n_uninfected
+            nonlocal n_recovered
             nonlocal n_false_positive
             nonlocal n_false_negative
-            nonlocal n_lod_false_negative
+
             if counts:
                 if counts[ind.group] > 0:
                     counts[ind.group] -= 1
                 else:
                     return False
             n_tested += 1
-            affected = isinstance(ind.infected, float) and not isinstance(ind.recovered, float)
+            affected = isinstance(ind.infected, float)
             if affected:
-                if len(args.sensitivity) == 2:
-                    if ind.viral_load(time) <= args.sensitivity[1]:
-                        n_lod_false_negative += 1
-                        return False
+                if isinstance(ind.recovered, float):
+                    n_recovered += 1
+                else:
+                    n_infected += 1
 
-                res = args.sensitivity[0] == 1 or float(args.sensitivity[0]) > numpy.random.uniform()
+                sensitivity = (ind.test_sensitivity(time, args.sensitivity[1]) if len(args.sensitivity) == 2 else 1 ) * float(args.sensitivity[0])
+
+                res = sensitivity == 1 or sensitivity > numpy.random.uniform()
                 if not res:
                     n_false_negative += 1
                 return res
             else:
+                n_uninfected += 1
+
                 res = args.specificity != 1 and args.specificity <= numpy.random.uniform()
                 if res:
                     n_false_positive += 1
@@ -134,6 +143,6 @@ class testing(BasePlugin):
 
         detected_IDs = f',detected={",".join(IDs)}' if IDs else ''
         self.logger.write(
-            f'{self.logger.id}\t{time:.2f}\t{EventType.PLUGIN.name}\t.\tname=testing,n_tesetd={n_tested},n_detected={len(IDs)},n_false_positive={n_false_positive},n_false_negative={n_false_negative},n_lod_false_negative={n_lod_false_negative}{detected_IDs}\n'
+            f'{self.logger.id}\t{time:.2f}\t{EventType.PLUGIN.name}\t.\tname=testing,n_tested={n_tested},n_infected={n_infected},n_uninfected={n_uninfected},n_recovered={n_recovered},n_detected={len(IDs)},n_false_positive={n_false_positive},n_false_negative={n_false_negative}{detected_IDs}\n'
         )
         return events

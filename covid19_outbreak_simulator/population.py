@@ -361,7 +361,8 @@ class Individual(object):
                 "This transmissibility model does not record infection parameters."
             )
 
-        infect_time, peak_time, duration, peak_transmissibility = self.infect_params
+        symptomatic, infect_time, peak_time, duration, peak_transmissibility = self.infect_params
+        # for transmissibility, duration stays, max stays
         if interval < infect_time:
             return 0
         elif interval < peak_time:
@@ -386,7 +387,12 @@ class Individual(object):
                 "This transmissibility model does not record infection parameters."
             )
 
-        infect_time, peak_time, duration, peak_transmissibility = self.infect_params
+        symptomatic, infect_time, peak_time, duration, peak_transmissibility = self.infect_params
+        # for viral load, peak transmissibility doubles for asymptomatic, duration doubles
+        duration *= 1.5
+        if not symptomatic:
+            peak_transmissibility *= 2
+
         if interval < infect_time:
             return 0
         elif interval < peak_time:
@@ -401,9 +407,17 @@ class Individual(object):
             return max(
                 0,
                 peak_transmissibility
-                * (2 * duration - interval)
-                / (2 * duration - peak_time),
+                * (duration - interval)
+                / (duration - peak_time),
             )
+
+    def test_sensitivity(self, time, lod):
+        # return transmissibility at specified time
+        viral_load = self.viral_load(time)
+        if viral_load >= lod:
+            return 1
+        else:
+            return viral_load / lod
 
     def infect(self, time, **kwargs):
         if isinstance(self.infected, float):

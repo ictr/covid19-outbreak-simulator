@@ -73,19 +73,17 @@ def test_prop_asym_carriers(params):
 
 
 def test_symptomatic_r0(params):
-    params.set('symptomatic_r0', prop='low', value=1.4)
-    params.set('symptomatic_r0', prop='high', value=2.8)
+    params.set('symptomatic_r0', prop='loc', value=2.1)
+    params.set('symptomatic_r0', prop='quantile_2.5', value=1.4)
 
-    assert params.symptomatic_r0_low == 1.4
-    assert params.symptomatic_r0_high == 2.8
+    assert params.symptomatic_r0_loc == 2.1
 
 
 def test_asymptomatic_r0(params):
-    params.set('asymptomatic_r0', prop='low', value=0.14)
-    params.set('asymptomatic_r0', prop='high', value=0.28)
+    params.set('asymptomatic_r0', prop='loc', value=0.21)
+    params.set('asymptomatic_r0', prop='quantile_2.5', value=0.14)
 
-    assert params.asymptomatic_r0_low == 0.14
-    assert params.asymptomatic_r0_high == 0.28
+    assert params.asymptomatic_r0_loc == 0.21
 
 
 def test_draw_prop_asym_carriers(default_model):
@@ -113,16 +111,13 @@ def test_drawn_random_r0(default_model):
         symp_r0.append(default_model.draw_random_r0(symptomatic=True))
     #
     assert math.fabs(sum(symp_r0) /
-                     N) - (default_model.params.symptomatic_r0_low +
-                           default_model.params.symptomatic_r0_high) / 2 < 0.005
+                     N) - default_model.params.symptomatic_r0_loc < 0.005
 
     asymp_r0 = []
     for i in range(N):
         asymp_r0.append(default_model.draw_random_r0(symptomatic=False))
     #
-    assert math.fabs(sum(asymp_r0) / N) - (
-        default_model.params.asymptomatic_r0_low +
-        default_model.params.asymptomatic_r0_high) / 2 < 0.005
+    assert math.fabs(sum(asymp_r0) / N) - default_model.params.asymptomatic_r0_loc < 0.005
 
 
 def draw_random_incubation_period(default_model):
@@ -172,7 +167,7 @@ def test_get_normal_asymptomatic_transmission_probability(default_model):
 def test_get_piecewise_symptomatic_transmission_probability(default_model):
 
     default_model.params.set_symptomatic_transmissibility_model(
-        ['piecewise', 0.2, 0.7, 6, 9]
+        ['piecewise']
     )
 
     incu = default_model.draw_random_incubation_period()
@@ -192,7 +187,7 @@ def test_get_piecewise_symptomatic_transmission_probability(default_model):
 def test_get_piecewise_asymptomatic_transmission_probability(default_model):
 
     default_model.params.set_asymptomatic_transmissibility_model(
-        ['piecewise', 0.2, 0.7, 6, 9]
+        ['piecewise']
     )
 
     R0 = default_model.draw_random_r0(symptomatic=False)

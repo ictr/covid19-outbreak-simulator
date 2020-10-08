@@ -56,21 +56,20 @@ def test_option_susceptibility():
 def test_option_symptomatic_r0():
     args = parse_args(["--symptomatic-r0", "1.0"])
     params = Params(args)
-    assert params.symptomatic_r0_low == 1.0
-    assert params.symptomatic_r0_high == 1.0
+    assert params.symptomatic_r0_loc == 1.0
+    assert params.symptomatic_r0_scale == 0
 
     args = parse_args(["--symptomatic-r0", "1.2", "2.0"])
     params = Params(args)
-    assert params.symptomatic_r0_low == 1.2
-    assert params.symptomatic_r0_high == 2.0
+    assert params.symptomatic_r0_loc == (1.2 + 2.0) / 2
 
     args = parse_args(
         ["--popsize", "A=500", "B=300", "--symptomatic-r0", "1.5", "A=0.8"]
     )
     params = Params(args)
     assert sorted(list(params.groups.keys())) == ["A", "B"]
-    assert params.symptomatic_r0_low == 1.5
-    assert params.symptomatic_r0_high == 1.5
+    assert params.symptomatic_r0_loc == 1.5
+    assert params.symptomatic_r0_scale == 0
     assert params.symptomatic_r0_multiplier_A == 0.8
 
     # not float number
@@ -99,21 +98,20 @@ def test_option_symptomatic_r0():
 def test_option_asymptomatic_r0():
     args = parse_args(["--asymptomatic-r0", "1.0"])
     params = Params(args)
-    assert params.asymptomatic_r0_low == 1.0
-    assert params.asymptomatic_r0_high == 1.0
+    assert params.asymptomatic_r0_loc == 1.0
+    assert params.asymptomatic_r0_scale == 0
 
     args = parse_args(["--asymptomatic-r0", "1.2", "2.0"])
     params = Params(args)
-    assert params.asymptomatic_r0_low == 1.2
-    assert params.asymptomatic_r0_high == 2.0
+    assert params.asymptomatic_r0_loc == (1.2 + 2.0) / 2
 
     args = parse_args(
         ["--popsize", "A=500", "B=300", "--asymptomatic-r0", "1.5", "A=0.8"]
     )
     params = Params(args)
     assert sorted(list(params.groups.keys())) == ["A", "B"]
-    assert params.asymptomatic_r0_low == 1.5
-    assert params.asymptomatic_r0_high == 1.5
+    assert params.asymptomatic_r0_loc == 1.5
+    assert params.asymptomatic_r0_scale == 0
     assert params.asymptomatic_r0_multiplier_A == 0.8
 
     # not float number
@@ -424,8 +422,9 @@ def test_symptomatic_transmissibility_model():
             "piecewise",
             "0.2",
             "0.7",
-            "7",
-            "9",
+            "3",
+            "0.59",
+            "1.14",
         ]
     )
 
@@ -466,7 +465,8 @@ def test_asymptomatic_transmissibility_model():
             "piecewise",
             "0.1",
             "0.3",
-            "7",
-            "9",
+            "3",
+            "0.5",
+            "1.147",
         ]
     )
