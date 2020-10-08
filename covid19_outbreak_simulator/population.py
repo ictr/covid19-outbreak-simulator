@@ -1,4 +1,5 @@
 import copy
+import math
 import numpy as np
 from numpy.random import choice, rand
 from fnmatch import fnmatch
@@ -18,6 +19,7 @@ class Individual(object):
         self.infected = False
         self.show_symptom = False
         self.recovered = False
+        self.symptomatic = None
 
         self.quarantined = False
 
@@ -46,19 +48,17 @@ class Individual(object):
         return []
 
     def symptomatic_infect(self, time, **kwargs):
+        self.symptomatic = True
         self.r0 = self.model.draw_random_r0(symptomatic=True, group=self.group)
         self.incubation_period = self.model.draw_random_incubation_period(
             group=self.group
         )
+        self.infect_params = self.model.draw_infection_params(symptomatic=True)
 
         #
         # infect others
-        (
-            x_grid,
-            trans_prob,
-            infect_params,
-        ) = self.model.get_symptomatic_transmission_probability(
-            self.incubation_period, self.r0
+        (x_grid, trans_prob) = self.model.get_symptomatic_transmission_probability(
+            self.incubation_period, self.r0, self.infect_params
         )
 
         by = kwargs.get("by", None)
@@ -181,7 +181,6 @@ class Individual(object):
                 f'Unrecognizable symptomatic case handling method: {" ".join(handle_symptomatic)}'
             )
 
-        self.infect_params = infect_params
         # infect only before removal or quarantine
         if kept:
             x_before = x_grid
@@ -256,16 +255,16 @@ class Individual(object):
         return evts
 
     def asymptomatic_infect(self, time, **kwargs):
+        self.symptomatic = False
         self.r0 = self.model.draw_random_r0(symptomatic=False)
         self.incubation_period = -1
 
         by = kwargs.get("by")
+        self.infect_params = self.model.draw_infection_params(symptomatic=False)
 
-        (
-            x_grid,
-            trans_prob,
-            infect_params,
-        ) = self.model.get_asymptomatic_transmissibility_probability(self.r0)
+        (x_grid, trans_prob) = self.model.get_asymptomatic_transmission_probability(
+            self.r0, self.infect_params
+        )
 
         if "leadtime" in kwargs and kwargs["leadtime"] is not None:
             if by is not None:
@@ -278,10 +277,13 @@ class Individual(object):
                 # could be anywhere in his incubation period
                 lead_time = np.random.uniform(0, x_grid[-1])
             else:
-                lead_time = min(as_float(
-                    kwargs["leadtime"],
-                    "--leadtime can only be any, asymptomatic, or a fixed number",
-                ),  x_grid[-1])
+                lead_time = min(
+                    as_float(
+                        kwargs["leadtime"],
+                        "--leadtime can only be any, asymptomatic, or a fixed number",
+                    ),
+                    x_grid[-1],
+                )
         else:
             lead_time = 0
 
@@ -290,8 +292,6 @@ class Individual(object):
         # REMOVAL ...
         evts = []
         #
-        self.infect_params = infect_params
-
         if lead_time > 0:
             idx = int(lead_time / self.model.params.simulation_interval)
             if idx >= len(trans_prob):
@@ -354,62 +354,84 @@ class Individual(object):
         return evts
 
     def transmissibility(self, time):
+
+        if self.symptomatic is None:
+            return 0
+
         # return transmissibility at specified time
         interval = time - self.infected
-        if not self.infect_params:
-            raise ValueError(
-                "This transmissibility model does not record infection parameters."
-            )
-
-        symptomatic, infect_time, peak_time, duration, peak_transmissibility = self.infect_params
-        # for transmissibility, duration stays, max stays
-        if interval < infect_time:
-            return 0
-        elif interval < peak_time:
-            return (
-                peak_transmissibility
-                * (interval - infect_time)
-                / (peak_time - infect_time)
+        if self.symptomatic:
+            (x_grid, trans_prob) = self.model.get_symptomatic_transmission_probability(
+                self.incubation_period, self.r0, self.infect_params
             )
         else:
-            # assuming that viral load will decrease a lot slower than transmissibility
-            # we use 2 * duration to simulate this effect
-            return max(
-                0,
-                peak_transmissibility * (duration - interval) / (duration - peak_time),
+            (x_grid, trans_prob) = self.model.get_asymptomatic_transmission_probability(
+                self.r0, self.infect_params
             )
+        idx = int(interval / self.model.params.simulation_interval)
+        return 0 if idx >= len(x_grid) else trans_prob[idx]
+
+    def communicable_period(self):
+        if self.symptomatic is None:
+            raise ValueError('Individual has not been infected yet.')
+
+        if self.symptomatic:
+            (x_grid, trans_prob) = self.model.get_symptomatic_transmission_probability(
+                self.incubation_period, self.r0, self.infect_params
+            )
+        else:
+            (x_grid, trans_prob) = self.model.get_asymptomatic_transmission_probability(
+                self.r0, self.infect_params
+            )
+        prob = np.array(trans_prob)
+        return len(np.trim_zeros(prob, 'fb')) * self.model.params.simulation_interval
+
+    def total_duration(self):
+        if self.symptomatic is None:
+            raise ValueError('Individual has not been infected yet.')
+
+        if self.symptomatic:
+            (x_grid, trans_prob) = self.model.get_symptomatic_transmission_probability(
+                self.incubation_period, self.r0, self.infect_params
+            )
+        else:
+            (x_grid, trans_prob) = self.model.get_asymptomatic_transmission_probability(
+                self.r0, self.infect_params
+            )
+        prob = np.array(trans_prob)
+        return len(np.trim_zeros(prob, 'b')) * self.model.params.simulation_interval
+
 
     def viral_load(self, time):
+
+        if self.symptomatic is None:
+            return 0
+
         # return transmissibility at specified time
         interval = time - self.infected
-        if not self.infect_params:
-            raise ValueError(
-                "This transmissibility model does not record infection parameters."
-            )
-
-        symptomatic, infect_time, peak_time, duration, peak_transmissibility = self.infect_params
-        # for viral load, peak transmissibility doubles for asymptomatic, duration doubles
-        duration *= 1.5
-        if not symptomatic:
-            peak_transmissibility *= 2
-
-        if interval < infect_time:
-            return 0
-        elif interval < peak_time:
-            return (
-                peak_transmissibility
-                * (interval - infect_time)
-                / (peak_time - infect_time)
+        if self.symptomatic:
+            (x_grid, trans_prob) = self.model.get_symptomatic_transmission_probability(
+                self.incubation_period, self.r0, self.infect_params
             )
         else:
-            # assuming that viral load will decrease a lot slower than transmissibility
-            # we use 2 * duration to simulate this effect
-            return max(
-                0,
-                peak_transmissibility
-                * (duration - interval)
-                / (duration - peak_time),
+            (x_grid, trans_prob) = self.model.get_asymptomatic_transmission_probability(
+                self.r0, self.infect_params
             )
+        peak_idx = np.argmax(trans_prob)
+        idx = int(interval / self.model.params.simulation_interval)
+        multiplier = 0.7 if self.symptomatic else 1.8
+        # translate to log10 CP/ML.
+        # prob / iterval ==> daily probability from 0.1 up to 0.8
+        # 0.01 to 3
+        # * 10 to up to 8 (10**8)
+        if idx < peak_idx:
+            return (multiplier * trans_prob[idx] / self.model.params.simulation_interval) * 20
+        idx = peak_idx + (idx - peak_idx) // 2
+        if idx >= len(x_grid):
+            return 0
+        else:
+            return (multiplier * trans_prob[idx] / self.model.params.simulation_interval) * 20
+
 
     def test_sensitivity(self, time, lod):
         # return transmissibility at specified time

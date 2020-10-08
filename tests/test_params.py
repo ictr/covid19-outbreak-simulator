@@ -140,8 +140,8 @@ def test_get_normal_symptomatic_transmission_probability(default_model):
     N = 10000
     r = []
     for i in range(N):
-        x_grid, prob, _ = default_model.get_symptomatic_transmission_probability(
-            incu, R0)
+        x_grid, prob = default_model.get_symptomatic_transmission_probability(
+            incu, R0, default_model.draw_infection_params(symptomatic=True))
         infected = np.random.binomial(1, prob, len(x_grid))
         r.append(sum(infected))
     #
@@ -155,8 +155,8 @@ def test_get_normal_asymptomatic_transmission_probability(default_model):
     N = 10000
     r = []
     for i in range(N):
-        x_grid, prob, _ = default_model.get_asymptomatic_transmissibility_probability(
-            R0)
+        x_grid, prob = default_model.get_asymptomatic_transmission_probability(
+            R0, default_model.draw_infection_params(symptomatic=False))
         infected = np.random.binomial(1, prob, len(x_grid))
         r.append(sum(infected))
     #
@@ -176,8 +176,8 @@ def test_get_piecewise_symptomatic_transmission_probability(default_model):
     N = 10000
     r = []
     for i in range(N):
-        x_grid, prob, _ = default_model.get_symptomatic_transmission_probability(
-            incu, R0)
+        x_grid, prob = default_model.get_symptomatic_transmission_probability(
+            incu, R0, default_model.draw_infection_params(symptomatic=True))
         infected = np.random.binomial(1, prob, len(x_grid))
         r.append(sum(infected))
     #
@@ -195,8 +195,8 @@ def test_get_piecewise_asymptomatic_transmission_probability(default_model):
     N = 10000
     r = []
     for i in range(N):
-        x_grid, prob, _ = default_model.get_asymptomatic_transmissibility_probability(
-            R0)
+        x_grid, prob = default_model.get_asymptomatic_transmission_probability(
+            R0, default_model.draw_infection_params(symptomatic=False))
         infected = np.random.binomial(1, prob, len(x_grid))
         r.append(sum(infected))
     #

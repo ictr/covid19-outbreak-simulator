@@ -261,7 +261,7 @@ class Params:
             self.asymptomatic_transmissibility_model = dict(
                 name=val[0],
                 noninfectivity_proportion=0.1,
-                peak_proportion=0.3,
+                peak_proportion=0.4,
                 duration_shift=3,
                 duration_mean=0.9729550745276567,
                 duration_sigma=0.49641477200713996,
@@ -442,19 +442,59 @@ class Model(object):
             )
         return ip * getattr(self.params, f"incubation_period_multiplier_{group}", 1.0)
 
-    def get_symptomatic_transmission_probability(self, incu, R0):
+    def draw_infection_params(self, symptomatic):
+        if symptomatic:
+            # duration of infection is 8 days after incubation
+            if self.params.symptomatic_transmissibility_model["name"] == "normal":
+                return [8]
+            # duration of infection is shift + lognormal distribution
+            else:
+                return [
+                    self.params.symptomatic_transmissibility_model["duration_shift"]
+                    + np.random.lognormal(
+                        self.params.symptomatic_transmissibility_model["duration_mean"],
+                        self.params.symptomatic_transmissibility_model[
+                            "duration_sigma"
+                        ],
+                    )
+                ]
+        else:
+            # 12 day overall (with normal at 4.8)
+            if self.params.asymptomatic_transmissibility_model["name"] == "normal":
+                return [12]
+            # asymptomatic
+            else:
+                return [
+                    self.params.asymptomatic_transmissibility_model["duration_shift"]
+                    + np.random.lognormal(
+                        self.params.asymptomatic_transmissibility_model[
+                            "duration_mean"
+                        ],
+                        self.params.asymptomatic_transmissibility_model[
+                            "duration_sigma"
+                        ],
+                    )
+                ]
+
+    def get_symptomatic_transmission_probability(self, incu, R0, params):
         if self.params.symptomatic_transmissibility_model["name"] == "normal":
-            return self.get_normal_symptomatic_transmission_probability(incu, R0)
+            return self.get_normal_symptomatic_transmission_probability(
+                incu, R0, params
+            )
         else:
-            return self.get_piecewise_symptomatic_transmission_probability(incu, R0)
+            return self.get_piecewise_symptomatic_transmission_probability(
+                incu, R0, params
+            )
 
-    def get_asymptomatic_transmissibility_probability(self, R0):
+    def get_asymptomatic_transmission_probability(self, R0, params):
         if self.params.asymptomatic_transmissibility_model["name"] == "normal":
-            return self.get_normal_asymptomatic_transmissibility_probability(R0)
+            return self.get_normal_asymptomatic_transmissibility_probability(R0, params)
         else:
-            return self.get_piecewise_asymptomatic_transmissibility_probability(R0)
+            return self.get_piecewise_asymptomatic_transmissibility_probability(
+                R0, params
+            )
 
-    def get_normal_symptomatic_transmission_probability(self, incu, R0):
+    def get_normal_symptomatic_transmission_probability(self, incu, R0, params):
         """Transmission probability.
         incu
             incubation period in days (can be float)
@@ -479,7 +519,9 @@ class Model(object):
         # if there is no left-hand-side
         if incu <= self.params.simulation_interval:
             x = np.linspace(
-                0, incu + 8, int((incu + 8) / self.params.simulation_interval)
+                0,
+                incu + params[0],
+                int((incu + params[0]) / self.params.simulation_interval),
             )
             y = dist_right.pdf(x)
         else:
@@ -498,15 +540,17 @@ class Model(object):
             scale = dist_right.pdf(incu) / dist_left.pdf(incu)
 
             x = np.linspace(
-                0, incu + 8, int((incu + 8) / self.params.simulation_interval)
+                0,
+                incu + params[0],
+                int((incu + params[0]) / self.params.simulation_interval),
             )
             idx = int(incu / self.params.simulation_interval)
             y = np.concatenate(
                 [dist_left.pdf(x[:idx]) * scale, dist_right.pdf(x[idx:])]
             )
-        return x, y / sum(y) * R0, None
+        return x, y / sum(y) * R0
 
-    def get_piecewise_symptomatic_transmission_probability(self, incu, R0):
+    def get_piecewise_symptomatic_transmission_probability(self, incu, R0, params):
         """Transmission probability.
         incu
             incubation period in days (can be float)
@@ -538,14 +582,7 @@ class Model(object):
         y
             probability of transmission for each time point
         """
-        duration = (
-            incu
-            + self.params.symptomatic_transmissibility_model["duration_shift"]
-            + np.random.lognormal(
-                self.params.symptomatic_transmissibility_model["duration_mean"],
-                self.params.symptomatic_transmissibility_model["duration_sigma"],
-            )
-        )
+        duration = incu + params[0]
         #
         x = np.linspace(0, duration, int(duration / self.params.simulation_interval))
         infect_time = (
@@ -568,9 +605,9 @@ class Model(object):
             ],
         )
         y = y / sum(y) * R0
-        return x, y, (True, infect_time, peak_time, duration, max(y))
+        return x, y
 
-    def get_normal_asymptomatic_transmissibility_probability(self, R0):
+    def get_normal_asymptomatic_transmissibility_probability(self, R0, params):
         """Asymptomatic Transmission probability.
         R0
             reproductive number, which is the expected number of infectees
@@ -586,11 +623,11 @@ class Model(object):
             probability of transmission for each time point
         """
         dist = norm(4.8, self.sd_5)
-        x = np.linspace(0, 12, int(12 / self.params.simulation_interval))
+        x = np.linspace(0, params[0], int(params[0] / self.params.simulation_interval))
         y = dist.pdf(x)
-        return x, y / sum(y) * R0, None
+        return x, y / sum(y) * R0
 
-    def get_piecewise_asymptomatic_transmissibility_probability(self, R0):
+    def get_piecewise_asymptomatic_transmissibility_probability(self, R0, params):
         """Asymptomatic Transmission probability.
         R0
             reproductive number, which is the expected number of infectees
@@ -605,12 +642,7 @@ class Model(object):
         y
             probability of transmission for each time point
         """
-        duration = self.params.asymptomatic_transmissibility_model[
-            "duration_shift"
-        ] + np.random.lognormal(
-            self.params.asymptomatic_transmissibility_model["duration_mean"],
-            self.params.asymptomatic_transmissibility_model["duration_sigma"],
-        )
+        duration = params[0]
         #
         x = np.linspace(0, duration, int(duration / self.params.simulation_interval))
         infect_time = (
@@ -636,4 +668,4 @@ class Model(object):
         y = y / sum(y) * R0
         # we assume that viral load is 2 times the transmissibility
         # for asymptomatic cases.
-        return x, y, (False, infect_time, peak_time, duration, max(y))
+        return x, y

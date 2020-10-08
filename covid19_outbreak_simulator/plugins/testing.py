@@ -30,7 +30,7 @@ class testing(BasePlugin):
             default=[1.0],
             help='''Sensitibity of the test. Individuals who carry the virus will have this
             probability to be detected. If a second paramter is set, it is intepreted
-            as a Limit of Detection value in terms of transmissibility probability.
+            as a Limit of Detection value in terms of log10 CP/ML (e.g. 3 for 1000 cp/ML).
             The overall sensibility will be lower with a positive LOD value so it is
             advised to perform a test run to obtain the true sensitivity.''',
         )
