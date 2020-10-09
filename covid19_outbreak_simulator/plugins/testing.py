@@ -87,7 +87,9 @@ class testing(BasePlugin):
             n_tested += 1
             affected = isinstance(ind.infected, float)
             if affected:
-                lod_sensitivity = ind.test_sensitivity(time, args.sensitivity[1]) if len(args.sensitivity) == 2 else 1
+                test_lod = args.sensitivity[1] if len(args.sensitivity) == 2 else 0
+                lod_sensitivity = ind.test_sensitivity(time, test_lod)
+                #
                 sensitivity = lod_sensitivity * args.sensitivity[0]
                 res = sensitivity == 1 or sensitivity > numpy.random.uniform()
 

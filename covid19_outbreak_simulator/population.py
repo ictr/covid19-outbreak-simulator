@@ -436,7 +436,10 @@ class Individual(object):
     def test_sensitivity(self, time, lod):
         # return transmissibility at specified time
         viral_load = self.viral_load(time)
-        if viral_load >= lod:
+        if viral_load == 0.0:
+            # if it is 0, it will already be 0
+            return 0
+        elif viral_load >= lod:
             return 1
         else:
             return viral_load / lod
