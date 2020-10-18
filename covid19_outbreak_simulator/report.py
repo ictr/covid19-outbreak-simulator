@@ -313,3 +313,5 @@ def summarize_simulations(logfile, output):
                     , file=outfile)
             except:
                 pass
+    if output != '-':
+        outfile.close()
