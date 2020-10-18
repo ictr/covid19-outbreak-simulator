@@ -161,6 +161,11 @@ def parse_args(args=None):
         type=int,
         help='Number of process to use for simulation. Default to number of CPU cores.'
     )
+    parser.add_argument(
+        '--summary-report',
+        help='''Generate a summary report and write to the specified file,
+          which can be "-" for standard output.'''
+    )
     return parser.parse_args(args)
 
 class FilteredStringIO(StringIO):
@@ -270,7 +275,11 @@ def main(argv=None):
             if 'ERROR' in result:
                 break
 
-    summarize_simulations(args.logfile)
+    for worker in workers:
+        # wait for workers to complete
+        worker.join()
+
+    summarize_simulations(args.logfile, args.summary_report)
     return 0
 
 

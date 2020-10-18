@@ -9,4 +9,4 @@ if __name__ == '__main__':
     parser.add_argument('logfile', help='''Logfile to be analyzed.''')
     args = parser.parse_args()
 
-    summarize_simulations(args.logfile)
+    summarize_simulations(args.logfile, args.summary_report)

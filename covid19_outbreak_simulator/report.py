@@ -3,7 +3,9 @@ import shlex
 from collections import defaultdict
 
 
-def summarize_simulations(logfile):
+def summarize_simulations(logfile, output):
+    if not output:
+        return
     # write some summary information into standard output
     n_simulation = 0
     total_infection = 0
@@ -37,6 +39,10 @@ def summarize_simulations(logfile):
     timed_stats = defaultdict(dict)
     customized_stats = defaultdict(dict)
     #
+    if output == '-':
+        outfile = sys.stdout
+    else:
+        outfile = open(output, 'w')
     with open(logfile) as lines:
         infection_from_seed_per_sim = defaultdict(int)
         infection_time_from_seed_per_sim = defaultdict(int)
@@ -185,100 +191,100 @@ def summarize_simulations(logfile):
     n_third_symptom = sum(n_third_symptom_on_day.values())
     #
     # print
-    print(f'logfile\t{args.logfile}')
-    print(f'popsize\t{" ".join(args.popsize)}')
+    print(f'logfile\t{args.logfile}', file=outfile)
+    print(f'popsize\t{" ".join(args.popsize)}', file=outfile)
     print(
         f'handle_symptomatic\t{" ".join(["remove", "1"] if args.handle_symptomatic is None else args.handle_symptomatic)}'
-    )
+    , file=outfile)
     if args.symptomatic_r0:
-        print(f'symptomatic_r0\t{" - ".join(args.symptomatic_r0)}')
+        print(f'symptomatic_r0\t{" - ".join(args.symptomatic_r0)}', file=outfile)
     if args.asymptomatic_r0:
-        print(f'asymptomatic_r0\t{" - ".join(args.asymptomatic_r0)}')
+        print(f'asymptomatic_r0\t{" - ".join(args.asymptomatic_r0)}', file=outfile)
     if args.incubation_period:
         print(
             f'incubation_period\t{args.incubation_period[0]}({args.incubation_period[1]}, {args.incubation_period[2]}) '
-            + ' '.join(args.incubation_period[3:]))
+            + ' '.join(args.incubation_period[3:]), file=outfile)
     if args.interval == 1 / 24:
-        print(f'interval\t1 hour')
+        print(f'interval\t1 hour', file=outfile)
     elif args.interval == 1:
-        print(f'interval\t1 day')
+        print(f'interval\t1 day', file=outfile)
     else:
-        print(f'interval\t{args.interval:.2f} day')
+        print(f'interval\t{args.interval:.2f} day', file=outfile)
     if args.prop_asym_carriers:
         if len(args.prop_asym_carriers) == 1:
             print(
-                f'prop_asym_carriers\t{float(args.prop_asym_carriers[0])*100:.1f}%'
+                f'prop_asym_carriers\t{float(args.prop_asym_carriers[0])*100:.1f}%', file=outfile
             )
         else:
             print(
                 f'prop_asym_carriers\t{float(args.prop_asym_carriers[0])*100:.1f}% to {float(args.prop_asym_carriers[1])*100:.1f}%'
-            )
+            , file=outfile)
     else:
-        print(f'prop_asym_carriers\t10% to 40%')
-    print(f'leadtime\t{"yes" if args.leadtime else "no"}')
-    print(f'n_simulation\t{n_simulation}')
-    print(f'total_infection\t{total_infection}')
-    print(f'total_infection_failed\t{total_infection_failed}')
-    print(f'total_infection_avoided\t{total_infection_avoided}')
-    print(f'total_infection_ignored\t{total_infection_ignored}')
-    print(f'total_show_symptom\t{total_show_symptom}')
-    print(f'total_removal\t{total_removal}')
-    print(f'total_recover\t{total_recover}')
-    print(f'total_quarantine\t{total_quarantine}')
-    print(f'total_reintegration\t{total_reintegration}')
-    print(f'total_abort\t{total_abort}')
-    print(f'total_asym_infection\t{total_asym_infection}')
-    print(f'total_presym_infection\t{total_presym_infection}')
-    print(f'total_sym_infection\t{total_sym_infection}')
+        print(f'prop_asym_carriers\t10% to 40%', file=outfile)
+    print(f'leadtime\t{"yes" if args.leadtime else "no"}', file=outfile)
+    print(f'n_simulation\t{n_simulation}', file=outfile)
+    print(f'total_infection\t{total_infection}', file=outfile)
+    print(f'total_infection_failed\t{total_infection_failed}', file=outfile)
+    print(f'total_infection_avoided\t{total_infection_avoided}', file=outfile)
+    print(f'total_infection_ignored\t{total_infection_ignored}', file=outfile)
+    print(f'total_show_symptom\t{total_show_symptom}', file=outfile)
+    print(f'total_removal\t{total_removal}', file=outfile)
+    print(f'total_recover\t{total_recover}', file=outfile)
+    print(f'total_quarantine\t{total_quarantine}', file=outfile)
+    print(f'total_reintegration\t{total_reintegration}', file=outfile)
+    print(f'total_abort\t{total_abort}', file=outfile)
+    print(f'total_asym_infection\t{total_asym_infection}', file=outfile)
+    print(f'total_presym_infection\t{total_presym_infection}', file=outfile)
+    print(f'total_sym_infection\t{total_sym_infection}', file=outfile)
 
     for num in sorted(n_remaining_popsize.keys()):
-        print(f'n_remaining_popsize_{num}\t{n_remaining_popsize[num]}')
+        print(f'n_remaining_popsize_{num}\t{n_remaining_popsize[num]}', file=outfile)
     # no outbreak is defined as final population size
-    print(f'n_no_outbreak\t{n_no_outbreak}')
+    print(f'n_no_outbreak\t{n_no_outbreak}', file=outfile)
     for day in sorted(n_outbreak_duration.keys()):
-        print(f'n_outbreak_duration_{day}\t{n_outbreak_duration[day]}')
+        print(f'n_outbreak_duration_{day}\t{n_outbreak_duration[day]}', file=outfile)
     for num in sorted(n_num_infected_by_seed.keys()):
-        print(f'n_num_infected_by_seed_{num}\t{n_num_infected_by_seed[num]}')
+        print(f'n_num_infected_by_seed_{num}\t{n_num_infected_by_seed[num]}', file=outfile)
     for day in sorted(n_first_infected_by_seed_on_day.keys()):
         if day == 0:
             print(
                 f'n_no_infected_by_seed\t{n_first_infected_by_seed_on_day[day]}'
-            )
+            , file=outfile)
         else:
             print(
                 f'n_first_infected_by_seed_on_day_{day}\t{n_first_infected_by_seed_on_day[day]}'
-            )
+            , file=outfile)
     for day in sorted(n_seed_show_symptom_on_day.keys()):
         if day == 0:
-            print(f'n_seed_show_no_symptom\t{n_seed_show_symptom_on_day[day]}')
+            print(f'n_seed_show_no_symptom\t{n_seed_show_symptom_on_day[day]}', file=outfile)
         else:
             print(
                 f'{day}_n_seed_show_symptom_on_day\t{n_seed_show_symptom_on_day[day]}'
-            )
+            , file=outfile)
     for day in sorted(n_first_infection_on_day.keys()):
         if day == 0:
-            print(f'n_no_first_infection\t{n_first_infection_on_day[day]}')
+            print(f'n_no_first_infection\t{n_first_infection_on_day[day]}', file=outfile)
         else:
             print(
                 f'n_first_infection_on_day_{day}\t{n_first_infection_on_day[day]}'
-            )
-    print(f'n_first_symptom\t{n_first_symptom}')
+            , file=outfile)
+    print(f'n_first_symptom\t{n_first_symptom}', file=outfile)
     for day in sorted(n_first_symptom_on_day.keys()):
-        print(f'n_first_symptom_on_day_{day}\t{n_first_symptom_on_day[day]}')
-    print(f'n_second_symptom\t{n_second_symptom}')
+        print(f'n_first_symptom_on_day_{day}\t{n_first_symptom_on_day[day]}', file=outfile)
+    print(f'n_second_symptom\t{n_second_symptom}', file=outfile)
     for day in sorted(n_second_symptom_on_day.keys()):
-        print(f'n_second_symptom_on_day_{day}\t{n_second_symptom_on_day[day]}')
-    print(f'n_third_symptom\t{n_third_symptom}')
+        print(f'n_second_symptom_on_day_{day}\t{n_second_symptom_on_day[day]}', file=outfile)
+    print(f'n_third_symptom\t{n_third_symptom}', file=outfile)
     for day in sorted(n_third_symptom_on_day.keys()):
-        print(f'n_third_symptom_on_day_{day}\t{n_third_symptom_on_day[day]}')
+        print(f'n_third_symptom_on_day_{day}\t{n_third_symptom_on_day[day]}', file=outfile)
     for item, timed_value in timed_stats.items():
         for time, value in timed_value.items():
             values = [x.strip() for x in value.split(',')]
             if len(set(values)) == 1 and len(values) > 1:
                 value = f'[{values[0]}] * {len(values)}'
-                print(f'{item}_{time}\t{value}')
+                print(f'{item}_{time}\t{value}', file=outfile)
             else:
-                print(f'{item}_{time}\t{value.strip()}')
+                print(f'{item}_{time}\t{value.strip()}', file=outfile)
         for time, value in timed_value.items():
             try:
                 value = eval('{' + value + '}')
@@ -286,7 +292,7 @@ def summarize_simulations(logfile):
                     total = sum(value.values())
                     print(
                         f'avg_{item}_{time}\t{total/len(value):.5f}, {total/args.repeats:.5f}'
-                    )
+                    , file=outfile)
             except:
                 pass
     for item, timed_value in customized_stats.items():
@@ -294,9 +300,9 @@ def summarize_simulations(logfile):
             values = [x.strip() for x in value.split(',')]
             if len(set(values)) == 1 and len(values) > 1:
                 value = f'[{values[0]}] * {len(values)}'
-                print(f'{item}_{time}\t{value}')
+                print(f'{item}_{time}\t{value}', file=outfile)
             else:
-                print(f'{item}_{time}\t{value.strip()}')
+                print(f'{item}_{time}\t{value.strip()}', file=outfile)
         for time, value in timed_value.items():
             try:
                 value = eval('{' + value + '}')
@@ -304,6 +310,6 @@ def summarize_simulations(logfile):
                     total = sum(value.values())
                     print(
                         f'avg_{item}_{time}\t{total/len(value):.5f}, {total/args.repeats:.5f}'
-                    )
+                    , file=outfile)
             except:
                 pass
