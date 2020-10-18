@@ -3,6 +3,7 @@ import argparse
 import multiprocessing
 import sys
 from io import StringIO
+import os
 
 import numpy as np
 from tqdm import tqdm
@@ -255,6 +256,25 @@ def main(argv=None):
                 f'Option --stop-if currently only supports t>TIME to stop after certain time point.'
             )
 
+
+
+    completed_ids = set()
+    append_mode = os.path.isfile(args.logfile)
+    if append_mode:
+        with open(args.logfile, 'r') as lf:
+            for line in lf:
+                try:
+                    id = int(line.split('\t', 1)[0])
+                    if id <= args.repeats:
+                        completed_ids.add(id)
+                except:
+                    # might be $ or "id"
+                    pass
+
+    if len(completed_ids) == args.repeats:
+        print(f'All simulations have been performed. Remove {args.logfile} if you would like to rerun.')
+        return 0
+
     workers = [
         Worker(tasks, results, args, cmd=argv if argv else sys.argv[1:])
         for i in range(min(args.jobs, args.repeats))
@@ -262,14 +282,19 @@ def main(argv=None):
     for worker in workers:
         worker.start()
 
-    with open(args.logfile, 'w') as logger:
-        logger.write('id\ttime\tevent\ttarget\tparams\n')
+    submitted = 0
+    with open(args.logfile, 'a' if append_mode else 'w') as logger:
+        if not append_mode:
+            logger.write('id\ttime\tevent\ttarget\tparams\n')
         for i in range(args.repeats):
-            tasks.put(i + 1)
+            if i+1 not in completed_ids:
+                submitted += 1
+                tasks.put(i + 1)
         for i in range(args.jobs):
             tasks.put(None)
         #
-        for i in tqdm(range(args.repeats)):
+        for i in tqdm(range(len(completed_ids), args.repeats),
+            total=args.repeats, initial=len(completed_ids)):
             result = results.get()
             logger.write(result)
             if 'ERROR' in result:
