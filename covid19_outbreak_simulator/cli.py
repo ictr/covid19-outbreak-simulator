@@ -256,10 +256,9 @@ def main(argv=None):
                 f'Option --stop-if currently only supports t>TIME to stop after certain time point.'
             )
 
-
-
     completed_ids = set()
     append_mode = os.path.isfile(args.logfile)
+    has_header = False
     if append_mode:
         with open(args.logfile, 'r') as lf:
             for line in lf:
@@ -269,7 +268,10 @@ def main(argv=None):
                         completed_ids.add(id)
                 except:
                     # might be $ or "id"
-                    pass
+                    has_header = True
+    # malformed log file
+    if not has_header:
+        append_mode = False
 
     if len(completed_ids) == args.repeats:
         print(f'All simulations have been performed. Remove {args.logfile} if you would like to rerun.')
