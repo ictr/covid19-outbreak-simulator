@@ -223,10 +223,10 @@ class Params:
     # a, b
 
     def set_symptomatic_transmissibility_model(self, val):
-        if not val or val[0] == "normal":
-            self.symptomatic_transmissibility_model = dict(name="normal")
-        elif val[0] != "piecewise":
+        if not val or val[0] not in ('normal', 'piecewise'):
             raise ValueError("Only a normal and a piecewise model is supported")
+        elif val[0] == "normal":
+            self.symptomatic_transmissibility_model = dict(name="normal")
         elif len(val) == 1:
             self.symptomatic_transmissibility_model = dict(
                 name=val[0],
@@ -262,10 +262,10 @@ class Params:
     # [n + rng.quantile(x) for x in [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.975]]
 
     def set_asymptomatic_transmissibility_model(self, val):
-        if not val or val[0] == "normal":
-            self.asymptomatic_transmissibility_model = dict(name="normal")
-        elif val[0] != "piecewise":
+        if not val or val[0] not in ('normal', 'piecewise'):
             raise ValueError("Only a normal and a piecewise model is supported")
+        if val[0] == "normal":
+            self.asymptomatic_transmissibility_model = dict(name="normal")
         elif len(val) == 1:
             self.asymptomatic_transmissibility_model = dict(
                 name=val[0],

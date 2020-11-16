@@ -70,6 +70,7 @@ def parse_args(args=None):
     parser.add_argument(
         '--symptomatic-transmissibility-model',
         nargs='+',
+        default=['piecewise'],
         help='''Model used for asymptomatic cases with parameters. The default model
             normal has a duration of 8 days after incubation, and a peak happens at 2/3 of
             incubation. An alternative piece wise model has a stage of no infectivity, a stage
@@ -81,6 +82,7 @@ def parse_args(args=None):
     parser.add_argument(
         '--asymptomatic-transmissibility-model',
         nargs='+',
+        default=['piecewise'],
         help='''Model used for asymptomatic cases with parameters. The default model
             normal has a duration of 12 and peaks at 4.8 day. The piecewise model has
             a stage of no infectivity, a stage for increasing and a stage for decreasing
