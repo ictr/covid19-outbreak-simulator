@@ -7,7 +7,7 @@ from scipy.optimize import bisect
 from scipy.stats import norm
 from covid19_outbreak_simulator.utils import as_float, as_int
 from fnmatch import fnmatch
-
+import pprint
 
 class Params:
     def __init__(self, args=None):
@@ -26,6 +26,7 @@ class Params:
         self.set_params(args)
 
     def __str__(self):
+        return pprint.pformat({x:y for x,y in self.__dict__.items() if x != 'params'})
         res = 'Parameters:\n'
         for k in sorted(self.__dict__.keys()):
             if k != 'params':
