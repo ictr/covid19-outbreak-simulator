@@ -163,6 +163,12 @@ def parse_args(args=None):
         help='Number of process to use for simulation. Default to number of CPU cores.'
     )
     parser.add_argument(
+        '-v',
+        '--version',
+        action='store_true',
+        help='Print version information'
+    )
+    parser.add_argument(
         '--summarize-model',
         action='store_true',
         help='''If specified, output key statistics calculated such as mean serial interval directly
@@ -234,9 +240,14 @@ class Worker(multiprocessing.Process):
 def main(argv=None):
     """Console script for covid19_outbreak_simulator."""
     args = parse_args(argv)
+    if args.version:
+        from . import __version__
+        print(f'COVID10 Outbreak Simulator version {__version__}')
+        sys.exit(0)
     if args.summarize_model:
         summarize_model(Params(args))
         sys.exit(0)
+
     tasks = multiprocessing.JoinableQueue()
     results = multiprocessing.Queue()
     if args.plugin:
