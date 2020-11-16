@@ -8,7 +8,7 @@ import os
 import numpy as np
 from tqdm import tqdm
 
-from .model import Params
+from .model import Params, summarize_model
 from .simulator import Simulator, load_plugins
 from .report import summarize_simulations
 
@@ -163,6 +163,13 @@ def parse_args(args=None):
         help='Number of process to use for simulation. Default to number of CPU cores.'
     )
     parser.add_argument(
+        '--summarize-model',
+        action='store_true',
+        help='''If specified, output key statistics calculated such as mean serial interval directly
+            from model parameters. No simulation will actually be executed if this parameter is
+            specified.'''
+    )
+    parser.add_argument(
         '--summary-report',
         help='''Generate a summary report and write to the specified file,
           which can be "-" for standard output.'''
@@ -227,6 +234,9 @@ class Worker(multiprocessing.Process):
 def main(argv=None):
     """Console script for covid19_outbreak_simulator."""
     args = parse_args(argv)
+    if args.summarize_model:
+        summarize_model(Params(args))
+        sys.exit(0)
     tasks = multiprocessing.JoinableQueue()
     results = multiprocessing.Queue()
     if args.plugin:

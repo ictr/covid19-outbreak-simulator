@@ -1,6 +1,8 @@
+import os
 import re
 
 import numpy as np
+import pandas as pd
 from scipy.optimize import bisect
 from scipy.stats import norm
 from covid19_outbreak_simulator.utils import as_float, as_int
@@ -22,6 +24,13 @@ class Params:
         }
         self.groups = {}
         self.set_params(args)
+
+    def __str__(self):
+        res = 'Parameters:\n'
+        for k in sorted(self.__dict__.keys()):
+            if k != 'params':
+                res += f'    {k}\t{self.__dict__[k]}\n'
+        return res
 
     def set(self, param, prop, value):
         if param not in self.params:
@@ -669,3 +678,98 @@ class Model(object):
         # we assume that viral load is 2 times the transmissibility
         # for asymptomatic cases.
         return x, y
+
+
+def print_stats(data, name):
+    series = pd.Series(data)
+    print('\n' + name + ':')
+    print(f'           mean:  {series.mean():.4f}')
+    print(f'            std:  {series.std():.4f}')
+    for q in (0.025, 0.05, 0.5, 0.95, 0.975):
+        print(f'  {q*100:4.1f}% qantile:  {series.quantile(q):.4f}')
+
+def sample_prop_asymp_carriers(model, N=1000):
+    asym_carriers = []
+    for i in range(N):
+        model.draw_prop_asym_carriers()
+        asym_carriers.append(model.draw_is_asymptomatic())
+    return asym_carriers
+
+
+def summarize_model(params):
+    from .population import Individual
+
+    print(params)
+    print()
+    #
+    N = 5000
+    model = Model(params)
+    print_stats(sample_prop_asymp_carriers(model, N),
+        'Proportion of asymptomatic carriers')
+
+    #
+    model.params.set('prop_asym_carriers', 'loc', 0)
+    model.params.set('prop_asym_carriers', 'scale', 0)
+    print_stats([model.draw_random_incubation_period() for x in range(N)],
+        'Incubation period')
+
+    print_stats([model.draw_random_r0(symptomatic=True) for x in range(N)],
+        'Production Number (Symptomatic)')
+    print_stats([model.draw_random_r0(symptomatic=False) for x in range(N)],
+        'Production Number (Asymptomatic)')
+
+    model.params.set('prop_asym_carriers', 'loc', 0)
+    model.params.set('prop_asym_carriers', 'scale', 0)
+
+    cp = []
+    du = []
+    with open(os.devnull, 'w') as logger:
+        logger.id = 1
+        model.draw_prop_asym_carriers()
+        for i in range(N):
+            ind = Individual(id='0', susceptibility=1, model=model, logger=logger)
+            evts = ind.symptomatic_infect(time=0, by=None,
+                                        handle_symptomatic=['keep'])
+            cp.append(ind.communicable_period())
+            du.append(ind.total_duration())
+
+    model.params.set('prop_asym_carriers', 'loc', 1)
+    model.params.set('prop_asym_carriers', 'scale', 0)
+
+    acp = []
+    adu = []
+    with open(os.devnull, 'w') as logger:
+        logger.id = 1
+        model.draw_prop_asym_carriers()
+        for i in range(N):
+            ind = Individual(id='0', susceptibility=1, model=model, logger=logger)
+            evts = ind.asymptomatic_infect(time=0, by=None,
+                                        handle_symptomatic=['keep'])
+            acp.append(ind.communicable_period())
+            adu.append(ind.total_duration())
+
+    print_stats(cp, 'Communicable Period (Symptomatic)')
+    print_stats(du, 'Total Duration (Symptomatic)')
+    print_stats(acp, 'Communicable Period (Asymptomatic)')
+    print_stats(adu, 'Total Duration (Asymptomatic)')
+
+    model.params.set('prop_asym_carriers', 'loc', 0)
+    model.params.set('prop_asym_carriers', 'scale', 0)
+
+    si = []
+    gt = []
+
+    with open(os.devnull, 'w') as logger:
+        logger.id = 1
+        model.draw_prop_asym_carriers()
+        for i in range(N):
+            ind = Individual(id='0', susceptibility=1, model=model, logger=logger)
+            evts = ind.symptomatic_infect(time=0, by=None,
+                                        handle_symptomatic=['keep'])
+            for evt in [x for x in evts if x.action.name == 'INFECTION']:
+                gt.append(evt.time)
+                si.append(evt.time + ind.model.draw_random_incubation_period() - ind.incubation_period)
+                break
+
+    print_stats(si, 'Serial Interval')
+    print_stats(gt, 'Generation Time')
