@@ -7,7 +7,7 @@ from scipy.optimize import bisect
 from scipy.stats import norm
 from covid19_outbreak_simulator.utils import as_float, as_int
 from fnmatch import fnmatch
-import pprint
+import yaml
 
 class Params:
     def __init__(self, args=None):
@@ -26,12 +26,16 @@ class Params:
         self.set_params(args)
 
     def __str__(self):
-        return pprint.pformat({x:y for x,y in self.__dict__.items() if x != 'params'})
-        res = 'Parameters:\n'
-        for k in sorted(self.__dict__.keys()):
-            if k != 'params':
-                res += f'    {k}\t{self.__dict__[k]}\n'
-        return res
+        def float_representer(dumper, value):
+            text = '{0:.4f}'.format(value)
+            return dumper.represent_scalar(u'tag:yaml.org,2002:float', text)
+        yaml.add_representer(float, float_representer)
+
+        val = {x:list(y) if isinstance(y, set) else y for x,y in self.__dict__.items() if x != 'params'}
+        if 'groups' in val and len(val['groups']) == 1:
+            val['groups'] = {'Unnamed': list(val['groups'].values())[0]}
+        return yaml.dump(val, sort_keys=True, indent=4)
+
 
     def set(self, param, prop, value):
         if param not in self.params:
@@ -684,10 +688,10 @@ class Model(object):
 def print_stats(data, name):
     series = pd.Series(data)
     print('\n' + name + ':')
-    print(f'           mean:  {series.mean():.4f}')
-    print(f'            std:  {series.std():.4f}')
+    print(f'            mean:  {series.mean():.4f}')
+    print(f'             std:  {series.std():.4f}')
     for q in (0.025, 0.05, 0.5, 0.95, 0.975):
-        print(f'  {q*100:4.1f}% qantile:  {series.quantile(q):.4f}')
+        print(f'  {q*100:4.1f}% quantile:  {series.quantile(q):.4f}')
 
 def sample_prop_asymp_carriers(model, N=1000):
     asym_carriers = []
@@ -699,10 +703,11 @@ def sample_prop_asymp_carriers(model, N=1000):
 
 def summarize_model(params):
     from .population import Individual
-
+    print('Parameters (in YAML format)\n')
     print(params)
     print()
     #
+    print('Properties:')
     N = 5000
     model = Model(params)
     print_stats(sample_prop_asymp_carriers(model, N),
