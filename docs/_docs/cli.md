@@ -22,6 +22,21 @@ $ alias outbreak_simulator="docker run -it -v `pwd`:/home/bcmictr bcmictr/outbre
 
 so that you can execute the docker image directly with command `outbreak_simulator`.
 
+## Running with singularity
+
+If you are using singularity, for example, on a cluster, you can build a singularity
+image from the latest docker image with command
+
+```
+singularity pull outbreak_simulator.sif docker://bcmictr/outbreak_simulator
+```
+
+You can then run the outbreak simulator with command
+
+```
+singularity run outbreak_simualtor.sif [OPTIONS]
+```
+
 ## Running the application notebook
 
 We record [applications of the outbreak simulator](/covid19-outbreak-simulator/applications/TestFrequency/)
