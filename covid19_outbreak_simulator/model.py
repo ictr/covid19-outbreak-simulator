@@ -90,6 +90,8 @@ class Params:
                 name = ""
                 size = ps
             size = as_int(size)
+            if name == 'all':
+                raise ValueError('Group name "all" is reserved for the entire population.')
             if name in self.groups:
                 raise ValueError(f'Group "{name}" has been specified before')
             self.groups[name] = size

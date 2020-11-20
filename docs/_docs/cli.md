@@ -287,6 +287,9 @@ For example,
 ```
 can be used to specifymultiplier for  `class1`, `class2`, etc.
 
+As a special case, you can use `all` to specify multiplier for the entire
+population.
+
 ## Example commands
 
 ### A small population with the introduction of one carrier

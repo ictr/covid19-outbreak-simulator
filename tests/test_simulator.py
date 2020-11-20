@@ -26,6 +26,10 @@ def test_option_popsize():
         params = Params(args)
 
     with pytest.raises(ValueError):
+        args = parse_args(["--popsize", "all=100"])
+        params = Params(args)
+
+    with pytest.raises(ValueError):
         args = parse_args(["--popsize", "500", "A=300", "A=200"])
         params = Params(args)
 
