@@ -54,11 +54,11 @@ def parse_args(args=None):
         nargs='+',
         help='''Production number of symptomatic infectors, should be specified as a single
             fixed number, or 2.5%% and 97.5%% quantile of a normal distribution from which individual
-            production number will be drawn. Multipliers are allowed to specify symptomatic r0 for
-            each group. This parameter reflects the infectivity of virus carrier measured
-            by the average number of individuals one infected individual "would" infect if
-            infectivity is not blocked by for example quarantine and susceptibility of
-            infectees.'''
+            production number will be drawn. Multipliers are allowed to adjust impact of social
+            distancing or mask for each group. This parameter reflects the infectivity of virus
+            carrier measured by the average number of individuals one infected individual "would"
+            infect if infectivity is not blocked by for example quarantine and susceptibility of
+            infectees. Note that viral loads are only affected by baseline R0, not multipliers.'''
     )
     parser.add_argument(
         '--asymptomatic-r0',

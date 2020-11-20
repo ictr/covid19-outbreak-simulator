@@ -50,6 +50,8 @@ class Individual(object):
     def symptomatic_infect(self, time, **kwargs):
         self.symptomatic = True
         self.r0 = self.model.draw_random_r0(symptomatic=True, group=self.group)
+        self.r0_multiplier = getattr(self.model.params, f"symptomatic_r0_multiplier_{self.group}", 1.0)
+        #
         self.incubation_period = self.model.draw_random_incubation_period(
             group=self.group
         )
@@ -58,7 +60,7 @@ class Individual(object):
         #
         # infect others
         (x_grid, trans_prob) = self.model.get_symptomatic_transmission_probability(
-            self.incubation_period, self.r0, self.infect_params
+            self.incubation_period, self.r0 * self.r0_multiplier, self.infect_params
         )
 
         by = kwargs.get("by", None)
@@ -243,6 +245,7 @@ class Individual(object):
         params.extend(
             [
                 f"r0={self.r0:.2f}",
+                f"r0_multiplier={self.r0_multiplier:.2f}",
                 f"r={sum(infected)}",
                 f"r_presym={len(presymptomatic_infected)}",
                 f"r_sym={len(symptomatic_infected)}",
@@ -257,13 +260,15 @@ class Individual(object):
     def asymptomatic_infect(self, time, **kwargs):
         self.symptomatic = False
         self.r0 = self.model.draw_random_r0(symptomatic=False)
+        self.r0_multiplier = getattr(self.model.params, f"asymptomatic_r0_multiplier_{self.group}", 1.0)
+
         self.incubation_period = -1
 
         by = kwargs.get("by")
         self.infect_params = self.model.draw_infection_params(symptomatic=False)
 
         (x_grid, trans_prob) = self.model.get_asymptomatic_transmission_probability(
-            self.r0, self.infect_params
+            self.r0 * self.r0_multiplier, self.infect_params
         )
 
         if "leadtime" in kwargs and kwargs["leadtime"] is not None:
@@ -344,6 +349,7 @@ class Individual(object):
         params.extend(
             [
                 f"r0={self.r0:.2f}",
+                f"r0_multiplier={self.r0_multiplier:.2f}",
                 f"r={asymptomatic_infected}",
                 f"r_asym={asymptomatic_infected}",
             ]
@@ -362,11 +368,11 @@ class Individual(object):
         interval = time - self.infected
         if self.symptomatic:
             (x_grid, trans_prob) = self.model.get_symptomatic_transmission_probability(
-                self.incubation_period, self.r0, self.infect_params
+                self.incubation_period, self.r0 * self.r0_multiplier, self.infect_params
             )
         else:
             (x_grid, trans_prob) = self.model.get_asymptomatic_transmission_probability(
-                self.r0, self.infect_params
+                self.r0 * self.r0_multiplier, self.infect_params
             )
         idx = int(interval / self.model.params.simulation_interval)
         return 0 if idx >= len(x_grid) else trans_prob[idx]
@@ -377,11 +383,11 @@ class Individual(object):
 
         if self.symptomatic:
             (x_grid, trans_prob) = self.model.get_symptomatic_transmission_probability(
-                self.incubation_period, self.r0, self.infect_params
+                self.incubation_period, self.r0 * self.r0_multiplier, self.infect_params
             )
         else:
             (x_grid, trans_prob) = self.model.get_asymptomatic_transmission_probability(
-                self.r0, self.infect_params
+                self.r0 * self.r0_multiplier, self.infect_params
             )
         prob = np.array(trans_prob)
         return len(np.trim_zeros(prob, 'fb')) * self.model.params.simulation_interval
@@ -392,18 +398,19 @@ class Individual(object):
 
         if self.symptomatic:
             (x_grid, trans_prob) = self.model.get_symptomatic_transmission_probability(
-                self.incubation_period, self.r0, self.infect_params
+                self.incubation_period, self.r0 * self.r0_multiplier, self.infect_params
             )
         else:
             (x_grid, trans_prob) = self.model.get_asymptomatic_transmission_probability(
-                self.r0, self.infect_params
+                self.r0 * self.r0_multiplier, self.infect_params
             )
         prob = np.array(trans_prob)
         return len(np.trim_zeros(prob, 'b')) * self.model.params.simulation_interval
 
 
     def viral_load(self, time):
-
+        # NOTE THAT viral load is proportional to R0,
+        # but not to R0 multiplier #16
         if self.symptomatic is None:
             return 0
 

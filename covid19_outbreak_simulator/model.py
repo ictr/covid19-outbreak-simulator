@@ -407,34 +407,18 @@ class Model(object):
         """
         if symptomatic:
             if self.params.symptomatic_r0_scale == 0.0:
-                r0 = self.params.symptomatic_r0_loc
-                return r0 * getattr(
-                    self.params, f"symptomatic_r0_multiplier_{group}", 1.0
-                )
+                return self.params.symptomatic_r0_loc
             else:
-                r0 = np.random.normal(
+                return max(0, np.random.normal(
                     self.params.symptomatic_r0_loc, self.params.symptomatic_r0_scale
-                )
-                return max(
-                    0,
-                    r0
-                    * getattr(self.params, f"symptomatic_r0_multiplier_{group}", 1.0),
-                )
+                ))
         else:
             if self.params.asymptomatic_r0_scale == 0.0:
-                r0 = self.params.asymptomatic_r0_loc
-                return r0 * getattr(
-                    self.params, f"asymptomatic_r0_multiplier_{group}", 1.0
-                )
+                return self.params.asymptomatic_r0_loc
             else:
-                r0 = np.random.normal(
+                return max(0, np.random.normal(
                     self.params.asymptomatic_r0_loc, self.params.asymptomatic_r0_scale
-                )
-                return max(
-                    0,
-                    r0
-                    * getattr(self.params, f"asymptomatic_r0_multiplier_{group}", 1.0),
-                )
+                ))
 
     def draw_random_incubation_period(self, group=""):
         """
