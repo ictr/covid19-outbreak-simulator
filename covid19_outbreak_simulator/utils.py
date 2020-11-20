@@ -42,6 +42,8 @@ def parse_param_with_multiplier(args, subpops=None, default=None):
         sp, val = arg.split('=', 1)
         if sp.startswith('!'):
             sps = [x for x in subpops if not fnmatch(x, sp[1:])]
+        elif sp in ('', '""', "''"):
+            sps = ['']
         else:
             sps = [x for x in subpops if fnmatch(x, sp)]
 

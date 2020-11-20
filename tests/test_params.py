@@ -23,6 +23,14 @@ def test_multiplier():
     assert res['B'] == 2
     assert len(res) == 2
 
+    res = parse_param_with_multiplier(['2', '=1.2'], subpops=[''])
+    assert res[''] == 2*1.2
+    assert len(res) == 1
+
+    res = parse_param_with_multiplier(['2', '""=1.2'], subpops=[''])
+    assert res[''] == 2*1.2
+    assert len(res) == 1
+
     res = parse_param_with_multiplier(['2'])
     assert res[''] == 2
     assert len(res) == 1
