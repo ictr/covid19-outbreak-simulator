@@ -147,7 +147,7 @@ optional arguments:
                         these individuals will be nurse0, nurse1 etc.
   --track-events TRACK_EVENTS [TRACK_EVENTS ...]
                         List events to track, default to track all events.
-                        Event START and ERROR will always be tracked.
+                        Event START, END, and ERROR will always be tracked.
   --vicinity [VICINITY [VICINITY ...]]
                         Number of "neighbors" from group "B" for individuals
                         in aubpopulation "A", specified as "A-B=n". For

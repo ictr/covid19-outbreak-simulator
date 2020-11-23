@@ -191,7 +191,7 @@ class FilteredStringIO(StringIO):
         self._track_events = track_events
         if self._track_events is not None:
             self._track_events = set(self._track_events)
-            for evt in ('START', 'ERRPR'):
+            for evt in ('START', 'ERROR', 'END'):
                 if evt not in self._track_events:
                     self._track_events.add(evt)
 
