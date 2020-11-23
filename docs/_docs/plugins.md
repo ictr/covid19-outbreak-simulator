@@ -40,24 +40,32 @@ will be called.
 ```sh
 % outbreak_simulator --plugin -h
 
-usage: --plugin [-h] [--disable] [--start START] [--end END] [--at AT [AT ...]]
-                [--interval INTERVAL]
+usage: --plugin [-h] [--disable] [--start START] [--end END]
+                [--at [AT [AT ...]]] [--interval INTERVAL]
                 [--trigger-by [TRIGGER_BY [TRIGGER_BY ...]]]
+                [-v {0,1,2}]
 
 A plugin for covid19-outbreak-simulator
 
 optional arguments:
   -h, --help            show this help message and exit
-  --disable             Disable the plugin if this parameter is specified.
-  --start START         Start time. Default to 0 no parameter is defined so
-                        the plugin will be called once at the beginning.
-  --end END             End time, default to none, meaning there is no end
-                        time.
-  --at AT [AT ...]      Specific time at which the plugin is applied.
-  --interval INTERVAL   Interval at which plugin is applied, it will assume a
-                        0 starting time if --start is left unspecified.
+  --disable             Disable the plugin if this parameter is
+                        specified.
+  --start START         Start time. Default to 0 no parameter is
+                        defined so the plugin will be called once at
+                        the beginning.
+  --end END             End time, default to none, meaning there is no
+                        end time.
+  --at [AT [AT ...]]    Specific time at which the plugin is applied.
+  --interval INTERVAL   Interval at which plugin is applied, it will
+                        assume a 0 starting time if --start is left
+                        unspecified.
   --trigger-by [TRIGGER_BY [TRIGGER_BY ...]]
                         Events that triggers this plug in.
+  -v {0,1,2}, --verbosity {0,1,2}
+                        Set verbosity level of the plugin, default to 1
+                        (general), can be set to 0 (warning and error)
+                        only, and 2 (more output)
 
 ```
 

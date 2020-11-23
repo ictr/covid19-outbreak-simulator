@@ -18,7 +18,8 @@ class community_infection(BasePlugin):
     def get_parser(self):
         parser = super(community_infection, self).get_parser()
         parser.prog = '--plugin community_infection'
-        parser.description = 'Community infection that infect everyone in the population randomly.'
+        parser.description = '''Community infection that infect everyone in the population randomly.
+            IDs of list of infected will be output with -v 2.'''
         parser.add_argument(
             '--probability',
             nargs='+',
@@ -59,9 +60,10 @@ class community_infection(BasePlugin):
                     min(1, prob * ind.susceptibility), 1)[0]
             ]
         IDs = [x.target for x in events]
-        ID_list = f',infected={",".join(IDs)}' if IDs else ''
+        ID_list = f',infected={",".join(IDs)}' if IDs and args.verbosity > 1 else ''
 
-        self.logger.write(
-            f'{self.logger.id}\t{time:.2f}\t{EventType.PLUGIN.name}\t.\tname=community_infection,n_infected={len(events)}{ID_list}\n'
-        )
+        if args.verbosity > 0:
+            self.logger.write(
+                f'{self.logger.id}\t{time:.2f}\t{EventType.PLUGIN.name}\t.\tname=community_infection,n_infected={len(events)}{ID_list}\n'
+            )
         return events

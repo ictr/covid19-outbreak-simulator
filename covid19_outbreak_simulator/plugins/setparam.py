@@ -1,5 +1,5 @@
 from covid19_outbreak_simulator.plugin import BasePlugin
-
+from covid19_outbreak_simulator.event import EventType
 
 #
 # This plugin changes parameters
@@ -87,6 +87,7 @@ class setparam(BasePlugin):
         if args.handle_symptomatic:
             pars['handle_symptomatic'] = args.handle_symptomatic
         param = ','.join(f'{x}={y}' for x, y in pars.items())
-        self.logger.write(
-            f'{self.logger.id}\t{time:.2f}\tDYNAMIC_R\t.\t{param}\n')
+        if args.verbosity > 0:
+            self.logger.write(
+                f'{self.logger.id}\t{time:.2f}\t{EventType.PLUGIN.name}\t.\tname=setparam,{param}\n')
         return []

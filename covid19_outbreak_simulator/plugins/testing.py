@@ -162,10 +162,11 @@ class testing(BasePlugin):
             n_false_negative_lod=n_false_negative_lod,
             n_false_negative_in_recovered=n_false_negative_in_recovered
         )
-        if IDs:
+        if IDs and args.verbosity > 1:
             res['detected_IDs'] = ",".join(IDs)
         res_str = ','.join(f'{k}={v}' for k,v in res.items())
-        self.logger.write(
-            f'{self.logger.id}\t{time:.2f}\t{EventType.PLUGIN.name}\t.\tname=testing,{res_str}\n'
-        )
+        if args.verbosity > 0:
+            self.logger.write(
+                f'{self.logger.id}\t{time:.2f}\t{EventType.PLUGIN.name}\t.\tname=testing,{res_str}\n'
+            )
         return events

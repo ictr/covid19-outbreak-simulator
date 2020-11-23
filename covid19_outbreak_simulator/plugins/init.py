@@ -17,7 +17,8 @@ class init(BasePlugin):
     def get_parser(self):
         parser = super(init, self).get_parser()
         parser.prog = '--plugin init'
-        parser.description = 'Initialize population with initial prevalence and seroprevalence'
+        parser.description = '''Initialize population with initial prevalence and seroprevalence.
+            IDs of infected individuals will be output with -v 2.'''
         parser.add_argument(
             '--incidence-rate',
             nargs='*',
@@ -131,9 +132,10 @@ class init(BasePlugin):
                         n_isp += 1
                         population[f'{name}_{idx}' if name else str(idx)].infected = -10.0
                         population[f'{name}_{idx}' if name else str(idx)].recovered = -2.0
-        infected_list = f',infected={",".join(infected)}' if infected else ""
-        self.logger.write(
-           f'{self.logger.id}\t{time:.2f}\t{EventType.PLUGIN.name}\t.\tname=init,n_recovered={n_isp},n_infected={n_ir}{infected_list}\n'
-        )
+        infected_list = f',infected={",".join(infected)}' if infected and args.verbosity > 1 else ""
+        if args.verbosity > 0:
+            self.logger.write(
+                f'{self.logger.id}\t{time:.2f}\t{EventType.PLUGIN.name}\t.\tname=init,n_recovered={n_isp},n_infected={n_ir}{infected_list}\n'
+            )
 
         return events

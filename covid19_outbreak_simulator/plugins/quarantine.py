@@ -75,4 +75,8 @@ class quarantine(BasePlugin):
                     target=ID,
                     logger=self.logger,
                     till=time + args.duration))
+        quarantined_list = f',Quarantined={",".join(IDs)}' if args.verbosity > 1 else ''
+        if args.verbosity > 0:
+            self.logger.write(f'{self.logger.id}\t{time:.2f}\t{EventType.PLUGIN.name}\t.\tname=quarantine,n_quarantined={len(IDs)}{quarantined_list}\n')
+
         return events

@@ -1,7 +1,7 @@
 import random
 
 from covid19_outbreak_simulator.plugin import BasePlugin
-
+from covid19_outbreak_simulator.event import EventType
 
 #
 # This plugin take random samples from the population during evolution.
@@ -56,5 +56,6 @@ class sample(BasePlugin):
             'n_popsize'] == 0 else '{:.5f}'.format(
                 (stat['n_recovered'] + stat['n_infected']) / stat['n_popsize'])
         param = ','.join(f'{k}={v}' for k, v in stat.items())
-        self.logger.write(f'{self.logger.id}\t{time:.2f}\tSAMPLE\t.\t{param}\n')
+        if args.verbosity > 0:
+            self.logger.write(f'{self.logger.id}\t{time:.2f}\t{EventType.PLUGIN.name}\t.\tname=sample,{param}\n')
         return []

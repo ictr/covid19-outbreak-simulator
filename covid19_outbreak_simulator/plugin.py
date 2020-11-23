@@ -71,6 +71,14 @@ class BasePlugin(object):
             '--trigger-by',
             nargs='*',
             help='''Events that triggers this plug in.''')
+        parser.add_argument(
+            '-v', '--verbosity',
+            default=1,
+            type=int,
+            choices=[0, 1, 2],
+            help='''Set verbosity level of the plugin, default to 1 (general), can be
+                set to 0 (warning and error) only, and 2 (more output)'''
+        )
         return parser
 
     def get_plugin_events(self, args):

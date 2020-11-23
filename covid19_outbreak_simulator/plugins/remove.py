@@ -38,5 +38,7 @@ class remove(BasePlugin):
             random.shuffle(IDs)
             for ID in IDs[:sz]:
                 population.remove(ID)
-            self.logger.write(f'{self.logger.id}\t{time:.2f}\tREMOVE\t.\tsubpop={name},size={sz},IDs={",".join(IDs[:sz])}\n')
+            removed_list = f',removed={",".join(IDs[:sz])}' if args.verbosity > 1 else ''
+            if args.verbosity > 0:
+                self.logger.write(f'{self.logger.id}\t{time:.2f}\t{EventType.PLUGIN.name}\t.\tname=remove,subpop={name},size={sz}{removed_list}\n')
         return events

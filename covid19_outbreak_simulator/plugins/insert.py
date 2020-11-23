@@ -77,7 +77,8 @@ class insert(BasePlugin):
                         handle_symptomatic=self.simulator.simu_args
                         .handle_symptomatic,
                         leadtime=args.leadtime))
-            self.logger.write(f'{self.logger.id}\t{time:.2f}\tINSERT\t.\tsubpop={name},size={sz},n_infected={n_infected},IDs={",".join(IDs)},Infected={",".join(infected)}\n')
-
+            infected_list = f',Infected={",".join(infected)}' if args.verbosity > 1 else ''
+            if args.verbosity > 0:
+                self.logger.write(f'{self.logger.id}\t{time:.2f}\t{EventType.PLUGIN.name}\t.\tname=insert,subpop={name},size={sz},n_infected={n_infected},IDs={",".join(IDs)}{infected_list}\n')
 
         return events

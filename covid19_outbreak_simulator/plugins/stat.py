@@ -59,8 +59,9 @@ class stat(BasePlugin):
                 f'n_{group}_popsize'] == '0' else '{:.3f}'.format(
                     res[f'n_{group}_infected'] / res[f'n_{group}_popsize'])
         param = ','.join(f'{k}={v}' for k, v in res.items())
-        self.logger.write(
-            f'{self.logger.id}\t{time:.2f}\t{EventType.STAT.name}\t.\t{param}\n'
-        )
+        if args.verbosity > 0:
+            self.logger.write(
+                f'{self.logger.id}\t{time:.2f}\t{EventType.STAT.name}\t.\t{param}\n'
+            )
 
         return []

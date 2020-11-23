@@ -3,6 +3,10 @@ title: Change Log
 permalink: /docs/changelog/
 ---
 
+## Version 0.4.6
+
+* Allow plugins to accept option `-v` (verbosity)
+
 ## Version 0.4.0
 
 * Add options for piecewise transmissibility models
