@@ -42,7 +42,7 @@ def test_plugin_trigger():
     ])
 
 
-def test_plugin_quarantine():
+def test_plugin_quarantine(clear_log):
     main([
         '--jobs', '1', '--repeats', '100', '--plugin', 'quarantine',
         '--duration', '7'
@@ -73,6 +73,7 @@ def test_plugin_quarantine():
         '--duration', '7', '--proportion', 'A=1', 'B=0', '--target', 'infected'
     ])
 
+def test_plugin_quarantine_error(clear_log):
     with pytest.raises((Exception, SystemExit)):
         main([
             '--jobs', '1', '--repeats', '100', '--plugin', 'quarantine', '1',

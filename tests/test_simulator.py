@@ -390,7 +390,7 @@ def test_main_stop_if_error():
         main(["--jobs", "1", "--repeats", "100", "--stop-if", "st>1"])
 
 
-def test_symptomatic_transmissibility_model():
+def test_symptomatic_transmissibility_model(clear_log):
     with pytest.raises(Exception):
         main(
             [
@@ -433,7 +433,7 @@ def test_symptomatic_transmissibility_model():
     )
 
 
-def test_asymptomatic_transmissibility_model():
+def test_asymptomatic_transmissibility_model(clear_log):
     with pytest.raises(Exception):
         main(
             [

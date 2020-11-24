@@ -108,6 +108,12 @@ def parse_args(args=None):
               1 will be assinged to each replicate and as the first columns
               in the log file.''')
     parser.add_argument(
+        '--resume',
+        action='store_true',
+        help='''If true, resume from last interrupted simulations. Existing logfile will not
+            be erased if exists. Note that this option does not check if the previous simulations
+            use the same options, or if they have corrected completed.''')
+    parser.add_argument(
         '--handle-symptomatic',
         nargs='*',
         help='''How to handle individuals who show symptom, which should be "keep" (stay in
@@ -280,13 +286,17 @@ def main(argv=None):
             )
 
     completed_ids = set()
-    append_mode = os.path.isfile(args.logfile)
+    append_mode = os.path.isfile(args.logfile) and args.resume
     has_header = False
     if append_mode:
         with open(args.logfile, 'r') as lf:
+            last_id = 'xxxx'
             for line in lf:
                 try:
-                    id = int(line.split('\t', 1)[0])
+                    if line.startswith(last_id):
+                        continue
+                    last_id = line.split('\t', 1)[0] + '\t'
+                    id = int(last_id)
                     if id <= args.repeats:
                         completed_ids.add(id)
                 except:

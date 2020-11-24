@@ -1,4 +1,5 @@
 import pytest
+import os
 
 from covid19_outbreak_simulator.model import Params, Model
 from covid19_outbreak_simulator.simulator import Simulator
@@ -22,6 +23,10 @@ def logger():
         logger.id = 1
         yield logger
 
+@pytest.fixture
+def clear_log():
+    if os.path.isfile('simulation.log'):
+        os.remove('simulation.log')
 
 @pytest.fixture
 def simulator(params, logger):
