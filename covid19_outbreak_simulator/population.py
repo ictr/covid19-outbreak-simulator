@@ -512,6 +512,19 @@ class Population(object):
                 subpop=name,
             )
 
+    def move(self, ID, subpop):
+        if subpop not in self.group_sizes:
+            raise ValueError(f'Invalid subpopulation name {subpop}')
+        if ID not in self.individuals:
+            return
+        from_sp = self.individuals[ID].group
+        self.group_sizes[from_sp] -= 1
+        self.group_sizes[subpop] += 1
+        new_id = f'{subpop}_{self.max_ids[subpop]}'
+        self.individuals[ID].id = new_id
+        self.max_ids[subpop] += 1
+        return new_id
+
     def parse_vicinity(self, params):
         if not params:
             return {}
