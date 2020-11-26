@@ -288,20 +288,36 @@ def main(argv=None):
     completed_ids = set()
     append_mode = os.path.isfile(args.logfile) and args.resume
     has_header = False
+
+    def check_lastline(line):
+        print(line)
+        if not line:
+            return
+        fields = line.split('\t')
+        if len(fields) != 5:
+            raise ValueError(f'Existing file is corrupeted. Please fix before continue: "{line.strip()}" does not have five fields.')
+        if fields[2] != 'END':
+            raise ValueError(f'Last record of replicate ends with line "{line.strip()}" is not an "END" event. Please fix before continue.')
+
     if append_mode:
         with open(args.logfile, 'r') as lf:
             last_id = 'xxxx'
+            last_line = None
             for line in lf:
                 try:
                     if line.startswith(last_id):
+                        last_line = line
                         continue
+                    check_lastline(last_line)
                     last_id = line.split('\t', 1)[0] + '\t'
                     id = int(last_id)
                     if id <= args.repeats:
                         completed_ids.add(id)
+                    last_line = line
                 except:
                     # might be $ or "id"
                     has_header = True
+            check_lastline(last_line)
     # malformed log file
     if not has_header:
         append_mode = False
