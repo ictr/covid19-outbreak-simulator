@@ -4,6 +4,8 @@ import multiprocessing
 import sys
 from io import StringIO
 import os
+from datetime import datetime
+import subprocess
 
 import numpy as np
 from tqdm import tqdm
@@ -307,49 +309,61 @@ def main(argv=None):
                 raise ValueError(f'Last record of replicate ends with line "{last_line.strip()}" is not an "END" event. Please fix before continue.')
             completed_ids = int(fields[0])
 
-    if completed_ids == args.repeats:
-        print(f'All simulations have been performed. Remove {args.logfile} if you would like to rerun.')
-        return 0
-    if completed_ids > args.repeats:
-        print(f'More than requested {args.repeats} replicates exists in {args.logfile}. Remove the logfile if you would like to rerun.')
-        return 0
-
-    workers = [
-        Worker(tasks, results, args, cmd=argv if argv else sys.argv[1:])
-        for i in range(min(args.jobs, args.repeats))
-    ]
-    for worker in workers:
-        worker.start()
-
-    if completed_ids != 0:
-        if args.resume:
+    if args.resume:
+        if completed_ids == args.repeats:
+            print(f'All simulations have been performed. Remove {args.logfile} if you would like to rerun.')
+            return 0
+        if completed_ids > args.repeats:
+            print(f'More than requested {args.repeats} replicates exists in {args.logfile}. Remove the logfile if you would like to rerun.')
+            return 0
+        if completed_ids != 0:
             print(f'Resuming from {completed_ids} completed records in {args.logfile}')
-        else:
-            print(f'Overwriting {completed_ids} completed records in {args.logfile}')
+    elif completed_ids != 0:
+        print(f'Overwriting {completed_ids} completed records in {args.logfile}')
+        completed_ids = 0
+
+    if os.path.isfile(args.logfile + '.lock'):
+        raise RuntimeError(f'The output logfile {args.logfile} is locked. Please remove {args.logfile}.lock manually if you are certain that no other process is writing to the logfile')
+
     submitted = 0
-    with open(args.logfile, 'a' if completed_ids > 0 else 'w') as logger:
-        if completed_ids == 0:
-            logger.write('id\ttime\tevent\ttarget\tparams\n')
-        for i in range(args.repeats):
-            if i+1 > completed_ids:
-                submitted += 1
-                tasks.put(i + 1)
-        for i in range(args.jobs):
-            tasks.put(None)
-        #
-        for i in tqdm(range(completed_ids, args.repeats),
-            total=args.repeats, initial=completed_ids):
-            result = results.get()
-            lines = result.splitlines()
-            first_fields = lines[0].split('\t')
-            if len(first_fields) != 4 or first_fields[1] != 'START':
-                raise ValueError(f'Wrong starting record reported: {lines[0]}')
-            last_fields = lines[-1].split('\t')
-            if len(last_fields) != 4 or last_fields[1] not in ('END', 'ERROR'):
-                raise ValueError(f'Wrong last record reported: {lines[-1]} ')
-            logger.write(''.join(f'{i+1}\t{line}\n' for line in lines))
-            if last_fields[1] == 'ERROR':
-                break
+    try:
+        with open(args.logfile + '.lock', 'w') as lock:
+            lock.write(f'START: {datetime.now().strftime("%m/%d/%Y-%H:%M:%S")}\n')
+            lock.write(f'CMD: {subprocess.list2cmdline(sys.argv)}')
+
+        workers = [
+            Worker(tasks, results, args, cmd=argv if argv else sys.argv[1:])
+            for i in range(min(args.jobs, args.repeats))
+        ]
+        for worker in workers:
+            worker.start()
+
+
+        with open(args.logfile, 'a' if completed_ids > 0 else 'w') as logger:
+            if completed_ids == 0:
+                logger.write('id\ttime\tevent\ttarget\tparams\n')
+            for i in range(args.repeats):
+                if i+1 > completed_ids:
+                    submitted += 1
+                    tasks.put(i + 1)
+            for i in range(args.jobs):
+                tasks.put(None)
+            #
+            for i in tqdm(range(completed_ids, args.repeats),
+                total=args.repeats, initial=completed_ids):
+                result = results.get()
+                lines = result.splitlines()
+                first_fields = lines[0].split('\t')
+                if len(first_fields) != 4 or first_fields[1] != 'START':
+                    raise ValueError(f'Wrong starting record reported: {lines[0]}')
+                last_fields = lines[-1].split('\t')
+                if len(last_fields) != 4 or last_fields[1] not in ('END', 'ERROR'):
+                    raise ValueError(f'Wrong last record reported: {lines[-1]} ')
+                logger.write(''.join(f'{i+1}\t{line}\n' for line in lines))
+                if last_fields[1] == 'ERROR':
+                    break
+    finally:
+        os.remove(args.logfile + '.lock')
 
     for worker in workers:
         # wait for workers to complete
