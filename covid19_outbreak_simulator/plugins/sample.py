@@ -57,5 +57,5 @@ class sample(BasePlugin):
                 (stat['n_recovered'] + stat['n_infected']) / stat['n_popsize'])
         param = ','.join(f'{k}={v}' for k, v in stat.items())
         if args.verbosity > 0:
-            self.logger.write(f'{self.logger.id}\t{time:.2f}\t{EventType.PLUGIN.name}\t.\tname=sample,{param}\n')
+            self.logger.write(f'{time:.2f}\t{EventType.PLUGIN.name}\t.\tname=sample,{param}\n')
         return []

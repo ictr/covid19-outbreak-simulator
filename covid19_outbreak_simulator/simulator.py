@@ -116,7 +116,7 @@ class Simulator(object):
         start_params = ','.join([f'{x}={y}' for x, y in start_params.items()])
 
         self.logger.write(
-            f'{self.logger.id}\t0.00\t{EventType.START.name}\t.\t{start_params}\n'
+            f'0.00\t{EventType.START.name}\t.\t{start_params}\n'
         )
         while True:
             # find the latest event
@@ -140,7 +140,7 @@ class Simulator(object):
                     break
                 if evt.action == EventType.ABORT:
                     self.logger.write(
-                        f'{self.logger.id}\t{time:.2f}\t{EventType.ABORT.name}\t{evt.target}\tpopsize={len(population)}\n'
+                        f'{time:.2f}\t{EventType.ABORT.name}\t{evt.target}\tpopsize={len(population)}\n'
                     )
                     aborted = True
                     break
@@ -202,5 +202,5 @@ class Simulator(object):
         params = ','.join([f'{x}={y}' for x, y in res.items()])
 
         self.logger.write(
-            f'{self.logger.id}\t{time:.2f}\t{EventType.END.name}\t{len(population)}\t{params}\n'
+            f'{time:.2f}\t{EventType.END.name}\t{len(population)}\t{params}\n'
         )

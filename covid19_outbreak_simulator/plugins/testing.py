@@ -167,6 +167,6 @@ class testing(BasePlugin):
         res_str = ','.join(f'{k}={v}' for k,v in res.items())
         if args.verbosity > 0:
             self.logger.write(
-                f'{self.logger.id}\t{time:.2f}\t{EventType.PLUGIN.name}\t.\tname=testing,{res_str}\n'
+                f'{time:.2f}\t{EventType.PLUGIN.name}\t.\tname=testing,{res_str}\n'
             )
         return events

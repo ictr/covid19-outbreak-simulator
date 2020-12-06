@@ -191,9 +191,8 @@ def parse_args(args=None):
     return parser.parse_args(args)
 
 class FilteredStringIO(StringIO):
-    def __init__(self, id, track_events=None):
+    def __init__(self, track_events=None):
         super(FilteredStringIO, self).__init__()
-        self.id = id
         self._track_events = track_events
         if self._track_events is not None:
             self._track_events = set(self._track_events)
@@ -203,7 +202,7 @@ class FilteredStringIO(StringIO):
 
 
     def write(self, text):
-        if not self._track_events or text.split('\t')[2] in self._track_events:
+        if not self._track_events or text.split('\t')[1] in self._track_events:
             super(FilteredStringIO, self).write(text)
 
 class Worker(multiprocessing.Process):
@@ -225,7 +224,7 @@ class Worker(multiprocessing.Process):
             if id is None:
                 self.task_queue.task_done()
                 break
-            with FilteredStringIO(id, track_events = self.simu_args.track_events) as logger:
+            with FilteredStringIO(track_events = self.simu_args.track_events) as logger:
                 simu = Simulator(
                     params=self.params,
                     logger=logger,
@@ -237,7 +236,7 @@ class Worker(multiprocessing.Process):
                     msg = repr(e).replace('\n',
                                           ' ').replace('\t',
                                                        ' ').replace(',', ' ')
-                    logger.write(f'{id}\t0.00\tERROR\t.\texception={msg}\n')
+                    logger.write(f'0.00\tERROR\t.\texception={msg}\n')
                     self.task_queue.task_done()
                     self.result_queue.put(logger.getvalue())
                     raise e
@@ -285,45 +284,34 @@ def main(argv=None):
                 f'Option --stop-if currently only supports t>TIME to stop after certain time point.'
             )
 
-    completed_ids = set()
-    append_mode = os.path.isfile(args.logfile) and args.resume
-    has_header = False
+    completed_ids = 0
 
-    def check_lastline(line):
-        print(line)
-        if not line:
-            return
-        fields = line.split('\t')
-        if len(fields) != 5:
-            raise ValueError(f'Existing file is corrupeted. Please fix before continue: "{line.strip()}" does not have five fields.')
-        if fields[2] != 'END':
-            raise ValueError(f'Last record of replicate ends with line "{line.strip()}" is not an "END" event. Please fix before continue.')
+    # check the last line
+    if os.path.isfile(args.logfile):
+        last_line = ''
+        try:
+            with open(args.logfile, 'rb') as f:
+                f.seek(-2, os.SEEK_END)
+                while f.read(1) != b'\n':
+                    f.seek(-2, os.SEEK_CUR)
+                last_line = f.readline().decode()
+        except:
+            pass
+        if not last_line:
+            completed_ids = 0
+        else:
+            fields = last_line.split('\t')
+            if len(fields) != 5:
+                raise ValueError(f'Existing file is corrupeted. Please fix before continue: "{last_line.strip()}" does not have five fields.')
+            if fields[2] != 'END':
+                raise ValueError(f'Last record of replicate ends with line "{last_line.strip()}" is not an "END" event. Please fix before continue.')
+            completed_ids = int(fields[0])
 
-    if append_mode:
-        with open(args.logfile, 'r') as lf:
-            last_id = 'xxxx'
-            last_line = None
-            for line in lf:
-                try:
-                    if line.startswith(last_id):
-                        last_line = line
-                        continue
-                    check_lastline(last_line)
-                    last_id = line.split('\t', 1)[0] + '\t'
-                    id = int(last_id)
-                    if id <= args.repeats:
-                        completed_ids.add(id)
-                    last_line = line
-                except:
-                    # might be $ or "id"
-                    has_header = True
-            check_lastline(last_line)
-    # malformed log file
-    if not has_header:
-        append_mode = False
-
-    if len(completed_ids) == args.repeats:
+    if completed_ids == args.repeats:
         print(f'All simulations have been performed. Remove {args.logfile} if you would like to rerun.')
+        return 0
+    if completed_ids > args.repeats:
+        print(f'More than requested {args.repeats} replicates exists in {args.logfile}. Remove the logfile if you would like to rerun.')
         return 0
 
     workers = [
@@ -333,22 +321,34 @@ def main(argv=None):
     for worker in workers:
         worker.start()
 
+    if completed_ids != 0:
+        if args.resume:
+            print(f'Resuming from {completed_ids} completed records in {args.logfile}')
+        else:
+            print(f'Overwriting {completed_ids} completed records in {args.logfile}')
     submitted = 0
-    with open(args.logfile, 'a' if append_mode else 'w') as logger:
-        if not append_mode:
+    with open(args.logfile, 'a' if completed_ids > 0 else 'w') as logger:
+        if completed_ids == 0:
             logger.write('id\ttime\tevent\ttarget\tparams\n')
         for i in range(args.repeats):
-            if i+1 not in completed_ids:
+            if i+1 > completed_ids:
                 submitted += 1
                 tasks.put(i + 1)
         for i in range(args.jobs):
             tasks.put(None)
         #
-        for i in tqdm(range(len(completed_ids), args.repeats),
-            total=args.repeats, initial=len(completed_ids)):
+        for i in tqdm(range(completed_ids, args.repeats),
+            total=args.repeats, initial=completed_ids):
             result = results.get()
-            logger.write(result)
-            if 'ERROR' in result:
+            lines = result.splitlines()
+            first_fields = lines[0].split('\t')
+            if len(first_fields) != 4 or first_fields[1] != 'START':
+                raise ValueError(f'Wrong starting record reported: {lines[0]}')
+            last_fields = lines[-1].split('\t')
+            if len(last_fields) != 4 or last_fields[1] not in ('END', 'ERROR'):
+                raise ValueError(f'Wrong last record reported: {lines[-1]} ')
+            logger.write(''.join(f'{i+1}\t{line}\n' for line in lines))
+            if last_fields[1] == 'ERROR':
                 break
 
     for worker in workers:

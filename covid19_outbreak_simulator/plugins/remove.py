@@ -40,5 +40,5 @@ class remove(BasePlugin):
                 population.remove(ID)
             removed_list = f',removed={",".join(IDs[:sz])}' if args.verbosity > 1 else ''
             if args.verbosity > 0:
-                self.logger.write(f'{self.logger.id}\t{time:.2f}\t{EventType.PLUGIN.name}\t.\tname=remove,subpop={name},size={sz}{removed_list}\n')
+                self.logger.write(f'{time:.2f}\t{EventType.PLUGIN.name}\t.\tname=remove,subpop={name},size={sz}{removed_list}\n')
         return events

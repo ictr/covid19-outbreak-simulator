@@ -79,6 +79,6 @@ class insert(BasePlugin):
                         leadtime=args.leadtime))
             infected_list = f',Infected={",".join(infected)}' if args.verbosity > 1 else ''
             if args.verbosity > 0:
-                self.logger.write(f'{self.logger.id}\t{time:.2f}\t{EventType.PLUGIN.name}\t.\tname=insert,subpop={name},size={sz},n_infected={n_infected},IDs={",".join(IDs)}{infected_list}\n')
+                self.logger.write(f'{time:.2f}\t{EventType.PLUGIN.name}\t.\tname=insert,subpop={name},size={sz},n_infected={n_infected},IDs={",".join(IDs)}{infected_list}\n')
 
         return events

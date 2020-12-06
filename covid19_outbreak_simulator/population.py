@@ -141,7 +141,7 @@ class Individual(object):
                 else:
                     # just remove
                     self.logger.write(
-                        f'{self.logger.id}\t{time:.2f}\t{EventType.WARNING.name}\t{self.id}\tmsg="Individual not removed before it show symptom before {time}"\n'
+                        f'{time:.2f}\t{EventType.WARNING.name}\t{self.id}\tmsg="Individual not removed before it show symptom before {time}"\n'
                     )
 
         elif handle_symptomatic[0].startswith("quarantine"):
@@ -253,7 +253,7 @@ class Individual(object):
             ]
         )
         self.logger.write(
-            f'{self.logger.id}\t{time:.2f}\t{EventType.INFECTION.name}\t{self.id}\t{",".join(params)}\n'
+            f'{time:.2f}\t{EventType.INFECTION.name}\t{self.id}\t{",".join(params)}\n'
         )
         return evts
 
@@ -355,7 +355,7 @@ class Individual(object):
             ]
         )
         self.logger.write(
-            f'{self.logger.id}\t{time:.2f}\t{EventType.INFECTION.name}\t{self.id}\t{",".join(params)}\n'
+            f'{time:.2f}\t{EventType.INFECTION.name}\t{self.id}\t{",".join(params)}\n'
         )
         return evts
 
@@ -455,14 +455,14 @@ class Individual(object):
         if isinstance(self.infected, float):
             by_id = "." if kwargs["by"] is None else kwargs["by"]
             self.logger.write(
-                f"{self.logger.id}\t{time:.2f}\t{EventType.INFECTION_IGNORED.name}\t{self.id}\tby={by_id}\n"
+                f"{time:.2f}\t{EventType.INFECTION_IGNORED.name}\t{self.id}\tby={by_id}\n"
             )
             return []
 
         if self.susceptibility < 1 and rand() > self.susceptibility:
             by_id = "." if kwargs["by"] is None else kwargs["by"]
             self.logger.write(
-                f"{self.logger.id}\t{time:.2f}\t{EventType.INFECTION_FAILED.name}\t{self.id}\tby={by_id},reson=susceptibility\n"
+                f"{time:.2f}\t{EventType.INFECTION_FAILED.name}\t{self.id}\tby={by_id},reson=susceptibility\n"
             )
             return []
 

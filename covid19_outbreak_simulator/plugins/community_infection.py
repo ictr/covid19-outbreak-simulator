@@ -64,6 +64,6 @@ class community_infection(BasePlugin):
 
         if args.verbosity > 0:
             self.logger.write(
-                f'{self.logger.id}\t{time:.2f}\t{EventType.PLUGIN.name}\t.\tname=community_infection,n_infected={len(events)}{ID_list}\n'
+                f'{time:.2f}\t{EventType.PLUGIN.name}\t.\tname=community_infection,n_infected={len(events)}{ID_list}\n'
             )
         return events

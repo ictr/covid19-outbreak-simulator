@@ -89,5 +89,5 @@ class setparam(BasePlugin):
         param = ','.join(f'{x}={y}' for x, y in pars.items())
         if args.verbosity > 0:
             self.logger.write(
-                f'{self.logger.id}\t{time:.2f}\t{EventType.PLUGIN.name}\t.\tname=setparam,{param}\n')
+                f'{time:.2f}\t{EventType.PLUGIN.name}\t.\tname=setparam,{param}\n')
         return []

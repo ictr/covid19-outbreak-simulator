@@ -67,14 +67,14 @@ class Event(object):
                 # if infector is removed or quarantined
                 if self.kwargs['by'] not in population:
                     self.logger.write(
-                        f'{self.logger.id}\t{self.time:.2f}\t{EventType.INFECTION_AVOIDED.name}\t.\tby={self.kwargs["by"]},reason=REMOVED\n'
+                        f'{self.time:.2f}\t{EventType.INFECTION_AVOIDED.name}\t.\tby={self.kwargs["by"]},reason=REMOVED\n'
                     )
                     return []
                 #
                 by_ind = population[self.kwargs['by']]
                 if by_ind.quarantined and by_ind.quarantined >= self.time:
                     self.logger.write(
-                        f'{self.logger.id}\t{self.time:.2f}\t{EventType.INFECTION_AVOIDED.name}\t.\tby={by_ind.id},reason=QUARANTINED\n'
+                        f'{self.time:.2f}\t{EventType.INFECTION_AVOIDED.name}\t.\tby={by_ind.id},reason=QUARANTINED\n'
                     )
                     return []
 
@@ -83,7 +83,7 @@ class Event(object):
                 # if the target is preselected (e.g. through init plugin or infector)
                 if self.target not in population:
                     self.logger.write(
-                        f'{self.logger.id}\t{self.time:.2f}\t{EventType.WARNING.name}\t{self.target}\tmsg=INFECTION target no longer exists\n'
+                        f'{self.time:.2f}\t{EventType.WARNING.name}\t{self.target}\tmsg=INFECTION target no longer exists\n'
                     )
                     return []
                 infectee = self.target
@@ -93,7 +93,7 @@ class Event(object):
 
                 if not infectee:
                     self.logger.write(
-                        f'{self.logger.id}\t{self.time:.2f}\t{EventType.INFECTION_FAILED.name}\t{self.target}\tby={self.kwargs["by"]},reson=no_infectee\n'
+                        f'{self.time:.2f}\t{EventType.INFECTION_FAILED.name}\t{self.target}\tby={self.kwargs["by"]},reson=no_infectee\n'
                     )
                     return []
             #
@@ -101,49 +101,49 @@ class Event(object):
         elif self.action == EventType.QUARANTINE:
             if self.target not in population:
                 self.logger.write(
-                    f'{self.logger.id}\t{self.time:.2f}\t{EventType.WARNING.name}\t{self.target}\tmsg=QUARANTINE target no longer exists\n'
+                    f'{self.time:.2f}\t{EventType.WARNING.name}\t{self.target}\tmsg=QUARANTINE target no longer exists\n'
                 )
                 return []
             self.logger.write(
-                f'{self.logger.id}\t{self.time:.2f}\t{EventType.QUARANTINE.name}\t{self.target}\ttill={self.kwargs["till"]:.2f}\n'
+                f'{self.time:.2f}\t{EventType.QUARANTINE.name}\t{self.target}\ttill={self.kwargs["till"]:.2f}\n'
             )
             return population[self.target].quarantine(**self.kwargs)
         elif self.action == EventType.REINTEGRATION:
             if self.target not in population:
                 self.logger.write(
-                    f'{self.logger.id}\t{self.time:.2f}\t{EventType.WARNING.name}\t{self.target}\tmsg=REINTEGRATION target no longer exists\n'
+                    f'{self.time:.2f}\t{EventType.WARNING.name}\t{self.target}\tmsg=REINTEGRATION target no longer exists\n'
                 )
                 return []
             else:
                 self.logger.write(
-                    f'{self.logger.id}\t{self.time:.2f}\t{EventType.REINTEGRATION.name}\t{self.target}\tsucc=True\n'
+                    f'{self.time:.2f}\t{EventType.REINTEGRATION.name}\t{self.target}\tsucc=True\n'
                 )
                 return population[self.target].reintegrate(**self.kwargs)
         elif self.action == EventType.INFECTION_AVOIDED:
             self.logger.write(
-                f'{self.logger.id}\t{self.time:.2f}\t{EventType.INFECTION_AVOIDED.name}\t.\tby={self.kwargs["by"]}\n'
+                f'{self.time:.2f}\t{EventType.INFECTION_AVOIDED.name}\t.\tby={self.kwargs["by"]}\n'
             )
             return []
         elif self.action == EventType.SHOW_SYMPTOM:
             if self.target in population:
                 population[self.target].show_symptom = self.time
                 self.logger.write(
-                    f'{self.logger.id}\t{self.time:.2f}\t{EventType.SHOW_SYMPTOM.name}\t{self.target}\t.\n'
+                    f'{self.time:.2f}\t{EventType.SHOW_SYMPTOM.name}\t{self.target}\t.\n'
                 )
             else:
                 self.logger.write(
-                    f'{self.logger.id}\t{self.time:.2f}\t{EventType.WARNING.name}\t{self.target}\tmsg=SHOW_SYMPTOM target no longer exists\n'
+                    f'{self.time:.2f}\t{EventType.WARNING.name}\t{self.target}\tmsg=SHOW_SYMPTOM target no longer exists\n'
                 )
             return []
         elif self.action == EventType.REMOVAL:
             if self.target in population:
                 population.remove(self.target)
                 self.logger.write(
-                    f'{self.logger.id}\t{self.time:.2f}\t{EventType.REMOVAL.name}\t{self.target}\tpopsize={len(population)}\n'
+                    f'{self.time:.2f}\t{EventType.REMOVAL.name}\t{self.target}\tpopsize={len(population)}\n'
                 )
             else:
                 self.logger.write(
-                    f'{self.logger.id}\t{self.time:.2f}\t{EventType.WARNING.name}\t{self.target}\tmsg=REMOVAL target no longer exists\n'
+                    f'{self.time:.2f}\t{EventType.WARNING.name}\t{self.target}\tmsg=REMOVAL target no longer exists\n'
                 )
             return []
         elif self.action == EventType.RECOVER:
@@ -153,7 +153,7 @@ class Event(object):
                 population[self.target].recovered = self.time
             else:
                 self.logger.write(
-                    f'{self.logger.id}\t{self.time:.2f}\t{EventType.WARNING.name}\t{self.target}\tmsg=RECOVER target no longer exists\n'
+                    f'{self.time:.2f}\t{EventType.WARNING.name}\t{self.target}\tmsg=RECOVER target no longer exists\n'
                 )
                 return []
 
@@ -173,7 +173,7 @@ class Event(object):
                 params[removed] = True
             param = ','.join(f'{x}={y}' for x, y in params.items())
             self.logger.write(
-                f'{self.logger.id}\t{self.time:.2f}\t{EventType.RECOVER.name}\t{self.target}\t{param}\n'
+                f'{self.time:.2f}\t{EventType.RECOVER.name}\t{self.target}\t{param}\n'
             )
             return []
         else:

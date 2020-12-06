@@ -135,7 +135,7 @@ class init(BasePlugin):
         infected_list = f',infected={",".join(infected)}' if infected and args.verbosity > 1 else ""
         if args.verbosity > 0:
             self.logger.write(
-                f'{self.logger.id}\t{time:.2f}\t{EventType.PLUGIN.name}\t.\tname=init,n_recovered={n_isp},n_infected={n_ir}{infected_list}\n'
+                f'{time:.2f}\t{EventType.PLUGIN.name}\t.\tname=init,n_recovered={n_isp},n_infected={n_ir}{infected_list}\n'
             )
 
         return events

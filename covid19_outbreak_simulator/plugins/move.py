@@ -27,5 +27,5 @@ class move(BasePlugin):
         for ID in args.IDs:
             new_id = population.move(ID, args.to)
             if args.verbosity > 0:
-                self.logger.write(f'{self.logger.id}\t{time:.2f}\t{EventType.PLUGIN.name}\t.\tname=move,subpop={args.to},id={ID},new_id={new_id}\n')
+                self.logger.write(f'{time:.2f}\t{EventType.PLUGIN.name}\t.\tname=move,subpop={args.to},id={ID},new_id={new_id}\n')
         return []
