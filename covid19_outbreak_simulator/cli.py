@@ -338,7 +338,6 @@ def main(argv=None):
         for worker in workers:
             worker.start()
 
-
         with open(args.logfile, 'a' if completed_ids > 0 else 'w') as logger:
             if completed_ids == 0:
                 logger.write('id\ttime\tevent\ttarget\tparams\n')
@@ -362,6 +361,8 @@ def main(argv=None):
                 logger.write(''.join(f'{i+1}\t{line}\n' for line in lines))
                 if last_fields[1] == 'ERROR':
                     break
+                if i % 1000 == 999:
+                    logger.flush()
     finally:
         os.remove(args.logfile + '.lock')
 
