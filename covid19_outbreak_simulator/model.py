@@ -105,7 +105,10 @@ class Params:
     def _set_multiplier(self, multiplier, param_name):
         name, value = multiplier.split("=", 1)
         value = as_float(value, "Multiplier should have format name=float_value")
+        print(self.groups)
+        print(f'NAME "{name}"')
         names = [x for x in self.groups.keys() if fnmatch(x, name)]
+        print(names)
         if not names:
             raise ValueError(f"Invalid group name {name} in multiplier {multiplier}")
         for name in names:
@@ -687,7 +690,7 @@ def sample_prop_asymp_carriers(model, N=1000):
     return asym_carriers
 
 
-def summarize_model(params):
+def summarize_model(params, args):
     from .population import Individual
     print('Parameters (in YAML format)\n')
     print(params)
@@ -765,3 +768,25 @@ def summarize_model(params):
 
     print_stats(si, 'Serial Interval')
     print_stats(gt, 'Generation Time')
+
+    # average test sensitivity
+    sensitivities = []
+    with open(os.devnull, 'w') as logger:
+        logger.id = 1
+
+        for i in range(10000):
+            model.draw_prop_asym_carriers()
+            ind = Individual(id='0', susceptibility=1, model=model, logger=logger)
+            ind.infect(0, by=None, leadtime=0)
+
+            for i in range(0, 15):
+
+                test_lod = args.sensitivity[1] if len(args.sensitivity) == 2 else 0
+
+                lod_sensitivity = ind.test_sensitivity(i, test_lod)
+                if lod_sensitivity == 0:
+                    continue
+                #
+                sensitivity = lod_sensitivity * args.sensitivity[0]
+                sensitivities.append(sensitivity)
+    print_stats(sensitivities, "Test sensitivity")
