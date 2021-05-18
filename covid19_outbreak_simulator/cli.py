@@ -190,6 +190,13 @@ def parse_args(args=None):
         help='''Generate a summary report and write to the specified file,
           which can be "-" for standard output.'''
     )
+    parser.add_argument(
+        '--sensitivity',
+        nargs='+',
+        type=float,
+        default=[1.0],
+        help=argparse.SUPPRESS
+    )
     return parser.parse_args(args)
 
 class FilteredStringIO(StringIO):
@@ -254,7 +261,7 @@ def main(argv=None):
         print(f'COVID10 Outbreak Simulator version {__version__}')
         sys.exit(0)
     if args.summarize_model:
-        summarize_model(Params(args))
+        summarize_model(Params(args), args)
         sys.exit(0)
 
     tasks = multiprocessing.JoinableQueue()
