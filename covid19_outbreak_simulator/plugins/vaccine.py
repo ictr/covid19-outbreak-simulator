@@ -13,14 +13,19 @@ class vaccine(BasePlugin):
 
     def __init__(self, *args, **kwargs):
         # this will set self.simualtor, self.logger
-        super(community_infection, self).__init__(*args, **kwargs)
+        super(vaccine, self).__init__(*args, **kwargs)
 
     def get_parser(self):
-        parser = super(community_infection, self).get_parser()
+        parser = super(vaccine, self).get_parser()
         parser.prog = '--plugin vaccine'
         parser.description = '''Vaccine all or selected individual, which will reduce
             the chance that he or she gets infected (susceptibility), the duration of
             the infection, and the probability that he or she infect others (R).'''
+        parser.add_argument(
+            'IDs',
+            nargs='*',
+            help='''IDs of individuals to test. Parameter "proportion"
+            will be ignored with specified IDs for testing''')
         parser.add_argument(
             '--proportion',
             nargs='+',
@@ -33,7 +38,9 @@ class vaccine(BasePlugin):
             nargs='+',
             default=[0],
             help='''The probability to resist an infection event, essentially 1 - susceptibility.
-        ''')            
+            The default susceptibility is 1, meaning all infection event will cause an infection,
+            if immunity == 0.85, susceptibility will be set to 0.15 so that only 15% of infection
+            events will succeed.''')
         parser.add_argument(
             '--protection',
             nargs='+',
@@ -46,37 +53,65 @@ class vaccine(BasePlugin):
             default=[0],
             help='''The reduction of infectivity, namely probability to infect others.
             ''')
-        
+
         return parser
 
     def apply(self, time, population, args=None):
+
+        if args.IDs:
+            IDs = args.IDs
+            if args.proportion:
+                raise ValueError(
+                    'Proportion is now allowed if specific IDs to quarantine is specified.'
+                )
+            if any(x not in population for x in IDs):
+                raise ValueError('Invalid or non-existant ID to quarantine.')
+        else:
+            proportions = parse_param_with_multiplier(
+                args.proportion,
+                subpops=population.group_sizes.keys(),
+                default=1.0)
+
+            IDs = []
+            for name, sz in population.group_sizes.items():
+                prop = proportions.get(name if name in proportions else '', 1.0)
+
+                if args.target == 'all':
+                    spIDs = [
+                        x.id
+                        for x in population.individuals.values()
+                        if name == '' or x.group == name
+                    ]
+                else:
+                    spIDs = [
+                        x.id
+                        for x in population.individuals.values()
+                        if (name == '' or x.group == name) and
+                        isinstance(x.infected, float) and
+                        not isinstance(x.recovered, float)
+                    ]
+
+                if prop < 1:
+                    random.shuffle(spIDs)
+                    IDs.extend(spIDs[:int(sz * prop)])
+                else:
+                    IDs.extend(spIDs)
+
         events = []
-
-        probability = parse_param_with_multiplier(args.probability,
-            subpops=population.group_sizes.keys())
-
-        for subpop, prob in probability.items():
-            # drawning random number one by one
-            events += [
+        for ID in IDs:
+            events.append(
                 Event(
                     time,
-                    EventType.INFECTION,
-                    target=id,
-                    logger=self.logger,
-                    priority=True,
-                    by=None,
-                    leadtime=0,
-                    handle_symptomatic=self.simulator.simu_args
-                    .handle_symptomatic)
-                for id, ind in population.individuals.items()
-                if population[id].group == subpop and not population[id].quarantined and np.random.binomial(1,
-                    min(1, prob * ind.susceptibility), 1)[0]
-            ]
-        IDs = [x.target for x in events]
-        ID_list = f',infected={",".join(IDs)}' if IDs and args.verbosity > 1 else ''
-
+                    EventType.VACCINE,
+                    target=ID,
+                    immunity=args.immunity,
+                    protection=args.protection,
+                    infectivity=args.infectivity,
+                    logger=self.logger))
+        vaccined_list = f',vaccined={",".join(IDs)}' if args.verbosity > 1 else ''
         if args.verbosity > 0:
             self.logger.write(
-                f'{time:.2f}\t{EventType.PLUGIN.name}\t.\tname=community_infection,n_infected={len(events)}{ID_list}\n'
+                f'{time:.2f}\t{EventType.PLUGIN.name}\t.\tname=vaccine,n_vaccined={len(IDs)}{vaccined_list}\n'
             )
+
         return events

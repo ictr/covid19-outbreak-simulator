@@ -9,10 +9,12 @@ import re
 
 
 class Individual(object):
+
     def __init__(self, id, susceptibility, model, logger):
         self.id = id
         self.model = model
-        self.susceptibility = 1.0 if susceptibility is None else min(1, susceptibility)
+        self.susceptibility = 1.0 if susceptibility is None else min(
+            1, susceptibility)
         self.logger = logger
 
         # these will be set to event happen time
@@ -20,7 +22,7 @@ class Individual(object):
         self.show_symptom = False
         self.recovered = False
         self.symptomatic = None
-
+        self.vaccined = False
         self.quarantined = False
 
         self.r0 = None
@@ -37,11 +39,25 @@ class Individual(object):
         if "till" in kwargs:
             till = kwargs["till"]
         else:
-            raise ValueError("No till parameter is specified for quarantine event.")
+            raise ValueError(
+                "No till parameter is specified for quarantine event.")
         self.quarantined = till
         return [
-            Event(till, EventType.REINTEGRATION, target=self.id, logger=self.logger)
+            Event(
+                till,
+                EventType.REINTEGRATION,
+                target=self.id,
+                logger=self.logger)
         ]
+
+    def vaccine(self,
+                time,
+                immunity,
+                protection=None,
+                infectivity=None,
+                **kwargs):
+        self.vaccined = time
+        self.susceptibility = 1 - immunity
 
     def reintegrate(self):
         self.quarantined = False
@@ -50,18 +66,20 @@ class Individual(object):
     def symptomatic_infect(self, time, **kwargs):
         self.symptomatic = True
         self.r0 = self.model.draw_random_r0(symptomatic=True, group=self.group)
-        self.r0_multiplier = getattr(self.model.params, f"symptomatic_r0_multiplier_{self.group}", 1.0)
+        self.r0_multiplier = getattr(self.model.params,
+                                     f"symptomatic_r0_multiplier_{self.group}",
+                                     1.0)
         #
         self.incubation_period = self.model.draw_random_incubation_period(
-            group=self.group
-        )
+            group=self.group)
         self.infect_params = self.model.draw_infection_params(symptomatic=True)
 
         #
         # infect others
-        (x_grid, trans_prob) = self.model.get_symptomatic_transmission_probability(
-            self.incubation_period, self.r0 * self.r0_multiplier, self.infect_params
-        )
+        (x_grid,
+         trans_prob) = self.model.get_symptomatic_transmission_probability(
+             self.incubation_period, self.r0 * self.r0_multiplier,
+             self.infect_params)
 
         by = kwargs.get("by", None)
 
@@ -84,7 +102,8 @@ class Individual(object):
 
         self.infected = float(time - lead_time)
 
-        if "handle_symptomatic" not in kwargs or kwargs["handle_symptomatic"] is None:
+        if "handle_symptomatic" not in kwargs or kwargs[
+                "handle_symptomatic"] is None:
             handle_symptomatic = ["remove", 1]
         else:
             handle_symptomatic = kwargs["handle_symptomatic"]
@@ -102,8 +121,7 @@ class Individual(object):
                     EventType.SHOW_SYMPTOM,
                     target=self.id,
                     logger=self.logger,
-                )
-            )
+                ))
         #
         if self.quarantined and self.quarantined > symp_time:
             # show symptom during quarantine, ok
@@ -120,13 +138,11 @@ class Individual(object):
                 raise ValueError(
                     f'Proportion in "--handle-symptomatic remove/keep prop" should be a float number between 0 and 1: {proportion} provided'
                 )
-            if (
-                handle_symptomatic[0] == "keep"
-                and np.random.uniform(0, 1, 1)[0] > proportion
-            ) or (
-                handle_symptomatic[0] == "remove"
-                and (proportion == 1 or np.random.uniform(0, 1, 1)[0] <= proportion)
-            ):
+            if (handle_symptomatic[0] == "keep" and
+                    np.random.uniform(0, 1, 1)[0] > proportion) or (
+                        handle_symptomatic[0] == "remove" and
+                        (proportion == 1 or
+                         np.random.uniform(0, 1, 1)[0] <= proportion)):
                 kept = False
                 if symp_time >= 0:
                     evts.append(
@@ -136,8 +152,7 @@ class Individual(object):
                             EventType.REMOVAL,
                             target=self.id,
                             logger=self.logger,
-                        )
-                    )
+                        ))
                 else:
                     # just remove
                     self.logger.write(
@@ -174,8 +189,7 @@ class Individual(object):
                             target=self.id,
                             logger=self.logger,
                             till=symp_time + quarantine_duration,
-                        )
-                    )
+                        ))
                 else:
                     self.quarantined = symp_time + quarantine_duration
         else:
@@ -188,16 +202,17 @@ class Individual(object):
             x_before = x_grid
         else:
             # remove or quanratine
-            x_before = [x for x in x_grid if x < self.incubation_period - lead_time]
-        infected = np.random.binomial(1, trans_prob[: len(x_before)], len(x_before))
+            x_before = [
+                x for x in x_grid if x < self.incubation_period - lead_time
+            ]
+        infected = np.random.binomial(1, trans_prob[:len(x_before)],
+                                      len(x_before))
         presymptomatic_infected = [
-            xx
-            for xx, ii in zip(x_before, infected)
+            xx for xx, ii in zip(x_before, infected)
             if ii and xx < self.incubation_period
         ]
         symptomatic_infected = [
-            xx
-            for xx, ii in zip(x_before, infected)
+            xx for xx, ii in zip(x_before, infected)
             if ii and xx >= self.incubation_period
         ]
         if self.quarantined:
@@ -210,8 +225,7 @@ class Individual(object):
                             target=self.id,
                             logger=self.logger,
                             by=self.id,
-                        )
-                    )
+                        ))
                     infected[idx] = 0
         #
         for x, infe in zip(x_before, infected):
@@ -223,9 +237,9 @@ class Individual(object):
                         target=None,
                         logger=self.logger,
                         by=self.id,
-                        handle_symptomatic=kwargs.get("handle_symptomatic", None),
-                    )
-                )
+                        handle_symptomatic=kwargs.get("handle_symptomatic",
+                                                      None),
+                    ))
 
         evts.append(
             Event(
@@ -233,8 +247,7 @@ class Individual(object):
                 EventType.RECOVER,
                 target=self.id,
                 logger=self.logger,
-            )
-        )
+            ))
         if by:
             params = [f"by={by}"]
         elif lead_time:
@@ -242,16 +255,14 @@ class Individual(object):
         else:
             params = []
         #
-        params.extend(
-            [
-                f"r0={self.r0:.2f}",
-                f"r0_multiplier={self.r0_multiplier:.2f}",
-                f"r={sum(infected)}",
-                f"r_presym={len(presymptomatic_infected)}",
-                f"r_sym={len(symptomatic_infected)}",
-                f"incu={self.incubation_period:.2f}",
-            ]
-        )
+        params.extend([
+            f"r0={self.r0:.2f}",
+            f"r0_multiplier={self.r0_multiplier:.2f}",
+            f"r={sum(infected)}",
+            f"r_presym={len(presymptomatic_infected)}",
+            f"r_sym={len(symptomatic_infected)}",
+            f"incu={self.incubation_period:.2f}",
+        ])
         self.logger.write(
             f'{time:.2f}\t{EventType.INFECTION.name}\t{self.id}\t{",".join(params)}\n'
         )
@@ -260,16 +271,17 @@ class Individual(object):
     def asymptomatic_infect(self, time, **kwargs):
         self.symptomatic = False
         self.r0 = self.model.draw_random_r0(symptomatic=False)
-        self.r0_multiplier = getattr(self.model.params, f"asymptomatic_r0_multiplier_{self.group}", 1.0)
+        self.r0_multiplier = getattr(
+            self.model.params, f"asymptomatic_r0_multiplier_{self.group}", 1.0)
 
         self.incubation_period = -1
 
         by = kwargs.get("by")
         self.infect_params = self.model.draw_infection_params(symptomatic=False)
 
-        (x_grid, trans_prob) = self.model.get_asymptomatic_transmission_probability(
-            self.r0 * self.r0_multiplier, self.infect_params
-        )
+        (x_grid,
+         trans_prob) = self.model.get_asymptomatic_transmission_probability(
+             self.r0 * self.r0_multiplier, self.infect_params)
 
         if "leadtime" in kwargs and kwargs["leadtime"] is not None:
             if by is not None:
@@ -318,8 +330,7 @@ class Individual(object):
                             target=self.id,
                             logger=self.logger,
                             by=self.id,
-                        )
-                    )
+                        ))
                     infected[idx] = 0
         #
         for x, infe in zip(x_grid, infected):
@@ -331,14 +342,15 @@ class Individual(object):
                         target=None,
                         logger=self.logger,
                         by=self.id,
-                        handle_symptomatic=kwargs.get("handle_symptomatic", None),
-                    )
-                )
+                        handle_symptomatic=kwargs.get("handle_symptomatic",
+                                                      None),
+                    ))
         evts.append(
             Event(
-                time + x_grid[-1], EventType.RECOVER, target=self.id, logger=self.logger
-            )
-        )
+                time + x_grid[-1],
+                EventType.RECOVER,
+                target=self.id,
+                logger=self.logger))
         if by:
             params = [f"by={by}"]
         elif lead_time > 0:
@@ -346,14 +358,12 @@ class Individual(object):
         else:
             params = []
         #
-        params.extend(
-            [
-                f"r0={self.r0:.2f}",
-                f"r0_multiplier={self.r0_multiplier:.2f}",
-                f"r={asymptomatic_infected}",
-                f"r_asym={asymptomatic_infected}",
-            ]
-        )
+        params.extend([
+            f"r0={self.r0:.2f}",
+            f"r0_multiplier={self.r0_multiplier:.2f}",
+            f"r={asymptomatic_infected}",
+            f"r_asym={asymptomatic_infected}",
+        ])
         self.logger.write(
             f'{time:.2f}\t{EventType.INFECTION.name}\t{self.id}\t{",".join(params)}\n'
         )
@@ -367,13 +377,14 @@ class Individual(object):
         # return transmissibility at specified time
         interval = time - self.infected
         if self.symptomatic:
-            (x_grid, trans_prob) = self.model.get_symptomatic_transmission_probability(
-                self.incubation_period, self.r0 * self.r0_multiplier, self.infect_params
-            )
+            (x_grid,
+             trans_prob) = self.model.get_symptomatic_transmission_probability(
+                 self.incubation_period, self.r0 * self.r0_multiplier,
+                 self.infect_params)
         else:
-            (x_grid, trans_prob) = self.model.get_asymptomatic_transmission_probability(
-                self.r0 * self.r0_multiplier, self.infect_params
-            )
+            (x_grid,
+             trans_prob) = self.model.get_asymptomatic_transmission_probability(
+                 self.r0 * self.r0_multiplier, self.infect_params)
         idx = int(interval / self.model.params.simulation_interval)
         return 0 if idx >= len(x_grid) else trans_prob[idx]
 
@@ -382,31 +393,34 @@ class Individual(object):
             raise ValueError('Individual has not been infected yet.')
 
         if self.symptomatic:
-            (x_grid, trans_prob) = self.model.get_symptomatic_transmission_probability(
-                self.incubation_period, self.r0 * self.r0_multiplier, self.infect_params
-            )
+            (x_grid,
+             trans_prob) = self.model.get_symptomatic_transmission_probability(
+                 self.incubation_period, self.r0 * self.r0_multiplier,
+                 self.infect_params)
         else:
-            (x_grid, trans_prob) = self.model.get_asymptomatic_transmission_probability(
-                self.r0 * self.r0_multiplier, self.infect_params
-            )
+            (x_grid,
+             trans_prob) = self.model.get_asymptomatic_transmission_probability(
+                 self.r0 * self.r0_multiplier, self.infect_params)
         prob = np.array(trans_prob)
-        return len(np.trim_zeros(prob, 'fb')) * self.model.params.simulation_interval
+        return len(np.trim_zeros(prob,
+                                 'fb')) * self.model.params.simulation_interval
 
     def total_duration(self):
         if self.symptomatic is None:
             raise ValueError('Individual has not been infected yet.')
 
         if self.symptomatic:
-            (x_grid, trans_prob) = self.model.get_symptomatic_transmission_probability(
-                self.incubation_period, self.r0 * self.r0_multiplier, self.infect_params
-            )
+            (x_grid,
+             trans_prob) = self.model.get_symptomatic_transmission_probability(
+                 self.incubation_period, self.r0 * self.r0_multiplier,
+                 self.infect_params)
         else:
-            (x_grid, trans_prob) = self.model.get_asymptomatic_transmission_probability(
-                self.r0 * self.r0_multiplier, self.infect_params
-            )
+            (x_grid,
+             trans_prob) = self.model.get_asymptomatic_transmission_probability(
+                 self.r0 * self.r0_multiplier, self.infect_params)
         prob = np.array(trans_prob)
-        return len(np.trim_zeros(prob, 'b')) * self.model.params.simulation_interval
-
+        return len(np.trim_zeros(prob,
+                                 'b')) * self.model.params.simulation_interval
 
     def viral_load(self, time):
         # NOTE THAT viral load is proportional to R0,
@@ -417,13 +431,13 @@ class Individual(object):
         # return transmissibility at specified time
         interval = time - self.infected
         if self.symptomatic:
-            (x_grid, trans_prob) = self.model.get_symptomatic_transmission_probability(
-                self.incubation_period, self.r0, self.infect_params
-            )
+            (x_grid,
+             trans_prob) = self.model.get_symptomatic_transmission_probability(
+                 self.incubation_period, self.r0, self.infect_params)
         else:
-            (x_grid, trans_prob) = self.model.get_asymptomatic_transmission_probability(
-                self.r0, self.infect_params
-            )
+            (x_grid,
+             trans_prob) = self.model.get_asymptomatic_transmission_probability(
+                 self.r0, self.infect_params)
         peak_idx = np.argmax(trans_prob)
         idx = int(interval / self.model.params.simulation_interval)
         multiplier = 0.7 if self.symptomatic else 1.8
@@ -432,13 +446,14 @@ class Individual(object):
         # 0.01 to 3
         # * 10 to up to 8 (10**8)
         if idx < peak_idx:
-            return (multiplier * trans_prob[idx] / self.model.params.simulation_interval) * 20
+            return (multiplier * trans_prob[idx] /
+                    self.model.params.simulation_interval) * 20
         idx = peak_idx + (idx - peak_idx) // 2
         if idx >= len(x_grid):
             return 0
         else:
-            return (multiplier * trans_prob[idx] / self.model.params.simulation_interval) * 20
-
+            return (multiplier * trans_prob[idx] /
+                    self.model.params.simulation_interval) * 20
 
     def test_sensitivity(self, time, lod):
         # return transmissibility at specified time
@@ -473,6 +488,7 @@ class Individual(object):
 
 
 class Population(object):
+
     def __init__(self, popsize, model, vicinity, logger):
         self.individuals = {}
         self.group_sizes = {
@@ -495,19 +511,19 @@ class Population(object):
                 sz = int(sz)
             except Exception:
                 raise ValueError(
-                    f"Named population size should be name=int: {ps} provided"
-                )
+                    f"Named population size should be name=int: {ps} provided")
 
             self.add(
                 [
                     Individual(
                         f"{name}_{idx}" if name else str(idx),
-                        susceptibility=getattr(model.params, f"susceptibility_mean", 1)
-                        * getattr(model.params, f"susceptibility_multiplier_{name}", 1),
+                        susceptibility=getattr(model.params,
+                                               f"susceptibility_mean", 1) *
+                        getattr(model.params,
+                                f"susceptibility_multiplier_{name}", 1),
                         model=model,
                         logger=logger,
-                    )
-                    for idx in range(idx, idx + sz)
+                    ) for idx in range(idx, idx + sz)
                 ],
                 subpop=name,
             )
@@ -551,24 +567,24 @@ class Population(object):
                 infector_sps = [""]
             elif infector_sp.startswith("!"):
                 infector_sps = [
-                    x
-                    for x in self.group_sizes.keys()
+                    x for x in self.group_sizes.keys()
                     if not fnmatch(x, infector_sp[1:])
                 ]
             else:
                 infector_sps = [
-                    x for x in self.group_sizes.keys() if fnmatch(x, infector_sp)
+                    x for x in self.group_sizes.keys()
+                    if fnmatch(x, infector_sp)
                 ]
 
             if infectee_sp.startswith("!"):
                 infectee_sps = [
-                    x
-                    for x in self.group_sizes.keys()
+                    x for x in self.group_sizes.keys()
                     if not fnmatch(x, infectee_sp[1:])
                 ]
             else:
                 infectee_sps = [
-                    x for x in self.group_sizes.keys() if fnmatch(x, infectee_sp)
+                    x for x in self.group_sizes.keys()
+                    if fnmatch(x, infectee_sp)
                 ]
 
             if infector_sp != "" and not infector_sps:
@@ -626,17 +642,12 @@ class Population(object):
         # if not cicinity is defines, or
         # if infection is from community and '' not in vicinity, or
         # with infector but self.vicinity does not have this case.
-        if (
-            not self.vicinity
-            or (infector is None and "" not in self.vicinity)
-            or (
-                infector is not None
-                and self.individuals[infector].group not in self.vicinity
-            )
-        ):
+        if (not self.vicinity or
+            (infector is None and "" not in self.vicinity) or
+            (infector is not None and
+             self.individuals[infector].group not in self.vicinity)):
             ids = [
-                id
-                for id, ind in self.individuals.items()
+                id for id, ind in self.individuals.items()
                 if infector != ind.id and not ind.quarantined
             ]
         else:
@@ -644,7 +655,8 @@ class Population(object):
             groups = list(self.group_sizes.keys())
 
             if infector in self.individuals:
-                freq = copy.deepcopy(self.vicinity[self.individuals[infector].group])
+                freq = copy.deepcopy(
+                    self.vicinity[self.individuals[infector].group])
             else:
                 freq = copy.deepcopy(self.vicinity[""])
 
@@ -660,9 +672,8 @@ class Population(object):
 
             # then select a random individual from the group.
             ids = [
-                id
-                for id, ind in self.individuals.items()
-                if ind.group == grp and infector != ind.id and not ind.quarantined
+                id for id, ind in self.individuals.items() if
+                ind.group == grp and infector != ind.id and not ind.quarantined
             ]
 
         if not ids:
