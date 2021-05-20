@@ -52,7 +52,8 @@ class testing(BasePlugin):
             '--handle-positive',
             default='remove',
             help='''How to handle individuals who are tested positive, which should be
-                "keep" (do not do anything), "remove" (remove from population), and "quarantine"
+                "keep" (do not do anything), "replace" (remove from population), "recover"
+                (instant recover, to model constant workforce size), and "quarantine"
                 (put aside until it recovers). Quarantine can be specified as "quarantine_7" etc
                 to specify  duration of quarantine. Individuals that are already in quarantine
                 will continue to be quarantined. Default to "remove", meaning all symptomatic cases
@@ -147,6 +148,10 @@ class testing(BasePlugin):
                             target=ID,
                             logger=self.logger,
                             till=time + duration))
+            elif args.handle_positive == 'replace':
+                events.append(
+                    Event(
+                        time + args.turnaround_time, EventType.REPLACEMENT, target=ID, logger=self.logger))
             elif args.handle_positive != 'keep':
                 raise ValueError(
                     'Unsupported action for patients who test positive.')
@@ -165,7 +170,7 @@ class testing(BasePlugin):
         if IDs and args.verbosity > 1:
             res['detected_IDs'] = ",".join(IDs)
         res_str = ','.join(f'{k}={v}' for k,v in res.items())
-        if args.verbosity > 0:
+        if args.verbosity > 0 and IDs:
             self.logger.write(
                 f'{time:.2f}\t{EventType.PLUGIN.name}\t.\tname=testing,{res_str}\n'
             )

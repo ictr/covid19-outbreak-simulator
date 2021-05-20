@@ -146,7 +146,7 @@ def test_vaccination(individual_factory, immunity):
     ind = individual_factory(id='1')
     ind.model.draw_prop_asym_carriers()
     #
-    ind.vaccinate(time=0, immunity=immunity, protection=None, infectivity=None)
+    ind.vaccinate(time=0, immunity=immunity, infectivity=0.5)
     #
     # try to infect the individual
     #

@@ -119,7 +119,8 @@ def parse_args(args=None):
         '--handle-symptomatic',
         nargs='*',
         help='''How to handle individuals who show symptom, which should be "keep" (stay in
-            population), "remove" (remove from population), and "quarantine" (put aside until
+            population), "remove" (remove from population), "replace" (reset its infection status
+            so that the individual is susceptible again), and "quarantine" (put aside until
             it recovers). all options can be followed by a "proportion", and quarantine can
             be specified as "quarantine_7" etc to specify duration of quarantine. Default to
             "remove", meaning all symptomatic cases will be removed from population.'''

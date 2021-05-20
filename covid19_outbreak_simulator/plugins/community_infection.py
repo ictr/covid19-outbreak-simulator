@@ -62,7 +62,7 @@ class community_infection(BasePlugin):
         IDs = [x.target for x in events]
         ID_list = f',infected={",".join(IDs)}' if IDs and args.verbosity > 1 else ''
 
-        if args.verbosity > 0:
+        if args.verbosity > 0 and IDs:
             self.logger.write(
                 f'{time:.2f}\t{EventType.PLUGIN.name}\t.\tname=community_infection,n_infected={len(events)}{ID_list}\n'
             )

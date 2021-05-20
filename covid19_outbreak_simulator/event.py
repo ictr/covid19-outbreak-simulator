@@ -20,7 +20,8 @@ class EventType(Enum):
     # quarantine individual given a specified time
     QUARANTINE = 8
     # vaccine shot
-    VACCINE = 16
+    VACCINATE = 16
+    REPLACEMENT = 17
     # reintegrate individual to the population (release from quarantine)
     REINTEGRATION = 9
     # population statistics

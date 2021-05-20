@@ -53,11 +53,23 @@ class Individual(object):
     def vaccinate(self,
                 time,
                 immunity,
-                protection=None,
-                infectivity=None,
+                infectivity,
                 **kwargs):
         self.vaccinated = time
         self.susceptibility = 1 - immunity
+        assert self.r0 != 0
+        self.r0 = self.r0 * infectivity
+
+    def reset(self):
+        # we keep the susceptibility parameter...
+        self.infected = False
+        self.show_symptom = False
+        self.recovered = False
+        self.symptomatic = None
+        self.vaccinated = False
+        self.quarantined = False
+        self.r0 = None
+        self.incubation_period = None
 
     def reintegrate(self):
         self.quarantined = False
