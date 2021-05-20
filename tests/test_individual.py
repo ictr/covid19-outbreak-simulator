@@ -139,3 +139,29 @@ def test_asymptomatic_infect(individual_factory, by, handle_symptomatic,
         assert ind1.infected == 5.0
     assert ind1.r0 is not None
     assert ind1.incubation_period is not None
+
+
+@pytest.mark.parametrize('immunity', [0, 0.75, 1])
+def test_vaccination(individual_factory, immunity):
+    ind = individual_factory(id='1')
+    ind.model.draw_prop_asym_carriers()
+    #
+    ind.vaccinate(time=0, immunity=immunity, protection=None, infectivity=None)
+    #
+    # try to infect the individual
+    #
+    N = 1000
+    N_infected = 0
+    for x in range(N):
+        ind.infected = None
+        ind.infect(5.0, by=None)
+        N_infected += ind.infected is not None
+
+    print(N_infected)
+    if immunity == 1:
+        assert N_infected == 0
+    elif immunity == 0:
+        assert N_infected == N
+    else:
+        assert N_infected < N * (1 - immunity + 0.1)
+        assert N_infected > N * (1 - immunity - 0.1)

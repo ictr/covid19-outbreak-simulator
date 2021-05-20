@@ -22,7 +22,7 @@ class Individual(object):
         self.show_symptom = False
         self.recovered = False
         self.symptomatic = None
-        self.vaccined = False
+        self.vaccinated = False
         self.quarantined = False
 
         self.r0 = None
@@ -50,13 +50,13 @@ class Individual(object):
                 logger=self.logger)
         ]
 
-    def vaccine(self,
+    def vaccinate(self,
                 time,
                 immunity,
                 protection=None,
                 infectivity=None,
                 **kwargs):
-        self.vaccined = time
+        self.vaccinated = time
         self.susceptibility = 1 - immunity
 
     def reintegrate(self):
