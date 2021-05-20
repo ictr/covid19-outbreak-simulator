@@ -9,4 +9,8 @@
 
 COVID-19 Outbreak Simulator is a population-based simulator that simulates the spread of SARS-CoV-2 virus in a dynamic and heterogeneous population, subject to preventative measures and post-outbreak action plans such as quarantine, testing, and removal of symptomatic cases. Outputs from the simulator can be used to obtain quantitative measures of the effectiveness of these actions.
 
-Please refer to our [homepage](https://ictr.github.io/covid19-outbreak-simulator/) for details.
+Please refer to our [homepage](https://ictr.github.io/covid19-outbreak-simulator/) for details. Please cite
+
+> Bo Peng, Rowland W Pettit, Christopher I Amos, Population simulations of COVID-19  outbreaks provide tools for risk assessment and continuity planning, JAMIA Open, 2021;, ooaa074, https://doi.org/10.1093/jamiaopen/ooaa074
+
+if you have used the simulator for your work.
