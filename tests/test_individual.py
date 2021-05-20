@@ -165,3 +165,4 @@ def test_vaccination(individual_factory, immunity):
     else:
         assert N_infected < N * (1 - immunity + 0.1)
         assert N_infected > N * (1 - immunity - 0.1)
+
