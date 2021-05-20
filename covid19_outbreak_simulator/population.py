@@ -18,6 +18,7 @@ class Individual(object):
         self.logger = logger
 
         # these will be set to event happen time
+        self.infectivity = None
         self.infected = False
         self.show_symptom = False
         self.recovered = False
@@ -50,19 +51,15 @@ class Individual(object):
                 logger=self.logger)
         ]
 
-    def vaccinate(self,
-                time,
-                immunity,
-                infectivity,
-                **kwargs):
+    def vaccinate(self, time, immunity, infectivity, **kwargs):
         self.vaccinated = time
         self.susceptibility = 1 - immunity
-        assert self.r0 != 0
-        self.r0 = self.r0 * infectivity
+        self.infectivity = infectivity
 
     def reset(self):
         # we keep the susceptibility parameter...
         self.infected = False
+        self.infectivity = None
         self.show_symptom = False
         self.recovered = False
         self.symptomatic = None
@@ -78,6 +75,12 @@ class Individual(object):
     def symptomatic_infect(self, time, **kwargs):
         self.symptomatic = True
         self.r0 = self.model.draw_random_r0(symptomatic=True, group=self.group)
+
+        if self.infectivity is not None:
+            self.r0 *= self.infectivity
+            if self.r0 < 1:
+                return self.asymptomatic_infect(time, r0=self.r0, **kwargs)
+
         self.r0_multiplier = getattr(self.model.params,
                                      f"symptomatic_r0_multiplier_{self.group}",
                                      1.0)
@@ -170,7 +173,21 @@ class Individual(object):
                     self.logger.write(
                         f'{time:.2f}\t{EventType.WARNING.name}\t{self.id}\tmsg="Individual not removed before it show symptom before {time}"\n'
                     )
-
+        elif handle_symptomatic[0] == "replace":
+            if symp_time >= 0:
+                evts.append(
+                    # scheduling REMOVAL
+                    Event(
+                        symp_time,
+                        EventType.REPLACEMENT,
+                        target=self.id,
+                        logger=self.logger,
+                    ))
+            else:
+                # just ignore
+                self.logger.write(
+                    f'{time:.2f}\t{EventType.WARNING.name}\t{self.id}\tmsg="Individual not replaced before it show symptom before {time}"\n'
+                )
         elif handle_symptomatic[0].startswith("quarantine"):
             if handle_symptomatic[0] == "quarantine":
                 quarantine_duration = 14
@@ -282,7 +299,13 @@ class Individual(object):
 
     def asymptomatic_infect(self, time, **kwargs):
         self.symptomatic = False
-        self.r0 = self.model.draw_random_r0(symptomatic=False)
+        if 'r0' in kwargs:
+            self.r0 = kwargs.pop('r0')
+        else:
+            self.r0 = self.model.draw_random_r0(symptomatic=False)
+            if self.infectivity is not None:
+                self.r0 *= self.infectivity
+
         self.r0_multiplier = getattr(
             self.model.params, f"asymptomatic_r0_multiplier_{self.group}", 1.0)
 
