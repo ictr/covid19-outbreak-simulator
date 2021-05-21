@@ -27,6 +27,11 @@ class testing(BasePlugin):
             proportion of tests for each group.''',
         )
         parser.add_argument(
+            '--ignore-vaccinated',
+            action='store_true',
+            help='''Do not test people who are vaccinated.''',
+        )
+        parser.add_argument(
             '--sensitivity',
             nargs='+',
             type=float,
@@ -66,6 +71,8 @@ class testing(BasePlugin):
     def apply(self, time, population, args=None):
         n_infected = 0
         n_uninfected = 0
+        n_ignore_infected = 0
+        n_ignore_uninfected = 0
         n_recovered = 0
         n_false_positive = 0
         n_false_negative = 0
@@ -77,6 +84,8 @@ class testing(BasePlugin):
             nonlocal n_tested
             nonlocal n_infected
             nonlocal n_uninfected
+            nonlocal n_ignore_infected
+            nonlocal n_ignore_uninfected
             nonlocal n_recovered
             nonlocal n_false_positive
             nonlocal n_false_negative
@@ -88,8 +97,16 @@ class testing(BasePlugin):
                     counts[ind.group] -= 1
                 else:
                     return False
-            n_tested += 1
+
             affected = isinstance(ind.infected, float)
+            if ind.vaccinated is not False and args.ignore_vaccinated:
+                if affected:
+                    n_ignore_infected += 1
+                else:
+                    n_ignore_uninfected += 1
+                return False
+
+            n_tested += 1
             if affected:
                 test_lod = args.sensitivity[1] if len(
                     args.sensitivity) == 2 else 0
@@ -174,6 +191,8 @@ class testing(BasePlugin):
             n_tested=n_tested,
             n_infected=n_infected,
             n_uninfected=n_uninfected,
+            n_ignore_infected=n_ignore_infected,
+            n_ignore_uninfected=n_ignore_uninfected,
             n_recovered=n_recovered,
             n_detected=len(IDs),
             n_false_positive=n_false_positive,

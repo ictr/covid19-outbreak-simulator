@@ -35,7 +35,7 @@ class EventType(Enum):
     PLUGIN = 15
 
     # vaccine shot
-    VACCINATE = 16
+    VACCINATION = 16
     REPLACEMENT = 17
 
 
@@ -156,15 +156,15 @@ class Event(object):
                 )
             return []
 
-        elif self.action == EventType.VACCINATE:
+        elif self.action == EventType.VACCINATION:
             if self.target in population:
                 population[self.target].vaccinate(self.time, **self.kwargs)
                 self.logger.write(
-                    f'{self.time:.2f}\t{EventType.VACCINATE.name}\t{self.target}\timmunity={self.kwargs["immunity"]},infectivity={self.kwargs["infectivity"]}\n'
+                    f'{self.time:.2f}\t{EventType.VACCINATION.name}\t{self.target}\timmunity={self.kwargs["immunity"]},infectivity={self.kwargs["infectivity"]}\n'
                 )
             else:
                 self.logger.write(
-                    f'{self.time:.2f}\t{EventType.WARNING.name}\t{self.target}\tmsg=VACCINATE target no longer exists\n'
+                    f'{self.time:.2f}\t{EventType.WARNING.name}\t{self.target}\tmsg=VACCINATION target no longer exists\n'
                 )
             return []
 

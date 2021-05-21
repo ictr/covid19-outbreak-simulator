@@ -89,7 +89,7 @@ class vaccinate(BasePlugin):
             events.append(
                 Event(
                     time,
-                    EventType.VACCINATE,
+                    EventType.VACCINATION,
                     target=ID,
                     priority=True,
                     immunity=args.immunity,
