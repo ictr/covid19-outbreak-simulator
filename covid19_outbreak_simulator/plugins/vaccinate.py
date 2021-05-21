@@ -65,15 +65,17 @@ class vaccinate(BasePlugin):
                 args.proportion,
                 subpops=population.group_sizes.keys(),
                 default=1.0)
-
             IDs = []
             for name, sz in population.group_sizes.items():
                 prop = proportions.get(name if name in proportions else '', 1.0)
 
+                if prop < 0 or prop > 1:
+                    raise ValueError(f'Disallowed proportion {prop}')
+
                 spIDs = [
                     x.id
                     for x in population.individuals.values()
-                    if (name == '' or x.group == name) and x.vaccinated is None
+                    if (name == '' or x.group == name) and x.vaccinated is False
                 ]
 
                 if prop < 1:
@@ -89,6 +91,7 @@ class vaccinate(BasePlugin):
                     time,
                     EventType.VACCINATE,
                     target=ID,
+                    priority=True,
                     immunity=args.immunity,
                     infectivity=args.infectivity,
                     logger=self.logger))
@@ -96,7 +99,7 @@ class vaccinate(BasePlugin):
         vaccinated_list = f',vaccinated={",".join(IDs)}' if args.verbosity > 1 else ''
         if args.verbosity > 0:
             self.logger.write(
-                f'{time:.2f}\t{EventType.PLUGIN.name}\t.\tname=vaccine,n_vaccinated={len(IDs)}{vaccinated_list}\n'
+                f'{time:.2f}\t{EventType.PLUGIN.name}\t.\tname=vaccine,proportion={args.proportion},immunity={args.immunity},infectivity={args.infectivity},n_vaccinated={len(IDs)}{vaccinated_list}\n'
             )
 
         return events

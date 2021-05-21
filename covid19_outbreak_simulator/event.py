@@ -168,6 +168,18 @@ class Event(object):
                 )
             return []
 
+        elif self.action == EventType.REPLACEMENT:
+            if self.target in population:
+                self.logger.write(
+                    f'{self.time:.2f}\t{EventType.REPLACEMENT.name}\t{self.target}\treson={self.kwargs["reason"]},infected={"False" if population[self.target].infected is False else "True"}\n'
+                )
+                population.replace(self.target)
+            else:
+                self.logger.write(
+                    f'{self.time:.2f}\t{EventType.WARNING.name}\t{self.target}\tmsg=REPLACEMENT target no longer exists\n'
+                )
+            return []
+
         elif self.action == EventType.RECOVER:
             removed = self.target not in population
 

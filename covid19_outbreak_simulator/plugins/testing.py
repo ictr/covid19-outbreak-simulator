@@ -3,6 +3,7 @@ from covid19_outbreak_simulator.plugin import BasePlugin
 from covid19_outbreak_simulator.utils import parse_param_with_multiplier
 import numpy
 
+
 class testing(BasePlugin):
 
     def __init__(self, *args, **kwargs):
@@ -14,7 +15,9 @@ class testing(BasePlugin):
         parser.prog = '--plugin testing'
         parser.description = '''PCR-based test that can pick out all active cases.'''
         parser.add_argument(
-            'IDs', nargs='*', help='''IDs of individuals to test. Parameter "proportion"
+            'IDs',
+            nargs='*',
+            help='''IDs of individuals to test. Parameter "proportion"
             will be ignored with specified IDs for testing''')
         parser.add_argument(
             '--proportion',
@@ -88,7 +91,8 @@ class testing(BasePlugin):
             n_tested += 1
             affected = isinstance(ind.infected, float)
             if affected:
-                test_lod = args.sensitivity[1] if len(args.sensitivity) == 2 else 0
+                test_lod = args.sensitivity[1] if len(
+                    args.sensitivity) == 2 else 0
                 lod_sensitivity = ind.test_sensitivity(time, test_lod)
                 #
                 sensitivity = lod_sensitivity * args.sensitivity[0]
@@ -108,7 +112,8 @@ class testing(BasePlugin):
             else:
                 n_uninfected += 1
 
-                res = args.specificity != 1 and args.specificity <= numpy.random.uniform()
+                res = args.specificity != 1 and args.specificity <= numpy.random.uniform(
+                )
                 if res:
                     n_false_positive += 1
                 return res
@@ -116,14 +121,16 @@ class testing(BasePlugin):
         if args.IDs:
             IDs = [x for x in args.IDs if select(population[x])]
         else:
-            proportions = parse_param_with_multiplier(args.proportion,
-                subpops=population.group_sizes.keys(), default=1.0)
-            counts = {name:int(size*proportions[name]) for name,size in population.group_sizes.items()}
+            proportions = parse_param_with_multiplier(
+                args.proportion,
+                subpops=population.group_sizes.keys(),
+                default=1.0)
+            counts = {
+                name: int(size * proportions[name])
+                for name, size in population.group_sizes.items()
+            }
 
-            IDs = [
-                x for x, y in population.items()
-                if select(y, counts)
-            ]
+            IDs = [x for x, y in population.items() if select(y, counts)]
 
         #print(f'SELECT {" ".join(IDs)}')
         events = []
@@ -134,7 +141,10 @@ class testing(BasePlugin):
             if args.handle_positive == 'remove':
                 events.append(
                     Event(
-                        time + args.turnaround_time, EventType.REMOVAL, target=ID, logger=self.logger))
+                        time + args.turnaround_time,
+                        EventType.REMOVAL,
+                        target=ID,
+                        logger=self.logger))
             elif args.handle_positive.startswith('quarantine'):
                 if args.handle_positive == 'quarantine':
                     duration = 14
@@ -151,7 +161,11 @@ class testing(BasePlugin):
             elif args.handle_positive == 'replace':
                 events.append(
                     Event(
-                        time + args.turnaround_time, EventType.REPLACEMENT, target=ID, logger=self.logger))
+                        time + args.turnaround_time,
+                        EventType.REPLACEMENT,
+                        reason='detected',
+                        target=ID,
+                        logger=self.logger))
             elif args.handle_positive != 'keep':
                 raise ValueError(
                     'Unsupported action for patients who test positive.')
@@ -165,11 +179,10 @@ class testing(BasePlugin):
             n_false_positive=n_false_positive,
             n_false_negative=n_false_negative,
             n_false_negative_lod=n_false_negative_lod,
-            n_false_negative_in_recovered=n_false_negative_in_recovered
-        )
+            n_false_negative_in_recovered=n_false_negative_in_recovered)
         if IDs and args.verbosity > 1:
             res['detected_IDs'] = ",".join(IDs)
-        res_str = ','.join(f'{k}={v}' for k,v in res.items())
+        res_str = ','.join(f'{k}={v}' for k, v in res.items())
         if args.verbosity > 0 and IDs:
             self.logger.write(
                 f'{time:.2f}\t{EventType.PLUGIN.name}\t.\tname=testing,{res_str}\n'

@@ -56,18 +56,6 @@ class Individual(object):
         self.susceptibility = 1 - immunity
         self.infectivity = infectivity
 
-    def reset(self):
-        # we keep the susceptibility parameter...
-        self.infected = False
-        self.infectivity = None
-        self.show_symptom = False
-        self.recovered = False
-        self.symptomatic = None
-        self.vaccinated = False
-        self.quarantined = False
-        self.r0 = None
-        self.incubation_period = None
-
     def reintegrate(self):
         self.quarantined = False
         return []
@@ -181,6 +169,7 @@ class Individual(object):
                         symp_time,
                         EventType.REPLACEMENT,
                         target=self.id,
+                        reason='symptom',
                         logger=self.logger,
                     ))
             else:
@@ -642,6 +631,30 @@ class Population(object):
             raise ValueError(f"One or more IDs are already in the population.")
         self.group_sizes[subpop] += len(items)
         self.max_ids[subpop] += len(items)
+
+
+    def replace(self, id):
+        old_id = id
+        ind = self.individuals[id]
+        grp = ind.group
+        idx = self.max_ids[grp]
+
+        self.max_ids[grp] += 1
+
+        ind.id = f'{grp}_{idx}' if grp else str(idx)
+
+        # we keep the susceptibility parameter...
+        ind.infected = False
+        ind.infectivity = None
+        ind.show_symptom = False
+        ind.recovered = False
+        ind.symptomatic = None
+        ind.vaccinated = False
+        ind.quarantined = False
+        ind.r0 = None
+        ind.incubation_period = None
+
+        self.individuals[ind.id] = self.individuals.pop(old_id)
 
     @property
     def ids(self):

@@ -105,14 +105,15 @@ class Params:
     def _set_multiplier(self, multiplier, param_name):
         name, value = multiplier.split("=", 1)
         value = as_float(value, "Multiplier should have format name=float_value")
-        print(self.groups)
-        print(f'NAME "{name}"')
-        names = [x for x in self.groups.keys() if fnmatch(x, name)]
-        print(names)
-        if not names:
-            raise ValueError(f"Invalid group name {name} in multiplier {multiplier}")
-        for name in names:
-            self.set(param_name, f"multiplier_{name}", value)
+        if name == 'all':
+            self.set(param_name, f"multiplier_", value)
+        else:
+            names = [x for x in self.groups.keys() if fnmatch(x, name)]
+            if not names:
+                raise ValueError(f"Invalid group name {name} in multiplier {multiplier}")
+            for name in names:
+                self.set(param_name, f"multiplier_{name}", value)
+
 
     def set_symptomatic_r0(self, val):
         if not val:
