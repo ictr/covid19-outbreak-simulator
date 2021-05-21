@@ -29,22 +29,21 @@ class vaccinate(BasePlugin):
         parser.add_argument(
             '--proportion',
             nargs='+',
-            default=[0],
             help='''The proportion of individuals to be vaccinated, which can be
             to the entire population or varying from subpopulation to subpopulation.
             ''')
         parser.add_argument(
             '--immunity',
-            nargs='+',
-            default=[0],
+            type=float,
+            default=0.95,
             help='''The probability to resist an infection event, essentially 1 - susceptibility.
             The default susceptibility is 1, meaning all infection event will cause an infection,
             if immunity == 0.85, susceptibility will be set to 0.15 so that only 15% of infection
             events will succeed.''')
         parser.add_argument(
             '--infectivity',
-            nargs='+',
-            default=[0],
+            type=float,
+            default=0.05,
             help='''The reduction of infectivity, which will be simulated as a reduction
             of R0.
             ''')
@@ -93,6 +92,7 @@ class vaccinate(BasePlugin):
                     immunity=args.immunity,
                     infectivity=args.infectivity,
                     logger=self.logger))
+
         vaccinated_list = f',vaccinated={",".join(IDs)}' if args.verbosity > 1 else ''
         if args.verbosity > 0:
             self.logger.write(

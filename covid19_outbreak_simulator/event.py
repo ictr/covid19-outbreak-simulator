@@ -1,5 +1,6 @@
 from enum import Enum
 
+
 class EventType(Enum):
     # START
     START = 0
@@ -19,9 +20,6 @@ class EventType(Enum):
     REMOVAL = 7
     # quarantine individual given a specified time
     QUARANTINE = 8
-    # vaccine shot
-    VACCINATE = 16
-    REPLACEMENT = 17
     # reintegrate individual to the population (release from quarantine)
     REINTEGRATION = 9
     # population statistics
@@ -35,6 +33,10 @@ class EventType(Enum):
     WARNING = 14
     #
     PLUGIN = 15
+
+    # vaccine shot
+    VACCINATE = 16
+    REPLACEMENT = 17
 
 
 class Event(object):
@@ -111,6 +113,7 @@ class Event(object):
                 f'{self.time:.2f}\t{EventType.QUARANTINE.name}\t{self.target}\ttill={self.kwargs["till"]:.2f}\n'
             )
             return population[self.target].quarantine(**self.kwargs)
+
         elif self.action == EventType.REINTEGRATION:
             if self.target not in population:
                 self.logger.write(
@@ -122,11 +125,13 @@ class Event(object):
                     f'{self.time:.2f}\t{EventType.REINTEGRATION.name}\t{self.target}\tsucc=True\n'
                 )
                 return population[self.target].reintegrate(**self.kwargs)
+
         elif self.action == EventType.INFECTION_AVOIDED:
             self.logger.write(
                 f'{self.time:.2f}\t{EventType.INFECTION_AVOIDED.name}\t.\tby={self.kwargs["by"]}\n'
             )
             return []
+
         elif self.action == EventType.SHOW_SYMPTOM:
             if self.target in population:
                 population[self.target].show_symptom = self.time
@@ -138,6 +143,7 @@ class Event(object):
                     f'{self.time:.2f}\t{EventType.WARNING.name}\t{self.target}\tmsg=SHOW_SYMPTOM target no longer exists\n'
                 )
             return []
+
         elif self.action == EventType.REMOVAL:
             if self.target in population:
                 population.remove(self.target)
@@ -149,6 +155,19 @@ class Event(object):
                     f'{self.time:.2f}\t{EventType.WARNING.name}\t{self.target}\tmsg=REMOVAL target no longer exists\n'
                 )
             return []
+
+        elif self.action == EventType.VACCINATE:
+            if self.target in population:
+                population[self.target].vaccinate(self.time, **self.kwargs)
+                self.logger.write(
+                    f'{self.time:.2f}\t{EventType.VACCINATE.name}\t{self.target}\timmunity={self.kwargs["immunity"]},infectivity={self.kwargs["infectivity"]}\n'
+                )
+            else:
+                self.logger.write(
+                    f'{self.time:.2f}\t{EventType.WARNING.name}\t{self.target}\tmsg=VACCINATE target no longer exists\n'
+                )
+            return []
+
         elif self.action == EventType.RECOVER:
             removed = self.target not in population
 
