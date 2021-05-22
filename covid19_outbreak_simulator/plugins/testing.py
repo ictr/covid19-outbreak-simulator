@@ -202,7 +202,7 @@ class testing(BasePlugin):
         if IDs and args.verbosity > 1:
             res['detected_IDs'] = ",".join(IDs)
         res_str = ','.join(f'{k}={v}' for k, v in res.items())
-        if args.verbosity > 0 and IDs:
+        if args.verbosity > 0:
             self.logger.write(
                 f'{time:.2f}\t{EventType.PLUGIN.name}\t.\tname=testing,{res_str}\n'
             )

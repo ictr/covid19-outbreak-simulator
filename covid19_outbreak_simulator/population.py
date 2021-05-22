@@ -375,9 +375,9 @@ class Individual(object):
                 EventType.RECOVER,
                 target=self.id,
                 logger=self.logger))
-        if by:
-            params = [f"by={by}"]
-        elif lead_time > 0:
+
+        params = [f"by={'.' if by is None else by}"]
+        if lead_time > 0:
             params = [f"leadtime={lead_time:.2f}"]
         else:
             params = []
@@ -501,7 +501,7 @@ class Individual(object):
         if self.susceptibility < 1 and rand() > self.susceptibility:
             by_id = "." if kwargs["by"] is None else kwargs["by"]
             self.logger.write(
-                f"{time:.2f}\t{EventType.INFECTION_FAILED.name}\t{self.id}\tby={by_id},reson=susceptibility\n"
+                f"{time:.2f}\t{EventType.INFECTION_FAILED.name}\t{self.id}\tby={by_id},reason=susceptibility\n"
             )
             return []
 
@@ -631,7 +631,6 @@ class Population(object):
             raise ValueError(f"One or more IDs are already in the population.")
         self.group_sizes[subpop] += len(items)
         self.max_ids[subpop] += len(items)
-
 
     def replace(self, id):
         old_id = id
