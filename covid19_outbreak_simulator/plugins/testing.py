@@ -181,6 +181,7 @@ class testing(BasePlugin):
                         time + args.turnaround_time,
                         EventType.REPLACEMENT,
                         reason='detected',
+                        keep=['vaccinated'],
                         target=ID,
                         logger=self.logger))
             elif args.handle_positive != 'keep':

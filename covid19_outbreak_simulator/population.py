@@ -170,6 +170,7 @@ class Individual(object):
                         EventType.REPLACEMENT,
                         target=self.id,
                         reason='symptom',
+                        keep=['vaccinated'],
                         logger=self.logger,
                     ))
             else:
@@ -632,7 +633,7 @@ class Population(object):
         self.group_sizes[subpop] += len(items)
         self.max_ids[subpop] += len(items)
 
-    def replace(self, id):
+    def replace(self, id, keep=[]):
         old_id = id
         ind = self.individuals[id]
         grp = ind.group
@@ -643,15 +644,19 @@ class Population(object):
         ind.id = f'{grp}_{idx}' if grp else str(idx)
 
         # we keep the susceptibility parameter...
-        ind.infected = False
-        ind.infectivity = None
-        ind.show_symptom = False
-        ind.recovered = False
-        ind.symptomatic = None
-        ind.vaccinated = False
-        ind.quarantined = False
-        ind.r0 = None
-        ind.incubation_period = None
+        for attr, def_value in [
+            ('infected', False),
+            ('infectivity', None),
+            ('show_symptom', False),
+            ('recovered', False),
+            ('symptomatic', None),
+            ('vaccinated', False),
+            ('quarantined', False),
+            ('r0', None),
+            ('incubation_period', None)
+        ]:
+            if attr not in keep:
+                setattr(attr, def_value)
 
         self.individuals[ind.id] = self.individuals.pop(old_id)
 

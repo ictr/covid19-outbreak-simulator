@@ -173,7 +173,7 @@ class Event(object):
                 self.logger.write(
                     f'{self.time:.2f}\t{EventType.REPLACEMENT.name}\t{self.target}\treason={self.kwargs["reason"]},infected={"False" if population[self.target].infected is False else "True"}\n'
                 )
-                population.replace(self.target)
+                population.replace(self.target, **self.kwargs)
             else:
                 self.logger.write(
                     f'{self.time:.2f}\t{EventType.WARNING.name}\t{self.target}\tmsg=REPLACEMENT target no longer exists\n'
