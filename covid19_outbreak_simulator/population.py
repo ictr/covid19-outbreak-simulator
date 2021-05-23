@@ -633,7 +633,7 @@ class Population(object):
         self.group_sizes[subpop] += len(items)
         self.max_ids[subpop] += len(items)
 
-    def replace(self, id, keep=[]):
+    def replace(self, id, keep=[], **kwargs):
         old_id = id
         ind = self.individuals[id]
         grp = ind.group
