@@ -656,7 +656,7 @@ class Population(object):
             ('incubation_period', None)
         ]:
             if attr not in keep:
-                setattr(self, attr, def_value)
+                setattr(ind, attr, def_value)
 
         self.individuals[ind.id] = self.individuals.pop(old_id)
 
