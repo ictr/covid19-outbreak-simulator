@@ -806,9 +806,11 @@ def summarize_model(params, args):
     print_stats(gt, 'Generation Time')
 
     # average test sensitivity
+    model = Model(Params(args))
     sensitivities = []
     with open(os.devnull, 'w') as logger:
         logger.id = 1
+
 
         for i in range(10000):
             model.draw_prop_asym_carriers()
@@ -816,7 +818,7 @@ def summarize_model(params, args):
                 id='0', susceptibility=1, model=model, logger=logger)
             ind.infect(0, by=None, leadtime=0)
 
-            for i in range(0, 15):
+            for i in range(0, 20):
 
                 test_lod = args.sensitivity[1] if len(
                     args.sensitivity) == 2 else 0
@@ -827,4 +829,4 @@ def summarize_model(params, args):
                 #
                 sensitivity = lod_sensitivity * args.sensitivity[0]
                 sensitivities.append(sensitivity)
-    print_stats(sensitivities, "Test sensitivity")
+    print_stats(sensitivities, f"Test sensitivity (for {model.params.prop_asym_carriers*100:.1f}% asymptomatic carriers")
