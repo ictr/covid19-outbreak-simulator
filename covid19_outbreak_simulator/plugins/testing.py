@@ -1,7 +1,13 @@
-from covid19_outbreak_simulator.event import Event, EventType
-from covid19_outbreak_simulator.plugin import BasePlugin
-from covid19_outbreak_simulator.utils import parse_param_with_multiplier
+import os
+
 import numpy
+import pandas as pd
+
+from covid19_outbreak_simulator.event import Event, EventType
+from covid19_outbreak_simulator.model import Model, Params
+from covid19_outbreak_simulator.plugin import BasePlugin
+from covid19_outbreak_simulator.population import Individual
+from covid19_outbreak_simulator.utils import parse_param_with_multiplier
 
 
 class testing(BasePlugin):
@@ -67,6 +73,48 @@ class testing(BasePlugin):
                 will continue to be quarantined. Default to "remove", meaning all symptomatic cases
                 will be removed from population.''')
         return parser
+
+    def summarize_model(self, simu_args, args):
+        print(f'\nPlugin {self}:')
+
+        model = Model(Params(simu_args))
+        for asym_carriers in (0, 1, None):
+            if asym_carriers is not None:
+                model.params.set('prop_asym_carriers', 'loc', asym_carriers)
+                model.params.set('prop_asym_carriers', 'scale', 0)
+            else:
+                model = Model(Params(simu_args))
+
+            # average test sensitivity
+            sensitivities7 = []
+            sensitivities20 = []
+            with open(os.devnull, 'w') as logger:
+                logger.id = 1
+
+                for i in range(10000):
+                    model.draw_prop_asym_carriers()
+                    ind = Individual(
+                        id='0', susceptibility=1, model=model, logger=logger)
+                    ind.infect(0, by=None, leadtime=0)
+
+                    for i in range(20):
+                        test_lod = args.sensitivity[1] if len(
+                            args.sensitivity) == 2 else 0
+
+                        lod_sensitivity = ind.test_sensitivity(i, test_lod)
+                        if lod_sensitivity == 0:
+                            continue
+                        #
+                        sensitivity = lod_sensitivity * args.sensitivity[0]
+                        if i <= 7:
+                            sensitivities7.append(sensitivity)
+                        else:
+                            sensitivities20.append(sensitivity)
+            print(f"\nTest sensitivity (for {model.params.prop_asym_carriers*100:.1f}% asymptomatic carriers)")
+            print(f"    <= 7 days:     {pd.Series(sensitivities7).mean() * 100:.1f}%")
+            print(f"    > 7 days:      {pd.Series(sensitivities20).mean() * 100:.1f}%")
+            print(f"    all:           {pd.Series(sensitivities7 + sensitivities20).mean() * 100:.1f}%")
+
 
     def apply(self, time, population, args=None):
         n_infected = 0

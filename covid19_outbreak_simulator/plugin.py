@@ -81,6 +81,10 @@ class BasePlugin(object):
         )
         return parser
 
+    def summarize_model(self, simu_args, args):
+        print(f'\nPlugin {self} does not support summarize_model.')
+        return
+
     def get_plugin_events(self, args):
         events = []
 

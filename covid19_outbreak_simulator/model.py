@@ -721,8 +721,9 @@ def sample_prop_asymp_carriers(model, N=1000):
     return asym_carriers
 
 
-def summarize_model(params, args):
+def summarize_model(args):
     from .population import Individual
+    params = Params(args)
     print('Parameters (in YAML format)\n')
     print(params)
     print()
@@ -804,40 +805,3 @@ def summarize_model(params, args):
 
     print_stats(si, 'Serial Interval')
     print_stats(gt, 'Generation Time')
-
-    for asym_carriers in (0, 1, None):
-        if asym_carriers is not None:
-            model.params.set('prop_asym_carriers', 'loc', asym_carriers)
-            model.params.set('prop_asym_carriers', 'scale', 0)
-        else:
-            model = Model(Params(args))
-
-        # average test sensitivity
-        sensitivities7 = []
-        sensitivities20 = []
-        with open(os.devnull, 'w') as logger:
-            logger.id = 1
-
-            for i in range(10000):
-                model.draw_prop_asym_carriers()
-                ind = Individual(
-                    id='0', susceptibility=1, model=model, logger=logger)
-                ind.infect(0, by=None, leadtime=0)
-
-                for i in range(20):
-                    test_lod = args.sensitivity[1] if len(
-                        args.sensitivity) == 2 else 0
-
-                    lod_sensitivity = ind.test_sensitivity(i, test_lod)
-                    if lod_sensitivity == 0:
-                        continue
-                    #
-                    sensitivity = lod_sensitivity * args.sensitivity[0]
-                    if i <= 7:
-                        sensitivities7.append(sensitivity)
-                    else:
-                        sensitivities20.append(sensitivity)
-        print(f"\nTest sensitivity (for {model.params.prop_asym_carriers*100:.1f}% asymptomatic carriers)")
-        print(f"    <= 7 days: {pd.Series(sensitivities7).mean() * 100:.1f}%")
-        print(f"    > 7 days:  {pd.Series(sensitivities20).mean() * 100:.1f}%")
-        print(f"    all:       {pd.Series(sensitivities7 + sensitivities20).mean() * 100:.1f}%")
