@@ -492,7 +492,8 @@ class Individual(object):
             return viral_load / lod
 
     def infect(self, time, **kwargs):
-        if isinstance(self.infected, float):
+        if isinstance(self.infected, float) and not isinstance(self.recovered, float):
+            # during infection
             by_id = "." if kwargs["by"] is None else kwargs["by"]
             self.logger.write(
                 f"{time:.2f}\t{EventType.INFECTION_IGNORED.name}\t{self.id}\tby={by_id}\n"
