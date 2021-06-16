@@ -465,7 +465,7 @@ class Individual(object):
                  self.r0, self.infect_params)
         peak_idx = np.argmax(trans_prob)
         idx = int(interval / self.model.params.simulation_interval)
-        multiplier = 0.7 if self.symptomatic else 1.8
+        multiplier = 0.8 if self.symptomatic else 1.3
         # translate to log10 CP/ML.
         # prob / iterval ==> daily probability from 0.1 up to 0.8
         # 0.01 to 3
