@@ -267,12 +267,9 @@ class Individual(object):
                 target=self.id,
                 logger=self.logger,
             ))
-        if by:
-            params = [f"by={by}"]
-        elif lead_time:
-            params = [f"leadtime={lead_time:.2f}"]
-        else:
-            params = []
+        params = [f"by={'.' if by is None else by}"]
+        if lead_time:
+            params.append(f"leadtime={lead_time:.2f}")
         #
         params.extend([
             f"r0={self.r0:.2f}",
@@ -379,9 +376,7 @@ class Individual(object):
 
         params = [f"by={'.' if by is None else by}"]
         if lead_time > 0:
-            params = [f"leadtime={lead_time:.2f}"]
-        else:
-            params = []
+            params.append(f"leadtime={lead_time:.2f}")
         #
         params.extend([
             f"r0={self.r0:.2f}",
