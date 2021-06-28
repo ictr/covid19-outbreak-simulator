@@ -560,6 +560,7 @@ class Population(object):
         new_id = f'{subpop}_{self.max_ids[subpop]}'
         self.individuals[ID].id = new_id
         self.max_ids[subpop] += 1
+        self.individuals[new_id] = self.individuals.pop(ID)
         return new_id
 
     def parse_vicinity(self, params):
