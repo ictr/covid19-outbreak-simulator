@@ -18,7 +18,7 @@ class remove(BasePlugin):
         parser.prog = '--plugin remove'
         parser.description = 'remove individuals from the population'
         parser.add_argument(
-            'popsize',
+            'count',
             nargs='+',
             help='''Number of individuals to be removed, which can be from
             the entire population, or from specific groups
@@ -27,7 +27,7 @@ class remove(BasePlugin):
 
     def apply(self, time, population, args=None):
         events = []
-        for ps in args.popsize:
+        for ps in args.count:
             name = ps.split('=', 1)[0] if '=' in ps else ''
             sz = int(ps.split('=', 1)[1]) if '=' in ps else int(ps)
 
@@ -37,7 +37,7 @@ class remove(BasePlugin):
             IDs = [x for x in population.ids if x.startswith(name) and x[len(name):].isnumeric()]
             random.shuffle(IDs)
             for ID in IDs[:sz]:
-                population.remove(ID)
+                population.remove(population[ID])
             removed_list = f',removed={",".join(IDs[:sz])}' if args.verbosity > 1 else ''
             if args.verbosity > 0:
                 self.logger.write(f'{time:.2f}\t{EventType.PLUGIN.name}\t.\tname=remove,subpop={name},size={sz}{removed_list}\n')

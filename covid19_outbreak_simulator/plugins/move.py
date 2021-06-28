@@ -26,7 +26,7 @@ class move(BasePlugin):
             '--type',
             dest='src_types',
             nargs='*',
-            help='''Type of individuals to be removed, can be "infected",
+            help='''Type of individuals to be removed, can be "infected", "uninfected",
             "quarantined", "recovered", "vaccinated", "unvaccinated", or "all". If
             count is not specified, all matching individuals will be removed, otherwise
             count number will be moved, following the order of types. Default to "all".'''
@@ -94,8 +94,13 @@ class move(BasePlugin):
             if src_type == 'infected':
                 move_IDs.extend(
                     add_ind(
-                        lambda ind: isinstance(ind, float) and not isinstance(
+                        lambda ind: isinstance(ind.infected, float) and not isinstance(
                             ind.recovered, float), args.count - len(move_IDs)))
+            #
+            if src_type == 'uninfected':
+                move_IDs.extend(
+                    add_ind(
+                        lambda ind: not isinstance(ind.infected, float), args.count - len(move_IDs)))
             #
             elif src_type == 'recovered':
                 move_IDs.extend(
@@ -126,7 +131,7 @@ class move(BasePlugin):
 
         if len(move_IDs) < args.count:
             self.logger.write(
-                f'{time:.2f}\t{EventType.WARNING.name}\t{self.id}\tmsg="Not enough people to move. Expected {args.count}, actual {len(move_IDs)}"\n'
+                f'{time:.2f}\t{EventType.WARNING.name}\t.\tmsg="Not enough people to move. Expected {args.count}, actual {len(move_IDs)}"\n'
             )
 
         return self.move(time, population, args, move_IDs)

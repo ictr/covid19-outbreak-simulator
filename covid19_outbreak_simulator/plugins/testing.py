@@ -208,7 +208,7 @@ class testing(BasePlugin):
                     Event(
                         time + args.turnaround_time,
                         EventType.REMOVAL,
-                        target=ID,
+                        target=population[ID],
                         logger=self.logger))
             elif args.handle_positive.startswith('quarantine'):
                 if args.handle_positive == 'quarantine':
@@ -220,7 +220,7 @@ class testing(BasePlugin):
                         Event(
                             time + args.turnaround_time,
                             EventType.QUARANTINE,
-                            target=ID,
+                            target=population[ID],
                             logger=self.logger,
                             till=time + duration))
             elif args.handle_positive == 'replace':
@@ -230,7 +230,7 @@ class testing(BasePlugin):
                         EventType.REPLACEMENT,
                         reason='detected',
                         keep=['vaccinated'],
-                        target=ID,
+                        target=population[ID],
                         logger=self.logger))
             elif args.handle_positive != 'keep':
                 raise ValueError(

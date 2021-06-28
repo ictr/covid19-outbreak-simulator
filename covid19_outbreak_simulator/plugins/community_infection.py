@@ -48,7 +48,7 @@ class community_infection(BasePlugin):
                 Event(
                     time,
                     EventType.INFECTION,
-                    target=id,
+                    target=ind,
                     logger=self.logger,
                     priority=True,
                     by=None,
@@ -59,7 +59,7 @@ class community_infection(BasePlugin):
                 if population[id].group == subpop and not population[id].quarantined and np.random.binomial(1,
                     min(1, prob * ind.susceptibility), 1)[0]
             ]
-        IDs = [x.target for x in events]
+        IDs = [x.target.id for x in events]
         ID_list = f',infected={",".join(IDs)}' if IDs and args.verbosity > 1 else ''
 
         if args.verbosity > 0 and IDs:

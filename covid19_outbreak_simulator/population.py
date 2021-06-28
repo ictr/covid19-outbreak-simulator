@@ -47,7 +47,7 @@ class Individual(object):
             Event(
                 till,
                 EventType.REINTEGRATION,
-                target=self.id,
+                target=self,
                 logger=self.logger)
         ]
 
@@ -122,7 +122,7 @@ class Individual(object):
                 Event(
                     symp_time,
                     EventType.SHOW_SYMPTOM,
-                    target=self.id,
+                    target=self,
                     logger=self.logger,
                 ))
         #
@@ -153,7 +153,7 @@ class Individual(object):
                         Event(
                             symp_time,
                             EventType.REMOVAL,
-                            target=self.id,
+                            target=self,
                             logger=self.logger,
                         ))
                 else:
@@ -168,7 +168,7 @@ class Individual(object):
                     Event(
                         symp_time,
                         EventType.REPLACEMENT,
-                        target=self.id,
+                        target=self,
                         reason='symptom',
                         keep=['vaccinated'],
                         logger=self.logger,
@@ -205,7 +205,7 @@ class Individual(object):
                         Event(
                             symp_time,
                             EventType.QUARANTINE,
-                            target=self.id,
+                            target=self,
                             logger=self.logger,
                             till=symp_time + quarantine_duration,
                         ))
@@ -241,7 +241,7 @@ class Individual(object):
                         Event(
                             time + x,
                             EventType.INFECTION_AVOIDED,
-                            target=self.id,
+                            target=self,
                             logger=self.logger,
                             by=self.id,
                         ))
@@ -264,7 +264,7 @@ class Individual(object):
             Event(
                 time + x_grid[-1] - lead_time,
                 EventType.RECOVER,
-                target=self.id,
+                target=self,
                 logger=self.logger,
             ))
         params = [f"by={'.' if by is None else by}"]
@@ -349,7 +349,7 @@ class Individual(object):
                         Event(
                             time + x,
                             EventType.INFECTION_AVOIDED,
-                            target=self.id,
+                            target=self,
                             logger=self.logger,
                             by=self.id,
                         ))
@@ -371,7 +371,7 @@ class Individual(object):
             Event(
                 time + x_grid[-1],
                 EventType.RECOVER,
-                target=self.id,
+                target=self,
                 logger=self.logger))
 
         params = [f"by={'.' if by is None else by}"]
@@ -629,9 +629,9 @@ class Population(object):
         self.group_sizes[subpop] += len(items)
         self.max_ids[subpop] += len(items)
 
-    def replace(self, id, keep=[], **kwargs):
-        old_id = id
-        ind = self.individuals[id]
+    def replace(self, ind, keep=[], **kwargs):
+        assert isinstance(ind, Individual)
+        old_id = ind.id
         grp = ind.group
         idx = self.max_ids[grp]
 
@@ -661,8 +661,9 @@ class Population(object):
         return self.individuals.keys()
 
     def remove(self, item):
-        self.group_sizes[self.individuals[item].group] -= 1
-        self.individuals.pop(item)
+        assert isinstance(item, Individual)
+        self.group_sizes[item.group] -= 1
+        self.individuals.pop(item.id)
 
     def __len__(self):
         return len(self.individuals)
@@ -726,4 +727,4 @@ class Population(object):
 
         if not ids:
             return None
-        return choice(ids)
+        return self.individuals[choice(ids)]

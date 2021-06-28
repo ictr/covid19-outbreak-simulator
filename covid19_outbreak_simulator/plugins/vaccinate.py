@@ -90,7 +90,7 @@ class vaccinate(BasePlugin):
                 Event(
                     time,
                     EventType.VACCINATION,
-                    target=ID,
+                    target=population[ID],
                     priority=True,
                     immunity=args.immunity,
                     infectivity=args.infectivity,

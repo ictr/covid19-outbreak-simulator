@@ -97,7 +97,7 @@ class init(BasePlugin):
                             Event(
                                 0.0,
                                 EventType.INFECTION,
-                                target=ID,
+                                target=population[ID],
                                 logger=self.logger,
                                 priority=True,
                                 by=None,
@@ -124,7 +124,7 @@ class init(BasePlugin):
                             Event(
                                 0.0,
                                 EventType.INFECTION,
-                                target=ID,
+                                target=population[ID],
                                 logger=self.logger,
                                 priority=True,
                                 by=None,

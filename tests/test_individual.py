@@ -21,7 +21,7 @@ def test_quarantine(individual):
     assert len(res) == 1
     assert res[0].action == EventType.REINTEGRATION
     assert res[0].time == 2
-    assert res[0].target == individual.id
+    assert res[0].target.id == individual.id
 
     res = individual.reintegrate()
 

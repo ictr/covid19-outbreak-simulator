@@ -97,7 +97,7 @@ class Simulator(object):
                 Event(
                     0,
                     EventType.INFECTION,
-                    target=infector,
+                    target=population[infector],
                     logger=self.logger,
                     by=None,
                     handle_symptomatic=self.simu_args.handle_symptomatic,
@@ -179,7 +179,7 @@ class Simulator(object):
         infected_by = set()
         for time, events_at_time in events.items():
             for event in events_at_time:
-                if event.action.name in ('SHOW_SYMPTOM', 'RECOVER', 'REMOVAL') and event.target not in population:
+                if event.action.name in ('SHOW_SYMPTOM', 'RECOVER', 'REMOVAL') and event.target.id not in population:
                     continue
                 if event.action.name in ('INFECTION'):
                     if event.kwargs['by'] in population:

@@ -71,7 +71,7 @@ class insert(BasePlugin):
                     Event(
                         time,
                         EventType.INFECTION,
-                        target=ID,
+                        target=population[ID],
                         logger=self.logger,
                         by=None,
                         handle_symptomatic=self.simulator.simu_args

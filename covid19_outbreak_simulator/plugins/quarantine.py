@@ -72,7 +72,7 @@ class quarantine(BasePlugin):
                 Event(
                     time,
                     EventType.QUARANTINE,
-                    target=ID,
+                    target=population[ID],
                     logger=self.logger,
                     till=time + args.duration))
         quarantined_list = f',Quarantined={",".join(IDs)}' if args.verbosity > 1 else ''

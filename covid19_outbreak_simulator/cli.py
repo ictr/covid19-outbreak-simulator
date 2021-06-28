@@ -387,7 +387,7 @@ def main(argv=None):
                         f'Wrong last record reported: {lines[-1]} ')
                 logger.write(''.join(f'{i+1}\t{line}\n' for line in lines))
                 if last_fields[1] == 'ERROR':
-                    break
+                    raise RuntimeError(last_fields[2])
                 if i % 1000 == 999:
                     logger.flush()
     finally:

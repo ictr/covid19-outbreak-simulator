@@ -4,22 +4,22 @@ from covid19_outbreak_simulator.cli import parse_args, main
 from covid19_outbreak_simulator.model import Params
 
 
-def test_option_base_plugin_help():
+def test_option_base_plugin_help(clear_log):
     args = parse_args(['--plugin', '-h'])
     assert args.plugin == ['-h']
 
 
-def test_option_plugin_help():
+def test_option_plugin_help(clear_log):
     args = parse_args(['--plugin', 'sample', '-h'])
     assert args.plugin == ['sample', '-h']
 
 
-def test_option_plugin_args():
+def test_option_plugin_args(clear_log):
     args = parse_args(['--plugin', 'sample', '--sample-size', '100'])
     assert args.plugin == ['sample', '--sample-size', '100']
 
 
-def test_plugin_no_module():
+def test_plugin_no_module(clear_log):
     with pytest.raises(Exception):
         main([
             '--jobs', '1', '--repeats', '100', '--infectors', '1', '--plugin',
@@ -27,7 +27,7 @@ def test_plugin_no_module():
         ])
 
 
-def test_plugin_no_module():
+def test_plugin_no_module(clear_log):
     with pytest.raises(Exception):
         main([
             '--jobs', '1', '--repeats', '100', '--infectors', '1', '--plugin',
@@ -35,7 +35,7 @@ def test_plugin_no_module():
         ])
 
 
-def test_plugin_trigger():
+def test_plugin_trigger(clear_log):
     main([
         '--jobs', '1', '--repeats', '100', '--infectors', '1', '--plugin',
         'stat', '--trigger-by', 'INFECTION'
@@ -95,20 +95,20 @@ def test_plugin_quarantine_error(clear_log):
         ])
 
 
-def test_plugin_stat():
+def test_plugin_stat(clear_log):
     main([
         '--jobs', '1', '--repeats', '100', '--plugin', 'stat', '--interval', '1'
     ])
 
 
-def test_plugin_stat_with_groups():
+def test_plugin_stat_with_groups(clear_log):
     main([
         '--jobs', '1', '--popsize', 'A=200', 'B=100', '--repeats', '100',
         '--infectors', 'A_0', '--plugin', 'stat', '--interval', '1'
     ])
 
 
-def test_plugin_init():
+def test_plugin_init(clear_log):
     main([
         '--jobs', '1', '--repeats', '100', '--plugin', 'init', '--at', '0',
         '--incidence-rate', '0.01'
@@ -126,7 +126,7 @@ def test_plugin_init():
     ])
 
 
-def test_plugin_sample():
+def test_plugin_sample(clear_log):
     main([
         '--jobs', '1', '--repeats', '100', '--plugin', 'sample', '--interval',
         '1', '--proportion', '0.8'
@@ -137,7 +137,7 @@ def test_plugin_sample():
     ])
 
 
-def test_plugin_sample_error():
+def test_plugin_sample_error(clear_log):
     with pytest.raises((Exception, SystemExit)):
         main([
             '--jobs', '1', '--repeats', '100', '--plugin', 'sample',
@@ -157,7 +157,7 @@ def test_plugin_sample_error():
         ])
 
 
-def test_plugin_setparam():
+def test_plugin_setparam(clear_log):
     main([
         '--jobs', '1', '--repeats', '100', '--plugin', 'setparam', '--at', '1',
         '--symptomatic-r0', '0.2'
@@ -168,7 +168,7 @@ def test_plugin_setparam():
     ])
 
 
-def test_plugin_insert():
+def test_plugin_insert(clear_log):
     main([
         '--jobs', '1', '--repeats', '100', '--stop-if', 't>10', '--plugin',
         'insert', '2', '--at', '1'
@@ -179,7 +179,7 @@ def test_plugin_insert():
     ])
 
 
-def test_plugin_remove():
+def test_plugin_remove(clear_log):
     main([
         '--jobs', '1', '--repeats', '100', '--stop-if', 't>10', '--plugin',
         'remove', '2', '--at', '1'
@@ -190,7 +190,7 @@ def test_plugin_remove():
     ])
 
 
-def test_plugin_community_infection():
+def test_plugin_community_infection(clear_log):
     main([
         '--jobs', '1', '--repeats', '10', '--stop-if', 't>4', '--plugin',
         'community_infection', '--probability', '0.0001', '--interval', '1'
@@ -202,7 +202,7 @@ def test_plugin_community_infection():
     ])
 
 
-def test_plugin_insert_hetero_pop():
+def test_plugin_insert_hetero_pop(clear_log):
     main([
         '--jobs', '1', '--repeats', '100', '--stop-if', 't>10', '--popsize',
         'A=100', 'B=100', '--stop-if', 't>10', '--plugin', 'insert', 'A=2',
@@ -210,7 +210,7 @@ def test_plugin_insert_hetero_pop():
     ])
 
 
-def test_plugin_testing():
+def test_plugin_testing(clear_log):
     main(['--jobs', '1', '--repeats', '100', '--plugin', 'testing'])
 
     main(['--jobs', '1', '--repeats', '100', '--plugin', 'testing', '1', '2'])
@@ -227,7 +227,7 @@ def test_plugin_testing():
     ])
 
 
-def test_plugin_vaccinate():
+def test_plugin_vaccinate(clear_log):
     main(['--jobs', '1', '--repeats', '100', '--plugin', 'vaccinate'])
 
     main(['--jobs', '1', '--repeats', '100', '--plugin', 'vaccinate', '1', '2'])
