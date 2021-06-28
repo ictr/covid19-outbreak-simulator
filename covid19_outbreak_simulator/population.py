@@ -555,6 +555,9 @@ class Population(object):
         if ID not in self.individuals:
             return
         from_sp = self.individuals[ID].group
+
+        assert from_sp != subpop
+
         self.group_sizes[from_sp] -= 1
         self.group_sizes[subpop] += 1
         new_id = f'{subpop}_{self.max_ids[subpop]}'

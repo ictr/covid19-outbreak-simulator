@@ -7,7 +7,7 @@ from covid19_outbreak_simulator.event import Event, EventType
 from covid19_outbreak_simulator.model import Model, Params
 from covid19_outbreak_simulator.plugin import BasePlugin
 from covid19_outbreak_simulator.population import Individual
-from covid19_outbreak_simulator.utils import parse_param_with_multiplier, status_to_condition
+from covid19_outbreak_simulator.utils import parse_param_with_multiplier, select_individuals
 
 
 class testing(BasePlugin):
@@ -150,10 +150,7 @@ class testing(BasePlugin):
         if args.ignore_vaccinated:
             args.target = ['unvaccinated']
 
-        conditions = [status_to_condition(x) for x in args.target
-                     ] if args.target else []
-
-        def select(ind, counts=None):
+        def select(ind):
             nonlocal n_tested
             nonlocal n_infected
             nonlocal n_uninfected
@@ -164,23 +161,8 @@ class testing(BasePlugin):
             nonlocal n_false_negative
             nonlocal n_false_negative_in_recovered
             nonlocal n_false_negative_lod
-            nonlocal conditions
-
-            if counts:
-                if counts[ind.group] > 0:
-                    counts[ind.group] -= 1
-                else:
-                    return False
 
             affected = isinstance(ind.infected, float)
-
-            if args.target:
-                if not any(cond(ind) for cond in conditions):
-                    if affected:
-                        n_ignore_infected += 1
-                    else:
-                        n_ignore_uninfected += 1
-                    return False
 
             n_tested += 1
             if affected:
@@ -218,12 +200,23 @@ class testing(BasePlugin):
                 args.proportion,
                 subpops=population.group_sizes.keys(),
                 default=1.0)
-            counts = {
-                name: int(size * proportions[name])
-                for name, size in population.group_sizes.items()
-            }
 
-            IDs = [x for x, y in population.items() if select(y, counts)]
+            IDs = []
+            for name, sz in population.group_sizes.items():
+                prop = proportions.get(name if name in proportions else '', 1.0)
+                count = int(sz * prop) if prop < 1 else sz
+
+                spIDs = [
+                    x.id
+                    for x in population.individuals.values()
+                    if (name == '' or x.group == name)
+                ]
+
+                IDs.extend([
+                    x for x in select_individuals(population, spIDs,
+                                                  args.target, count)
+                    if select(population[x])
+                ])
 
         #print(f'SELECT {" ".join(IDs)}')
         events = []
@@ -278,6 +271,7 @@ class testing(BasePlugin):
             n_false_negative_in_recovered=n_false_negative_in_recovered)
         if IDs and args.verbosity > 1:
             res['detected_IDs'] = ",".join(IDs)
+
         res_str = ','.join(f'{k}={v}' for k, v in res.items())
         if args.verbosity > 0:
             self.logger.write(

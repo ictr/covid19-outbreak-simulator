@@ -1,4 +1,6 @@
 from fnmatch import fnmatch
+import copy
+import random
 
 
 def as_float(val, msg=''):
@@ -81,8 +83,38 @@ def status_to_condition(status):
     elif status == 'vaccinated':
         return lambda ind: isinstance(ind.vaccinated, float)
     elif status == 'unvaccinated':
-        return lambda ind: isinstance(ind.vaccinated, float)
+        return lambda ind: not isinstance(ind.vaccinated, float)
     elif status == 'all':
         return lambda ind: True
     else:
-        raise ValueError('Unexpected conditions')
+        raise ValueError(f'Unexpected conditions {status}')
+
+
+def select_individuals(population, IDs, targets, max_count=None):
+    from_IDs = copy.deepcopy(IDs)
+    random.shuffle(from_IDs)
+
+    def add_ind(match_cond, max_count=None):
+        res = []
+        count = 0
+        for ID in from_IDs:
+            if match_cond(population[ID]):
+                res.append(ID)
+                from_IDs.remove(ID)
+                count += 1
+                if max_count is not None and count == max_count:
+                    break
+        return res
+
+    count = 0
+    selected = []
+    for target in targets or ['all']:
+        selected.extend(
+            add_ind(
+                status_to_condition(target),
+                None if max_count is None else max_count - len(selected)))
+
+        if max_count is not None and len(selected) == max_count:
+            break
+
+    return selected

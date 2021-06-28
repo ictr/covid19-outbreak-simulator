@@ -1,6 +1,6 @@
 from covid19_outbreak_simulator.event import Event, EventType
 from covid19_outbreak_simulator.plugin import BasePlugin
-from covid19_outbreak_simulator.utils import parse_param_with_multiplier, status_to_condition
+from covid19_outbreak_simulator.utils import parse_param_with_multiplier, select_individuals
 
 import random
 
@@ -21,36 +21,35 @@ class quarantine(BasePlugin):
         parser.add_argument(
             '--proportion',
             nargs='*',
-            help='''Proportion of individuals or active cases (parameter --status) to quarantine. Default to
-            all, but can be set to a lower value to indicate incomplete quarantine.
+            help='''Proportion of individuals to quarantine. Default to
+            all (1.0), but can be set to a lower value to indicate incomplete quarantine.
             This option does not apply to cases when IDs are explicitly specified.
             Multipliers are allowed to specify proportions for each subpopulation.''',
         )
         parser.add_argument(
             '--count',
             nargs='*',
-            help='''Number of individuals or active cases (parameter --status) to quarantine. Default to
-            all, but can be set to a lower value to indicate incomplete quarantine.
-            This option does not apply to cases when IDs are explicitly specified.
-            Multipliers are allowed to specify count for each subpopulation.''',
+            help='''Number of individuals to quarantine. Default to 1 but multipliers
+            are expected to set number of individuals from each subpopulation.''',
         )
         parser.add_argument(
             '--target',
-            default='infected',
+            default=['infected'],
+            nargs='*',
             choices=[
                 "infected", "uninfected", "quarantined", "recovered",
                 "vaccinated", "unvaccinated", "all"
             ],
-            help='''Who to quarantine, replaced by option status.''',
+            help='''One or more types of individuals to be quarantined, can be "infected",
+                "uninfected", "quarantined", "recovered", "vaccinated", "unvaccinated", or
+                "all". Individuals will be selected based on conditions until --count or
+                --proportion is satisfied''',
         )
         parser.add_argument(
             '--duration', type=float, default=14, help='''Days of quarantine''')
         return parser
 
     def apply(self, time, population, args=None):
-        cond = lambda ind: True
-
-        cond = status_to_condition(args.target) if args.target else []
 
         if args.IDs:
             IDs = args.IDs
@@ -61,46 +60,35 @@ class quarantine(BasePlugin):
             if any(x not in population for x in IDs):
                 raise ValueError('Invalid or non-existant ID to quarantine.')
             if args.target:
-                IDs = [x for x in IDs if cond(population[x])]
-
-        elif args.count:
-            counts = parse_param_with_multiplier(
-                args.count, subpops=population.group_sizes.keys(), default=1)
-
-            IDs = []
-            for name, sz in population.group_sizes.items():
-                count = int(counts.get(name if name in counts else ''))
-
-                spIDs = [
-                    x.id
-                    for x in population.individuals.values()
-                    if (name == '' or x.group == name) and cond(x)
-                ]
-
-                random.shuffle(spIDs)
-                IDs.extend(spIDs[:count])
+                IDs = select_individuals(population, IDs, args.target)
 
         else:
-            proportions = parse_param_with_multiplier(
-                args.proportion,
-                subpops=population.group_sizes.keys(),
-                default=1.0)
+            if args.count:
+                counts = parse_param_with_multiplier(
+                    args.count,
+                    subpops=population.group_sizes.keys(),
+                    default=1)
+            else:
+                proportions = parse_param_with_multiplier(
+                    args.proportion,
+                    subpops=population.group_sizes.keys(),
+                    default=1.0)
+                counts = {}
+                for name, sz in population.group_sizes.items():
+                    prop = proportions.get(name if name in proportions else '',
+                                           1.0)
+                    counts[name] = int(sz * prop) if prop < 1 else sz
 
             IDs = []
             for name, sz in population.group_sizes.items():
-                prop = proportions.get(name if name in proportions else '', 1.0)
+                count = int(counts.get(name if name in counts else '1'))
 
                 spIDs = [
                     x.id
                     for x in population.individuals.values()
-                    if (name == '' or x.group == name) and cond(x)
+                    if (name == '' or x.group == name)
                 ]
-
-                if prop < 1:
-                    random.shuffle(spIDs)
-                    IDs.extend(spIDs[:int(sz * prop)])
-                else:
-                    IDs.extend(spIDs)
+                IDs = select_individuals(population, spIDs, args.target, count)
 
         events = []
         for ID in IDs:
@@ -111,6 +99,7 @@ class quarantine(BasePlugin):
                     target=population[ID],
                     logger=self.logger,
                     till=time + args.duration))
+
         quarantined_list = f',Quarantined={",".join(IDs)}' if args.verbosity > 1 else ''
         if args.verbosity > 0:
             self.logger.write(

@@ -2,7 +2,7 @@ import random
 
 from covid19_outbreak_simulator.event import Event, EventType
 from covid19_outbreak_simulator.plugin import BasePlugin
-from covid19_outbreak_simulator.utils import status_to_condition
+from covid19_outbreak_simulator.utils import select_individuals
 
 
 class move(BasePlugin):
@@ -30,19 +30,24 @@ class move(BasePlugin):
                 "infected", "uninfected", "quarantined", "recovered",
                 "vaccinated", "unvaccinated", "all"
             ],
-            help='''Type of individuals to be removed, can be "infected", "uninfected",
+            help='''One or more types of individuals to be removed, can be "infected", "uninfected",
             "quarantined", "recovered", "vaccinated", "unvaccinated", or "all". If
             count is not specified, all matching individuals will be removed, otherwise
             count number will be moved, following the order of types. Default to "all".'''
         )
         parser.add_argument(
-            '--count', type=int, help='''Number of people to move''')
+            '--count',
+            type=int,
+            help='''Number of people to move, which will be randomly
+            selected following specified --target.''')
         parser.add_argument(
             '--from',
+            required=True,
             dest='from_subpop',
             help='Name of the subpopulation of the source.')
         parser.add_argument(
             '--to',
+            required=True,
             dest='to_subpop',
             help='Name of the subpopulation of the destination.')
         return parser
@@ -66,6 +71,8 @@ class move(BasePlugin):
         if args.IDs:
             return self.move(time, population, args, args.IDs)
 
+        assert args.count is not None
+
         #
         # from
         from_IDs = [
@@ -74,33 +81,8 @@ class move(BasePlugin):
             if x.group == args.from_subpop
         ]
         #
-        random.shuffle(from_IDs)
-        #
-        # now find the individuals to move
-        if not args.target:
-            args.target = ['all']
-
-        def add_ind(match_cond, max_count):
-            res = []
-            count = 0
-            for ID in from_IDs:
-                if match_cond(population[ID]):
-                    res.append(ID)
-                    from_IDs.remove(ID)
-                    count += 1
-                    if count == max_count:
-                        break
-            return res
-
-        count = 0
-        move_IDs = []
-        for status in args.target:
-            move_IDs.extend(
-                add_ind(
-                    status_to_condition(status), args.count - len(move_IDs)))
-
-            if len(move_IDs) == args.count:
-                break
+        move_IDs = select_individuals(population, from_IDs, args.target,
+                                      args.count)
 
         if len(move_IDs) < args.count:
             self.logger.write(
