@@ -74,6 +74,18 @@ def test_plugin_quarantine(clear_log):
         '--proportion', 'A=1', 'B=0', '--target', 'infected'
     ])
 
+    main([
+        '--jobs', '1', '--popsize', 'A=100', 'B=200', '--infector', 'A_10',
+        '--repeats', '100', '--plugin', 'quarantine', '--duration', '7',
+        '--proportion', 'A=1', 'B=0', '--target', 'uninfected'
+    ])
+
+    main([
+        '--jobs', '1', '--popsize', 'A=100', 'B=200', '--infector', 'A_10',
+        '--repeats', '100', '--plugin', 'quarantine', '--duration', '7',
+        '--count', 'A=10', 'B=20', '--target', 'uninfected'
+    ])
+
 
 def test_plugin_quarantine_error(clear_log):
     with pytest.raises((Exception, SystemExit)):
@@ -224,6 +236,11 @@ def test_plugin_testing(clear_log):
     main([
         '--jobs', '1', '--repeats', '100', '--plugin', 'testing', '1', '2',
         '--turnaround-time', '2'
+    ])
+
+    main([
+        '--jobs', '1', '--repeats', '100', '--plugin', 'testing', '1', '2',
+        '--turnaround-time', '2', '--target', 'infected'
     ])
 
 

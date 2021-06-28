@@ -1,17 +1,23 @@
 from fnmatch import fnmatch
 
+
 def as_float(val, msg=''):
     try:
         return float(val)
     except Exception:
-        raise ValueError(f'A float number is expected{" (" + msg + ")" if msg else ""}: {val} provided')
+        raise ValueError(
+            f'A float number is expected{" (" + msg + ")" if msg else ""}: {val} provided'
+        )
 
 
 def as_int(val, msg=''):
     try:
         return int(val)
     except Exception:
-        raise ValueError(f'An integer number is expected{" (" + msg + ")" if msg else ""}: {val} provided')
+        raise ValueError(
+            f'An integer number is expected{" (" + msg + ")" if msg else ""}: {val} provided'
+        )
+
 
 def parse_param_with_multiplier(args, subpops=None, default=None):
     if args is None:
@@ -20,7 +26,7 @@ def parse_param_with_multiplier(args, subpops=None, default=None):
         else:
             raise ValueError('Process multiplier of unspecified parameter')
 
-    base = [x for x in args if not isinstance(x, str) or  '=' not in x]
+    base = [x for x in args if not isinstance(x, str) or '=' not in x]
     if not base:
         if default is None:
             raise ValueError(f'No vase value for multiplier: {" ".join(args)}')
@@ -60,3 +66,23 @@ def parse_param_with_multiplier(args, subpops=None, default=None):
             else:
                 res[sp] = base * val
     return res
+
+
+def status_to_condition(status):
+    if status == 'infected':
+        return lambda ind: isinstance(ind.infected, float) and not isinstance(
+            ind.recovered, float)
+    elif status == 'uninfected':
+        return lambda ind: not isinstance(ind.infected, float)
+    elif status == 'recovered':
+        return lambda ind: isinstance(ind.recovered, float)
+    elif status == 'quarantined':
+        return lambda ind: isinstance(ind.quarantined, float)
+    elif status == 'vaccinated':
+        return lambda ind: isinstance(ind.vaccinated, float)
+    elif status == 'unvaccinated':
+        return lambda ind: isinstance(ind.vaccinated, float)
+    elif status == 'all':
+        return lambda ind: True
+    else:
+        raise ValueError('Unexpected conditions')

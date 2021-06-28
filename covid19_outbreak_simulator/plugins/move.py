@@ -2,6 +2,7 @@ import random
 
 from covid19_outbreak_simulator.event import Event, EventType
 from covid19_outbreak_simulator.plugin import BasePlugin
+from covid19_outbreak_simulator.utils import status_to_condition
 
 
 class move(BasePlugin):
@@ -23,9 +24,12 @@ class move(BasePlugin):
             help='''IDs of individuals to be moved. All other paramters will
                 be ignored if IDs are specified''')
         parser.add_argument(
-            '--type',
-            dest='src_types',
+            '--target',
             nargs='*',
+            choices=[
+                "infected", "uninfected", "quarantined", "recovered",
+                "vaccinated", "unvaccinated", "all"
+            ],
             help='''Type of individuals to be removed, can be "infected", "uninfected",
             "quarantined", "recovered", "vaccinated", "unvaccinated", or "all". If
             count is not specified, all matching individuals will be removed, otherwise
@@ -73,8 +77,8 @@ class move(BasePlugin):
         random.shuffle(from_IDs)
         #
         # now find the individuals to move
-        if not args.src_types:
-            args.src_types = ['all']
+        if not args.target:
+            args.target = ['all']
 
         def add_ind(match_cond, max_count):
             res = []
@@ -90,41 +94,10 @@ class move(BasePlugin):
 
         count = 0
         move_IDs = []
-        for src_type in args.src_types:
-            if src_type == 'infected':
-                move_IDs.extend(
-                    add_ind(
-                        lambda ind: isinstance(ind.infected, float) and not isinstance(
-                            ind.recovered, float), args.count - len(move_IDs)))
-            #
-            if src_type == 'uninfected':
-                move_IDs.extend(
-                    add_ind(
-                        lambda ind: not isinstance(ind.infected, float), args.count - len(move_IDs)))
-            #
-            elif src_type == 'recovered':
-                move_IDs.extend(
-                    add_ind(lambda ind: isinstance(ind.recovered, float),
-                            args.count - len(move_IDs)))
-            #
-            elif src_type == 'quarantined':
-                move_IDs.extend(
-                    add_ind(lambda ind: isinstance(ind.quarantined, float),
-                            args.count - len(move_IDs)))
-            #
-            elif src_type == 'vaccinated':
-                move_IDs.extend(
-                    add_ind(lambda ind: isinstance(ind.vaccinated, float),
-                            args.count - len(move_IDs)))
-            #
-            elif src_type == 'unvaccinated':
-                move_IDs.extend(
-                    add_ind(lambda ind: not isinstance(ind.vaccinated, float),
-                            args.count - len(move_IDs)))
-            #
-            elif src_type == 'all':
-                move_IDs.extend(
-                    add_ind(lambda ind: True, args.count - len(move_IDs)))
+        for status in args.target:
+            move_IDs.extend(
+                add_ind(
+                    status_to_condition(status), args.count - len(move_IDs)))
 
             if len(move_IDs) == args.count:
                 break

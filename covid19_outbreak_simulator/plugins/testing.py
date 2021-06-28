@@ -7,7 +7,7 @@ from covid19_outbreak_simulator.event import Event, EventType
 from covid19_outbreak_simulator.model import Model, Params
 from covid19_outbreak_simulator.plugin import BasePlugin
 from covid19_outbreak_simulator.population import Individual
-from covid19_outbreak_simulator.utils import parse_param_with_multiplier
+from covid19_outbreak_simulator.utils import parse_param_with_multiplier, status_to_condition
 
 
 class testing(BasePlugin):
@@ -33,9 +33,21 @@ class testing(BasePlugin):
             proportion of tests for each group.''',
         )
         parser.add_argument(
+            '--target',
+            nargs='*',
+            choices=[
+                "infected", "uninfected", "quarantined", "recovered",
+                "vaccinated", "unvaccinated", "all"
+            ],
+            help='''Type of individuals to be tested, can be "infected", "uninfected",
+            "quarantined", "recovered", "vaccinated", "unvaccinated", or "all". If
+            count is not specified, all matching individuals will be removed, otherwise
+            count number will be moved, following the order of types. Default to "all".'''
+        )
+        parser.add_argument(
             '--ignore-vaccinated',
             action='store_true',
-            help='''Do not test people who are vaccinated.''',
+            help='Ignore vaccinated, replaced by --target unvaccinated',
         )
         parser.add_argument(
             '--sensitivity',
@@ -110,11 +122,18 @@ class testing(BasePlugin):
                             sensitivities7.append(sensitivity)
                         else:
                             sensitivities20.append(sensitivity)
-            print(f"\nTest sensitivity (for {model.params.prop_asym_carriers*100:.1f}% asymptomatic carriers)")
-            print(f"    <= 7 days:     {pd.Series(sensitivities7).mean() * 100:.1f}%")
-            print(f"    > 7 days:      {pd.Series(sensitivities20).mean() * 100:.1f}%")
-            print(f"    all:           {pd.Series(sensitivities7 + sensitivities20).mean() * 100:.1f}%")
-
+            print(
+                f"\nTest sensitivity (for {model.params.prop_asym_carriers*100:.1f}% asymptomatic carriers)"
+            )
+            print(
+                f"    <= 7 days:     {pd.Series(sensitivities7).mean() * 100:.1f}%"
+            )
+            print(
+                f"    > 7 days:      {pd.Series(sensitivities20).mean() * 100:.1f}%"
+            )
+            print(
+                f"    all:           {pd.Series(sensitivities7 + sensitivities20).mean() * 100:.1f}%"
+            )
 
     def apply(self, time, population, args=None):
         n_infected = 0
@@ -128,6 +147,12 @@ class testing(BasePlugin):
         n_tested = 0
         n_false_negative_lod = 0
 
+        if args.ignore_vaccinated:
+            args.target = ['unvaccinated']
+
+        conditions = [status_to_condition(x) for x in args.target
+                     ] if args.target else []
+
         def select(ind, counts=None):
             nonlocal n_tested
             nonlocal n_infected
@@ -139,6 +164,7 @@ class testing(BasePlugin):
             nonlocal n_false_negative
             nonlocal n_false_negative_in_recovered
             nonlocal n_false_negative_lod
+            nonlocal conditions
 
             if counts:
                 if counts[ind.group] > 0:
@@ -147,12 +173,14 @@ class testing(BasePlugin):
                     return False
 
             affected = isinstance(ind.infected, float)
-            if ind.vaccinated is not False and args.ignore_vaccinated:
-                if affected:
-                    n_ignore_infected += 1
-                else:
-                    n_ignore_uninfected += 1
-                return False
+
+            if args.target:
+                if not any(cond(ind) for cond in conditions):
+                    if affected:
+                        n_ignore_infected += 1
+                    else:
+                        n_ignore_uninfected += 1
+                    return False
 
             n_tested += 1
             if affected:
