@@ -85,8 +85,11 @@ class init(BasePlugin):
                 n_isp += sp_isp
                 for idx, sts in zip(range(0, sz), pop_status):
                     if sts == 2:
-                        population[f'{name}_{idx}' if name else str(idx)].infected = -10.0
-                        population[f'{name}_{idx}' if name else str(idx)].recovered = -2.0
+                        ind_id = f'{name}_{idx}' if name else str(idx)
+                        population[ind_id].infected = -10.0
+                        population[ind_id].recovered = -2.0
+                        population[ind_id].susceptibility = 0.01
+                        population[ind_id].infectivity = 0.01
                     if sts == 1:
                         ID = f'{name}_{idx}' if name else str(idx)
                         infected.append(ID)
@@ -94,7 +97,7 @@ class init(BasePlugin):
                             Event(
                                 0.0,
                                 EventType.INFECTION,
-                                target=ID,
+                                target=population[ID],
                                 logger=self.logger,
                                 priority=True,
                                 by=None,
@@ -121,7 +124,7 @@ class init(BasePlugin):
                             Event(
                                 0.0,
                                 EventType.INFECTION,
-                                target=ID,
+                                target=population[ID],
                                 logger=self.logger,
                                 priority=True,
                                 by=None,

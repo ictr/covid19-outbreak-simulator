@@ -31,8 +31,7 @@ def parse_args(args=None):
         '--track-events',
         nargs='+',
         help='''List events to track, default to track all events. Event START and ERROR
-        will always be tracked.'''
-    )
+        will always be tracked.''')
     parser.add_argument(
         '--vicinity',
         nargs='*',
@@ -79,8 +78,7 @@ def parse_args(args=None):
             for increasing and a stage for decreasing infectivity. The proportion of stages
             and time after incubation period are controlled by a lognormal distribution.
             Parameters to this model could be specified but not recommended.
-        '''
-    )
+        ''')
     parser.add_argument(
         '--asymptomatic-transmissibility-model',
         nargs='+',
@@ -91,8 +89,7 @@ def parse_args(args=None):
             infectivity. The proportion of stages and the overall duration are controlled
             by a lognormal distribution. Parameters to this model could be specified but
             not recommended.
-        '''
-    )
+        ''')
 
     parser.add_argument(
         '--incubation-period',
@@ -100,8 +97,7 @@ def parse_args(args=None):
         help='''Incubation period period, should be specified as "lognormal" followed by two
             numbers as mean and sigma, or "normal" followed by mean and sd. Multipliers are
             allowed to specify incubation period for each group. Default to
-            "lognormal 1.621 0.418"'''
-    )
+            "lognormal 1.621 0.418"''')
     parser.add_argument(
         '--repeats',
         default=100,
@@ -142,7 +138,7 @@ def parse_args(args=None):
         '--prop-asym-carriers',
         nargs='*',
         help='''Proportion of asymptomatic cases. You can specify a fix number, or two
-        numbers as the lower and higher CI (95%%) of the proportion. Default to 0.10 to 0.40.
+        numbers as the lower and higher CI (95%%) of the proportion. Default to 0.40.
         Multipliers can be specified to set proportion of asymptomatic carriers
         for particular groups.''')
     parser.add_argument(
@@ -177,30 +173,29 @@ def parse_args(args=None):
         '-v',
         '--version',
         action='store_true',
-        help='Print version information'
-    )
+        help='Print version information')
     parser.add_argument(
         '--summarize-model',
         action='store_true',
         help='''If specified, output key statistics calculated such as mean serial interval directly
             from model parameters. No simulation will actually be executed if this parameter is
-            specified.'''
-    )
+            specified. It will also trigger the "summarize-model" mode for plugins if the plugin
+            supports this feature.''')
     parser.add_argument(
         '--summary-report',
         help='''Generate a summary report and write to the specified file,
-          which can be "-" for standard output.'''
-    )
+          which can be "-" for standard output.''')
     parser.add_argument(
         '--sensitivity',
         nargs='+',
         type=float,
         default=[1.0],
-        help=argparse.SUPPRESS
-    )
+        help=argparse.SUPPRESS)
     return parser.parse_args(args)
 
+
 class FilteredStringIO(StringIO):
+
     def __init__(self, track_events=None):
         super(FilteredStringIO, self).__init__()
         self._track_events = track_events
@@ -210,10 +205,10 @@ class FilteredStringIO(StringIO):
                 if evt not in self._track_events:
                     self._track_events.add(evt)
 
-
     def write(self, text):
         if not self._track_events or text.split('\t')[1] in self._track_events:
             super(FilteredStringIO, self).write(text)
+
 
 class Worker(multiprocessing.Process):
 
@@ -234,7 +229,8 @@ class Worker(multiprocessing.Process):
             if id is None:
                 self.task_queue.task_done()
                 break
-            with FilteredStringIO(track_events = self.simu_args.track_events) as logger:
+            with FilteredStringIO(
+                    track_events=self.simu_args.track_events) as logger:
                 simu = Simulator(
                     params=self.params,
                     logger=logger,
@@ -261,12 +257,8 @@ def main(argv=None):
         from . import __version__
         print(f'COVID10 Outbreak Simulator version {__version__}')
         sys.exit(0)
-    if args.summarize_model:
-        summarize_model(Params(args), args)
-        sys.exit(0)
 
-    tasks = multiprocessing.JoinableQueue()
-    results = multiprocessing.Queue()
+    plugins = []
     if args.plugin:
         if args.plugin[0] == '-h':
             # list all plugins
@@ -275,7 +267,7 @@ def main(argv=None):
             parser = bp.get_parser()
             parser.parse_args(['-h'])
         # load the plugins just to check if the parameters are ok
-        load_plugins(args.plugin)
+        plugins = load_plugins(args.plugin)
 
     if not args.jobs:
         args.jobs = multiprocessing.cpu_count()
@@ -294,6 +286,14 @@ def main(argv=None):
                 f'Option --stop-if currently only supports t>TIME to stop after certain time point.'
             )
 
+    if args.summarize_model:
+        summarize_model(args)
+        for plugin, plugin_args in plugins:
+            plugin.summarize_model(args, plugin_args)
+        sys.exit(0)
+
+    tasks = multiprocessing.JoinableQueue()
+    results = multiprocessing.Queue()
     completed_ids = 0
 
     # check the last line
@@ -312,31 +312,45 @@ def main(argv=None):
         else:
             fields = last_line.split('\t')
             if len(fields) != 5:
-                raise ValueError(f'Existing file is corrupeted. Please fix before continue: "{last_line.strip()}" does not have five fields.')
+                raise ValueError(
+                    f'Existing file is corrupeted. Please fix before continue: "{last_line.strip()}" does not have five fields.'
+                )
             if fields[2] != 'END':
-                raise ValueError(f'Last record of replicate ends with line "{last_line.strip()}" is not an "END" event. Please fix before continue.')
+                raise ValueError(
+                    f'Last record of replicate ends with line "{last_line.strip()}" is not an "END" event. Please fix before continue.'
+                )
             completed_ids = int(fields[0])
 
     if args.resume:
         if completed_ids == args.repeats:
-            print(f'All simulations have been performed. Remove {args.logfile} if you would like to rerun.')
+            print(
+                f'All simulations have been performed. Remove {args.logfile} if you would like to rerun.'
+            )
             return 0
         if completed_ids > args.repeats:
-            print(f'More than requested {args.repeats} replicates exists in {args.logfile}. Remove the logfile if you would like to rerun.')
+            print(
+                f'More than requested {args.repeats} replicates exists in {args.logfile}. Remove the logfile if you would like to rerun.'
+            )
             return 0
         if completed_ids != 0:
-            print(f'Resuming from {completed_ids} completed records in {args.logfile}')
+            print(
+                f'Resuming from {completed_ids} completed records in {args.logfile}'
+            )
     elif completed_ids != 0:
-        print(f'Overwriting {completed_ids} completed records in {args.logfile}')
+        print(
+            f'Overwriting {completed_ids} completed records in {args.logfile}')
         completed_ids = 0
 
     if os.path.isfile(args.logfile + '.lock'):
-        raise RuntimeError(f'The output logfile {args.logfile} is locked. Please remove {args.logfile}.lock manually if you are certain that no other process is writing to the logfile')
+        raise RuntimeError(
+            f'The output logfile {args.logfile} is locked. Please remove {args.logfile}.lock manually if you are certain that no other process is writing to the logfile'
+        )
 
     submitted = 0
     try:
         with open(args.logfile + '.lock', 'w') as lock:
-            lock.write(f'START: {datetime.now().strftime("%m/%d/%Y-%H:%M:%S")}\n')
+            lock.write(
+                f'START: {datetime.now().strftime("%m/%d/%Y-%H:%M:%S")}\n')
             lock.write(f'CMD: {subprocess.list2cmdline(sys.argv)}')
 
         workers = [
@@ -350,25 +364,30 @@ def main(argv=None):
             if completed_ids == 0:
                 logger.write('id\ttime\tevent\ttarget\tparams\n')
             for i in range(args.repeats):
-                if i+1 > completed_ids:
+                if i + 1 > completed_ids:
                     submitted += 1
                     tasks.put(i + 1)
             for i in range(args.jobs):
                 tasks.put(None)
             #
-            for i in tqdm(range(completed_ids, args.repeats),
-                total=args.repeats, initial=completed_ids):
+            for i in tqdm(
+                    range(completed_ids, args.repeats),
+                    total=args.repeats,
+                    initial=completed_ids):
                 result = results.get()
                 lines = result.splitlines()
                 first_fields = lines[0].split('\t')
                 if len(first_fields) != 4 or first_fields[1] != 'START':
-                    raise ValueError(f'Wrong starting record reported: {lines[0]}')
+                    raise ValueError(
+                        f'Wrong starting record reported: {lines[0]}')
                 last_fields = lines[-1].split('\t')
-                if len(last_fields) != 4 or last_fields[1] not in ('END', 'ERROR'):
-                    raise ValueError(f'Wrong last record reported: {lines[-1]} ')
+                if len(last_fields) != 4 or last_fields[1] not in ('END',
+                                                                   'ERROR'):
+                    raise ValueError(
+                        f'Wrong last record reported: {lines[-1]} ')
                 logger.write(''.join(f'{i+1}\t{line}\n' for line in lines))
                 if last_fields[1] == 'ERROR':
-                    break
+                    raise RuntimeError(last_fields[2])
                 if i % 1000 == 999:
                     logger.flush()
     finally:

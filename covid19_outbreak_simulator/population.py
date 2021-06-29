@@ -47,7 +47,7 @@ class Individual(object):
             Event(
                 till,
                 EventType.REINTEGRATION,
-                target=self.id,
+                target=self,
                 logger=self.logger)
         ]
 
@@ -55,18 +55,6 @@ class Individual(object):
         self.vaccinated = time
         self.susceptibility = 1 - immunity
         self.infectivity = infectivity
-
-    def reset(self):
-        # we keep the susceptibility parameter...
-        self.infected = False
-        self.infectivity = None
-        self.show_symptom = False
-        self.recovered = False
-        self.symptomatic = None
-        self.vaccinated = False
-        self.quarantined = False
-        self.r0 = None
-        self.incubation_period = None
 
     def reintegrate(self):
         self.quarantined = False
@@ -134,7 +122,7 @@ class Individual(object):
                 Event(
                     symp_time,
                     EventType.SHOW_SYMPTOM,
-                    target=self.id,
+                    target=self,
                     logger=self.logger,
                 ))
         #
@@ -165,7 +153,7 @@ class Individual(object):
                         Event(
                             symp_time,
                             EventType.REMOVAL,
-                            target=self.id,
+                            target=self,
                             logger=self.logger,
                         ))
                 else:
@@ -180,7 +168,9 @@ class Individual(object):
                     Event(
                         symp_time,
                         EventType.REPLACEMENT,
-                        target=self.id,
+                        target=self,
+                        reason='symptom',
+                        keep=['vaccinated'],
                         logger=self.logger,
                     ))
             else:
@@ -215,7 +205,7 @@ class Individual(object):
                         Event(
                             symp_time,
                             EventType.QUARANTINE,
-                            target=self.id,
+                            target=self,
                             logger=self.logger,
                             till=symp_time + quarantine_duration,
                         ))
@@ -251,7 +241,7 @@ class Individual(object):
                         Event(
                             time + x,
                             EventType.INFECTION_AVOIDED,
-                            target=self.id,
+                            target=self,
                             logger=self.logger,
                             by=self.id,
                         ))
@@ -274,15 +264,12 @@ class Individual(object):
             Event(
                 time + x_grid[-1] - lead_time,
                 EventType.RECOVER,
-                target=self.id,
+                target=self,
                 logger=self.logger,
             ))
-        if by:
-            params = [f"by={by}"]
-        elif lead_time:
-            params = [f"leadtime={lead_time:.2f}"]
-        else:
-            params = []
+        params = [f"by={'.' if by is None else by}"]
+        if lead_time:
+            params.append(f"leadtime={lead_time:.2f}")
         #
         params.extend([
             f"r0={self.r0:.2f}",
@@ -362,7 +349,7 @@ class Individual(object):
                         Event(
                             time + x,
                             EventType.INFECTION_AVOIDED,
-                            target=self.id,
+                            target=self,
                             logger=self.logger,
                             by=self.id,
                         ))
@@ -384,14 +371,12 @@ class Individual(object):
             Event(
                 time + x_grid[-1],
                 EventType.RECOVER,
-                target=self.id,
+                target=self,
                 logger=self.logger))
-        if by:
-            params = [f"by={by}"]
-        elif lead_time > 0:
-            params = [f"leadtime={lead_time:.2f}"]
-        else:
-            params = []
+
+        params = [f"by={'.' if by is None else by}"]
+        if lead_time > 0:
+            params.append(f"leadtime={lead_time:.2f}")
         #
         params.extend([
             f"r0={self.r0:.2f}",
@@ -475,7 +460,7 @@ class Individual(object):
                  self.r0, self.infect_params)
         peak_idx = np.argmax(trans_prob)
         idx = int(interval / self.model.params.simulation_interval)
-        multiplier = 0.7 if self.symptomatic else 1.8
+        multiplier = 0.8 if self.symptomatic else 1.3
         # translate to log10 CP/ML.
         # prob / iterval ==> daily probability from 0.1 up to 0.8
         # 0.01 to 3
@@ -502,7 +487,8 @@ class Individual(object):
             return viral_load / lod
 
     def infect(self, time, **kwargs):
-        if isinstance(self.infected, float):
+        if isinstance(self.infected, float) and not isinstance(self.recovered, float):
+            # during infection
             by_id = "." if kwargs["by"] is None else kwargs["by"]
             self.logger.write(
                 f"{time:.2f}\t{EventType.INFECTION_IGNORED.name}\t{self.id}\tby={by_id}\n"
@@ -512,7 +498,7 @@ class Individual(object):
         if self.susceptibility < 1 and rand() > self.susceptibility:
             by_id = "." if kwargs["by"] is None else kwargs["by"]
             self.logger.write(
-                f"{time:.2f}\t{EventType.INFECTION_FAILED.name}\t{self.id}\tby={by_id},reson=susceptibility\n"
+                f"{time:.2f}\t{EventType.INFECTION_FAILED.name}\t{self.id}\tby={by_id},reason=susceptibility\n"
             )
             return []
 
@@ -569,11 +555,15 @@ class Population(object):
         if ID not in self.individuals:
             return
         from_sp = self.individuals[ID].group
+
+        assert from_sp != subpop
+
         self.group_sizes[from_sp] -= 1
         self.group_sizes[subpop] += 1
         new_id = f'{subpop}_{self.max_ids[subpop]}'
         self.individuals[ID].id = new_id
         self.max_ids[subpop] += 1
+        self.individuals[new_id] = self.individuals.pop(ID)
         return new_id
 
     def parse_vicinity(self, params):
@@ -643,13 +633,41 @@ class Population(object):
         self.group_sizes[subpop] += len(items)
         self.max_ids[subpop] += len(items)
 
+    def replace(self, ind, keep=[], **kwargs):
+        assert isinstance(ind, Individual)
+        old_id = ind.id
+        grp = ind.group
+        idx = self.max_ids[grp]
+
+        self.max_ids[grp] += 1
+
+        ind.id = f'{grp}_{idx}' if grp else str(idx)
+
+        # we keep the susceptibility parameter...
+        for attr, def_value in [
+            ('infected', False),
+            ('infectivity', None),
+            ('show_symptom', False),
+            ('recovered', False),
+            ('symptomatic', None),
+            ('vaccinated', False),
+            ('quarantined', False),
+            ('r0', None),
+            ('incubation_period', None)
+        ]:
+            if attr not in keep:
+                setattr(ind, attr, def_value)
+
+        self.individuals[ind.id] = self.individuals.pop(old_id)
+
     @property
     def ids(self):
         return self.individuals.keys()
 
     def remove(self, item):
-        self.group_sizes[self.individuals[item].group] -= 1
-        self.individuals.pop(item)
+        assert isinstance(item, Individual)
+        self.group_sizes[item.group] -= 1
+        self.individuals.pop(item.id)
 
     def __len__(self):
         return len(self.individuals)
@@ -713,4 +731,4 @@ class Population(object):
 
         if not ids:
             return None
-        return choice(ids)
+        return self.individuals[choice(ids)]

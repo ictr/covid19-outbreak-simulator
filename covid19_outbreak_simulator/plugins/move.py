@@ -2,6 +2,7 @@ import random
 
 from covid19_outbreak_simulator.event import Event, EventType
 from covid19_outbreak_simulator.plugin import BasePlugin
+from covid19_outbreak_simulator.utils import select_individuals
 
 
 class move(BasePlugin):
@@ -17,15 +18,85 @@ class move(BasePlugin):
         parser = super(move, self).get_parser()
         parser.prog = '--plugin move'
         parser.description = 'move individuals from one subpopulation to another.'
-        parser.add_argument('IDs',
-            nargs='+', help='IDs of individuals to be moved.')
-        parser.add_argument('-t', '--to',
+        parser.add_argument(
+            'IDs',
+            nargs='*',
+            help='''IDs of individuals to be moved. All other paramters will
+                be ignored if IDs are specified''')
+        parser.add_argument(
+            '--target',
+            nargs='*',
+            choices=[
+                "infected", "uninfected", "quarantined", "recovered",
+                "vaccinated", "unvaccinated", "all"
+            ],
+            help='''One or more types of individuals to be removed, can be "infected", "uninfected",
+            "quarantined", "recovered", "vaccinated", "unvaccinated", or "all". If
+            count is not specified, all matching individuals will be removed, otherwise
+            count number will be moved, following the order of types. Default to "all".'''
+        )
+        parser.add_argument(
+            '--count',
+            type=int,
+            help='''Number of people to move, which will be randomly
+            selected following specified --target.''')
+        parser.add_argument(
+            '--from',
+            required=True,
+            dest='from_subpop',
+            help='Name of the subpopulation of the source.')
+        parser.add_argument(
+            '--to',
+            required=True,
+            dest='to_subpop',
             help='Name of the subpopulation of the destination.')
+        parser.add_argument(
+            '--reintegrate',
+            action='store_true',
+            help='''If specified, remove the quarantine status of moved
+                individuals
+            '''
+        )
         return parser
 
-    def apply(self, time, population, args=None):
-        for ID in args.IDs:
-            new_id = population.move(ID, args.to)
-            if args.verbosity > 0:
-                self.logger.write(f'{time:.2f}\t{EventType.PLUGIN.name}\t.\tname=move,subpop={args.to},id={ID},new_id={new_id}\n')
+    def move(self, time, population, args, IDs):
+        ID_map = {}
+        for ID in IDs:
+            new_id = population.move(ID, args.to_subpop)
+            if args.reintegrate and isinstance(population[new_id].quarantined, float):
+                population[new_id].reintegrate()
+
+            ID_map[ID] = new_id
+        if args.verbosity > 1 and ID_map:
+            ID_map = ',ID_map=' + ','.join(
+                [f'{x}->{y}' for x, y in ID_map.items()])
+        else:
+            ID_map = ''
+        self.logger.write(
+            f'{time:.2f}\t{EventType.PLUGIN.name}\t.\tname=move,from={args.from_subpop},to={args.to_subpop},n_moved={len(IDs)},{ID_map}\n'
+        )
         return []
+
+    def apply(self, time, population, args=None):
+        if args.IDs:
+            return self.move(time, population, args, args.IDs)
+
+        assert args.count is not None
+
+        #
+        # from
+        from_IDs = [
+            x.id
+            for x in population.individuals.values()
+            if x.group == args.from_subpop
+        ]
+        #
+        move_IDs = select_individuals(population, from_IDs, args.target,
+                                      args.count)
+
+        if len(move_IDs) < args.count:
+            self.logger.write(
+                f'{time:.2f}\t{EventType.WARNING.name}\t.\tmsg="Not enough people to move. Expected {args.count}, actual {len(move_IDs)}"\n'
+            )
+
+        return self.move(time, population, args, move_IDs)

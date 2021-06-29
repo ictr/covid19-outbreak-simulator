@@ -21,7 +21,7 @@ def test_quarantine(individual):
     assert len(res) == 1
     assert res[0].action == EventType.REINTEGRATION
     assert res[0].time == 2
-    assert res[0].target == individual.id
+    assert res[0].target.id == individual.id
 
     res = individual.reintegrate()
 
@@ -141,27 +141,45 @@ def test_asymptomatic_infect(individual_factory, by, handle_symptomatic,
     assert ind1.incubation_period is not None
 
 
-@pytest.mark.parametrize('immunity', [0, 0.75, 1])
-def test_vaccination(individual_factory, immunity):
+@pytest.mark.parametrize('immunity, infectivity',
+                         product([0, 0.75, 1], [0.2, 0.3]))
+def test_vaccination(individual_factory, immunity, infectivity):
     ind = individual_factory(id='1')
-    ind.model.draw_prop_asym_carriers()
     #
-    ind.vaccinate(time=0, immunity=immunity, infectivity=0.5)
+    ind.model.params.set_prop_asym_carriers(['0.2'])
+    ind.model.draw_prop_asym_carriers()
+
+    assert ind.model.params.prop_asym_carriers == 0.2
+    ind.vaccinate(time=0, immunity=immunity, infectivity=infectivity)
     #
     # try to infect the individual
     #
     N = 1000
     N_infected = 0
+    N_asymptomatic = 0
+    N_symptomatic = 0
     for x in range(N):
         ind.infected = None
-        ind.infect(5.0, by=None)
+        ind.symptomatic = None
+        ind.infect(0, by=None)
         N_infected += ind.infected is not None
+        if ind.symptomatic == False:
+            N_asymptomatic += 1
+        elif ind.symptomatic == True:
+            N_symptomatic += 1
 
-    print(N_infected)
     if immunity == 1:
         assert N_infected == 0
+        assert N_asymptomatic == 0
+        assert N_symptomatic == 0
     elif immunity == 0:
         assert N_infected == N
+        assert N_asymptomatic / (
+            N_asymptomatic +
+            N_symptomatic) > 0.2, 'expect {N_asymptomatic/N} to be > 0.2'
     else:
         assert N_infected < N * (1 - immunity + 0.1)
         assert N_infected > N * (1 - immunity - 0.1)
+        assert N_asymptomatic / (
+            N_asymptomatic +
+            N_symptomatic) > 0.2, 'expect {N_asymptomatic/N} to be > 0.2'

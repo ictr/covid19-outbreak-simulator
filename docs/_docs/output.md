@@ -34,6 +34,8 @@ Currently the following events are tracked
 | `REINTEGRATION` | Reintroduce the quarantined individual to group.                                        |
 | `REMOVAL` | Remove from population.                                                                 |
 | `SHOW_SYMPTOM` | Show symptom.                                                                           |
+| `VACCINATION` | Vaccination                                                                      |
+| `REPLACEMENT` | A special event that replace the existing individual with a new uninfected one. |
 | `START` | Start up simulation.                                                                    |
 | `STAT` | Report population stats at specified intervals.                                         |
 

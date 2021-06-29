@@ -1,7 +1,14 @@
-from covid19_outbreak_simulator.event import Event, EventType
-from covid19_outbreak_simulator.plugin import BasePlugin
-from covid19_outbreak_simulator.utils import parse_param_with_multiplier
+import os
+
 import numpy
+import pandas as pd
+
+from covid19_outbreak_simulator.event import Event, EventType
+from covid19_outbreak_simulator.model import Model, Params
+from covid19_outbreak_simulator.plugin import BasePlugin
+from covid19_outbreak_simulator.population import Individual
+from covid19_outbreak_simulator.utils import parse_param_with_multiplier, select_individuals
+
 
 class testing(BasePlugin):
 
@@ -14,7 +21,9 @@ class testing(BasePlugin):
         parser.prog = '--plugin testing'
         parser.description = '''PCR-based test that can pick out all active cases.'''
         parser.add_argument(
-            'IDs', nargs='*', help='''IDs of individuals to test. Parameter "proportion"
+            'IDs',
+            nargs='*',
+            help='''IDs of individuals to test. Parameter "proportion"
             will be ignored with specified IDs for testing''')
         parser.add_argument(
             '--proportion',
@@ -22,6 +31,23 @@ class testing(BasePlugin):
             help='''Proportion of individuals to test. Individuals who are tested
             positive will by default be quarantined. Multipliers are allowed to specify
             proportion of tests for each group.''',
+        )
+        parser.add_argument(
+            '--target',
+            nargs='*',
+            choices=[
+                "infected", "uninfected", "quarantined", "recovered",
+                "vaccinated", "unvaccinated", "all"
+            ],
+            help='''Type of individuals to be tested, can be "infected", "uninfected",
+            "quarantined", "recovered", "vaccinated", "unvaccinated", or "all". If
+            count is not specified, all matching individuals will be removed, otherwise
+            count number will be moved, following the order of types. Default to "all".'''
+        )
+        parser.add_argument(
+            '--ignore-vaccinated',
+            action='store_true',
+            help='Ignore vaccinated, replaced by --target unvaccinated',
         )
         parser.add_argument(
             '--sensitivity',
@@ -60,9 +86,60 @@ class testing(BasePlugin):
                 will be removed from population.''')
         return parser
 
+    def summarize_model(self, simu_args, args):
+        print(f'\nPlugin {self}:')
+
+        model = Model(Params(simu_args))
+        for asym_carriers in (0, 1, None):
+            if asym_carriers is not None:
+                model.params.set('prop_asym_carriers', 'loc', asym_carriers)
+                model.params.set('prop_asym_carriers', 'scale', 0)
+            else:
+                model = Model(Params(simu_args))
+
+            # average test sensitivity
+            sensitivities7 = []
+            sensitivities20 = []
+            with open(os.devnull, 'w') as logger:
+                logger.id = 1
+
+                for i in range(10000):
+                    model.draw_prop_asym_carriers()
+                    ind = Individual(
+                        id='0', susceptibility=1, model=model, logger=logger)
+                    ind.infect(0, by=None, leadtime=0)
+
+                    for i in range(20):
+                        test_lod = args.sensitivity[1] if len(
+                            args.sensitivity) == 2 else 0
+
+                        lod_sensitivity = ind.test_sensitivity(i, test_lod)
+                        if lod_sensitivity == 0:
+                            continue
+                        #
+                        sensitivity = lod_sensitivity * args.sensitivity[0]
+                        if i <= 7:
+                            sensitivities7.append(sensitivity)
+                        else:
+                            sensitivities20.append(sensitivity)
+            print(
+                f"\nTest sensitivity (for {model.params.prop_asym_carriers*100:.1f}% asymptomatic carriers)"
+            )
+            print(
+                f"    <= 7 days:     {pd.Series(sensitivities7).mean() * 100:.1f}%"
+            )
+            print(
+                f"    > 7 days:      {pd.Series(sensitivities20).mean() * 100:.1f}%"
+            )
+            print(
+                f"    all:           {pd.Series(sensitivities7 + sensitivities20).mean() * 100:.1f}%"
+            )
+
     def apply(self, time, population, args=None):
         n_infected = 0
         n_uninfected = 0
+        n_ignore_infected = 0
+        n_ignore_uninfected = 0
         n_recovered = 0
         n_false_positive = 0
         n_false_negative = 0
@@ -70,25 +147,27 @@ class testing(BasePlugin):
         n_tested = 0
         n_false_negative_lod = 0
 
-        def select(ind, counts=None):
+        if args.ignore_vaccinated:
+            args.target = ['unvaccinated']
+
+        def select(ind):
             nonlocal n_tested
             nonlocal n_infected
             nonlocal n_uninfected
+            nonlocal n_ignore_infected
+            nonlocal n_ignore_uninfected
             nonlocal n_recovered
             nonlocal n_false_positive
             nonlocal n_false_negative
             nonlocal n_false_negative_in_recovered
             nonlocal n_false_negative_lod
 
-            if counts:
-                if counts[ind.group] > 0:
-                    counts[ind.group] -= 1
-                else:
-                    return False
-            n_tested += 1
             affected = isinstance(ind.infected, float)
+
+            n_tested += 1
             if affected:
-                test_lod = args.sensitivity[1] if len(args.sensitivity) == 2 else 0
+                test_lod = args.sensitivity[1] if len(
+                    args.sensitivity) == 2 else 0
                 lod_sensitivity = ind.test_sensitivity(time, test_lod)
                 #
                 sensitivity = lod_sensitivity * args.sensitivity[0]
@@ -108,7 +187,8 @@ class testing(BasePlugin):
             else:
                 n_uninfected += 1
 
-                res = args.specificity != 1 and args.specificity <= numpy.random.uniform()
+                res = args.specificity != 1 and args.specificity <= numpy.random.uniform(
+                )
                 if res:
                     n_false_positive += 1
                 return res
@@ -116,14 +196,28 @@ class testing(BasePlugin):
         if args.IDs:
             IDs = [x for x in args.IDs if select(population[x])]
         else:
-            proportions = parse_param_with_multiplier(args.proportion,
-                subpops=population.group_sizes.keys(), default=1.0)
-            counts = {name:int(size*proportions[name]) for name,size in population.group_sizes.items()}
+            proportions = parse_param_with_multiplier(
+                args.proportion,
+                subpops=population.group_sizes.keys(),
+                default=1.0)
 
-            IDs = [
-                x for x, y in population.items()
-                if select(y, counts)
-            ]
+            IDs = []
+            for name, sz in population.group_sizes.items():
+                prop = proportions.get(name if name in proportions else '', 1.0)
+                count = int(sz * prop) if prop < 1 else sz
+                if count == 0:
+                    continue
+
+                spIDs = [
+                    x.id
+                    for x in population.individuals.values()
+                    if (name == '' or x.group == name)
+                ]
+                IDs.extend([
+                    x for x in select_individuals(population, spIDs,
+                                                  args.target, count)
+                    if select(population[x])
+                ])
 
         #print(f'SELECT {" ".join(IDs)}')
         events = []
@@ -134,7 +228,10 @@ class testing(BasePlugin):
             if args.handle_positive == 'remove':
                 events.append(
                     Event(
-                        time + args.turnaround_time, EventType.REMOVAL, target=ID, logger=self.logger))
+                        time + args.turnaround_time,
+                        EventType.REMOVAL,
+                        target=population[ID],
+                        logger=self.logger))
             elif args.handle_positive.startswith('quarantine'):
                 if args.handle_positive == 'quarantine':
                     duration = 14
@@ -145,13 +242,18 @@ class testing(BasePlugin):
                         Event(
                             time + args.turnaround_time,
                             EventType.QUARANTINE,
-                            target=ID,
+                            target=population[ID],
                             logger=self.logger,
                             till=time + duration))
             elif args.handle_positive == 'replace':
                 events.append(
                     Event(
-                        time + args.turnaround_time, EventType.REPLACEMENT, target=ID, logger=self.logger))
+                        time + args.turnaround_time,
+                        EventType.REPLACEMENT,
+                        reason='detected',
+                        keep=['vaccinated'],
+                        target=population[ID],
+                        logger=self.logger))
             elif args.handle_positive != 'keep':
                 raise ValueError(
                     'Unsupported action for patients who test positive.')
@@ -160,17 +262,19 @@ class testing(BasePlugin):
             n_tested=n_tested,
             n_infected=n_infected,
             n_uninfected=n_uninfected,
+            n_ignore_infected=n_ignore_infected,
+            n_ignore_uninfected=n_ignore_uninfected,
             n_recovered=n_recovered,
             n_detected=len(IDs),
             n_false_positive=n_false_positive,
             n_false_negative=n_false_negative,
             n_false_negative_lod=n_false_negative_lod,
-            n_false_negative_in_recovered=n_false_negative_in_recovered
-        )
+            n_false_negative_in_recovered=n_false_negative_in_recovered)
         if IDs and args.verbosity > 1:
             res['detected_IDs'] = ",".join(IDs)
-        res_str = ','.join(f'{k}={v}' for k,v in res.items())
-        if args.verbosity > 0 and IDs:
+
+        res_str = ','.join(f'{k}={v}' for k, v in res.items())
+        if args.verbosity > 0:
             self.logger.write(
                 f'{time:.2f}\t{EventType.PLUGIN.name}\t.\tname=testing,{res_str}\n'
             )

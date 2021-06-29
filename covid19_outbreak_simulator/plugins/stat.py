@@ -25,7 +25,7 @@ class stat(BasePlugin):
         ])
         res[f'n_infected'] = len([
             x for x, ind in population.items()
-        if isinstance(ind.infected, float)
+            if isinstance(ind.infected, float)
         ])
         res[f'n_active'] = res['n_infected'] - res['n_recovered']
         res[f'n_popsize'] = len(population)
@@ -36,7 +36,7 @@ class stat(BasePlugin):
             f'n_popsize'] == 0 else '{:.5f}'.format(res[f'n_infected'] /
                                                     res[f'n_popsize'])
 
-        groups = set([x.group for x in population.values()])
+        groups = sorted(list(population.group_sizes.keys()))
         for group in groups:
             if group == '':
                 continue
@@ -61,7 +61,6 @@ class stat(BasePlugin):
         param = ','.join(f'{k}={v}' for k, v in res.items())
         if args.verbosity > 0:
             self.logger.write(
-                f'{time:.2f}\t{EventType.STAT.name}\t.\t{param}\n'
-            )
+                f'{time:.2f}\t{EventType.STAT.name}\t.\t{param}\n')
 
         return []

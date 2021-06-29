@@ -19,13 +19,13 @@ def test_population(population_factory):
 
 def test_remove(population_factory):
     pop = population_factory(popsize=['100'])
-    pop.remove('66')
+    pop.remove(pop['66'])
     assert '66' not in pop.individuals
     assert pop.max_ids[''] == 100
 
     pop = population_factory(popsize=['A=100', 'B=200'])
-    pop.remove('A_66')
-    pop.remove('B_21')
+    pop.remove(pop['A_66'])
+    pop.remove(pop['B_21'])
 
     assert pop.group_sizes['A'] == 99
     assert pop.group_sizes['B'] == 199
@@ -39,7 +39,7 @@ def test_select(population_factory):
     cnt = {'A': 0, 'B': 0}
     for i in range(1000):
         selected = pop.select(infector='B_10')
-        cnt[pop.individuals[selected].group] += 1
+        cnt[selected.group] += 1
 
     assert cnt['A'] / (cnt['A'] + cnt['B']) > 0.15 and cnt['A'] / (cnt['A'] + cnt['B']) < 0.35
     assert cnt['B'] / (cnt['A'] + cnt['B']) > 0.60 and cnt['B'] / (cnt['A'] + cnt['B']) < 0.90
@@ -47,7 +47,7 @@ def test_select(population_factory):
     cnt = {'A': 0, 'B': 0}
     for i in range(1000):
         selected = pop.select(infector='A_10')
-        cnt[pop.individuals[selected].group] += 1
+        cnt[selected.group] += 1
 
     assert cnt['A'] / (cnt['A'] + cnt['B']) > 0.15 and cnt['A'] / (cnt['A'] + cnt['B']) < 0.35
     assert cnt['B'] / (cnt['A'] + cnt['B']) > 0.60 and cnt['B'] / (cnt['A'] + cnt['B']) < 0.90
@@ -57,7 +57,7 @@ def test_select(population_factory):
 
     for i in range(10):
         selected = pop.select(infector='A_0')
-        assert not selected.startswith('A')
+        assert not selected.id.startswith('A')
 
     #
     pop = population_factory(popsize=['A=100', 'B=200'], vicinity=['A-A=50', 'A-B=10'])
@@ -65,7 +65,7 @@ def test_select(population_factory):
     cnt = {'A': 0, 'B': 0}
     for i in range(1000):
         selected = pop.select(infector='A_0')
-        cnt[pop.individuals[selected].group] += 1
+        cnt[selected.group] += 1
 
     assert cnt['A'] / (cnt['A'] + cnt['B']) > 0.5 and cnt['A'] / (cnt['A'] + cnt['B']) < 0.95
     assert cnt['B'] / (cnt['A'] + cnt['B']) < 0.5 and cnt['B'] / (cnt['A'] + cnt['B']) > 0.05
@@ -74,7 +74,7 @@ def test_select(population_factory):
     cnt = {'A': 0, 'B': 0}
     for i in range(1000):
         selected = pop.select(infector='B_10')
-        cnt[pop.individuals[selected].group] += 1
+        cnt[selected.group] += 1
 
     assert cnt['A'] / (cnt['A'] + cnt['B']) > 0.15 and cnt['A'] / (cnt['A'] + cnt['B']) < 0.35
     assert cnt['B'] / (cnt['A'] + cnt['B']) > 0.60 and cnt['B'] / (cnt['A'] + cnt['B']) < 0.90
@@ -84,7 +84,7 @@ def test_select(population_factory):
 
     for i in range(10):
         selected = pop.select()
-        assert not selected.startswith('A')
+        assert not selected.id.startswith('A')
 
     #
     # ! match
@@ -93,7 +93,7 @@ def test_select(population_factory):
     cnt = {'A': 0, 'B': 0}
     for i in range(1000):
         selected = pop.select(infector=None)
-        cnt[pop.individuals[selected].group] += 1
+        cnt[selected.group] += 1
 
     assert cnt['A'] / (cnt['A'] + cnt['B']) > 0.5 and cnt['A'] / (cnt['A'] + cnt['B']) < 0.95
     assert cnt['B'] / (cnt['A'] + cnt['B']) < 0.5 and cnt['B'] / (cnt['A'] + cnt['B']) > 0.05
@@ -104,7 +104,7 @@ def test_select(population_factory):
     cnt = {'A': 0, 'B': 0}
     for i in range(1000):
         selected = pop.select(infector='A_10')
-        cnt[pop.individuals[selected].group] += 1
+        cnt[selected.group] += 1
 
     assert cnt['A'] / (cnt['A'] + cnt['B']) > 0.4 and cnt['A'] / (cnt['A'] + cnt['B']) < 0.6
     assert cnt['B'] / (cnt['A'] + cnt['B']) > 0.4 and cnt['B'] / (cnt['A'] + cnt['B']) < 0.6
