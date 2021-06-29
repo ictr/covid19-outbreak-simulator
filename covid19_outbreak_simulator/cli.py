@@ -116,10 +116,12 @@ def parse_args(args=None):
         nargs='*',
         help='''How to handle individuals who show symptom, which should be "keep" (stay in
             population), "remove" (remove from population), "replace" (reset its infection status
-            so that the individual is susceptible again), and "quarantine" (put aside until
-            it recovers). all options can be followed by a "proportion", and quarantine can
-            be specified as "quarantine_7" etc to specify duration of quarantine. Default to
-            "remove", meaning all symptomatic cases will be removed from population.'''
+            so that the individual is susceptible again), "quarantine" (put aside until
+            it recovers). "reintegrate" (remove from quarantine, which is counterintuitive but
+            can be used for selecting uninfected indivudal through quarantine). All options can
+            be followed by a "proportion", and quarantine can be specified as "quarantine_7" etc
+            to specify duration of quarantine. Default to  "remove", meaning all symptomatic
+            cases will be removed from population.'''
     )
     parser.add_argument(
         '--infectors',

@@ -1,6 +1,7 @@
 from covid19_outbreak_simulator.plugin import BasePlugin
 from covid19_outbreak_simulator.event import EventType
 
+
 #
 # This plugin changes parameters
 #
@@ -45,11 +46,13 @@ class setparam(BasePlugin):
             '--handle-symptomatic',
             nargs='*',
             help='''How to handle individuals who show symptom, which should be "keep" (stay in
-                population), "remove" (remove from population), and "quarantine" (put aside until
-                it recovers). all options can be followed by a "proportion", and quarantine can
-                be specified as "quarantine_7" etc to specify duration of quarantine. Default to
-                "remove", meaning all symptomatic cases will be removed from population.'''
-        )
+                population), "remove" (remove from population), "replace" (reset its infection status
+                so that the individual is susceptible again), "quarantine" (put aside until
+                it recovers). "reintegrate" (remove from quarantine, which is counterintuitive but
+                can be used for selecting uninfected indivudal through quarantine). All options can
+                be followed by a "proportion", and quarantine can be specified as "quarantine_7" etc
+                to specify duration of quarantine. Default to  "remove", meaning all symptomatic
+                cases will be removed from population''')
         parser.add_argument(
             '--prop-asym-carriers',
             nargs='*',
@@ -89,5 +92,6 @@ class setparam(BasePlugin):
         param = ','.join(f'{x}={y}' for x, y in pars.items())
         if args.verbosity > 0:
             self.logger.write(
-                f'{time:.2f}\t{EventType.PLUGIN.name}\t.\tname=setparam,{param}\n')
+                f'{time:.2f}\t{EventType.PLUGIN.name}\t.\tname=setparam,{param}\n'
+            )
         return []

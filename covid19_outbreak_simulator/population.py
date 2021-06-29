@@ -127,8 +127,34 @@ class Individual(object):
                 ))
         #
         if self.quarantined and self.quarantined > symp_time:
-            # show symptom during quarantine, ok
-            pass
+            # show symptom during quarantine, check if need to reintegrate when show symptom
+            if handle_symptomatic[0] == 'reintegrate':
+                if len(handle_symptomatic) == 1:
+                    proportion = 1
+                else:
+                    proportion = as_float(
+                        handle_symptomatic[1],
+                        "Proportion in --handle-symptomatic remove/keep prop should be a float number",
+                    )
+                if proportion > 1 or proportion < 0:
+                    raise ValueError(
+                        f'Proportion in "--handle-symptomatic remove/keep prop" should be a float number between 0 and 1: {proportion} provided'
+                    )
+                if proportion == 1 or np.random.uniform(0, 1, 1)[0] <= proportion:
+                    if symp_time >= 0:
+                        evts.append(
+                            # scheduling reintegration
+                            Event(
+                                symp_time,
+                                EventType.INTEGRATION,
+                                target=self,
+                                logger=self.logger,
+                            ))
+                    else:
+                        # ignore
+                        self.logger.write(
+                            f'{time:.2f}\t{EventType.WARNING.name}\t{self.id}\tmsg="Individual not reintegrated before it show symptom before {time}"\n'
+                        )
         elif handle_symptomatic[0] in ("remove", "keep"):
             if len(handle_symptomatic) == 1:
                 proportion = 1
