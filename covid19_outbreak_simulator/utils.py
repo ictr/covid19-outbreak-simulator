@@ -94,16 +94,17 @@ def select_individuals(population, IDs, targets, max_count=None):
     from_IDs = copy.deepcopy(IDs)
     random.shuffle(from_IDs)
 
-    def add_ind(match_cond, max_count=None):
+    def add_ind(match_cond, limit=None):
+        nonlocal from_IDs
         res = []
         count = 0
         for ID in from_IDs:
             if match_cond(population[ID]):
                 res.append(ID)
-                from_IDs.remove(ID)
                 count += 1
-                if max_count is not None and count == max_count:
+                if limit is not None and count == limit:
                     break
+        from_IDs = list(set(from_IDs) - set(res))
         return res
 
     count = 0
@@ -113,7 +114,6 @@ def select_individuals(population, IDs, targets, max_count=None):
             add_ind(
                 status_to_condition(target),
                 None if max_count is None else max_count - len(selected)))
-
         if max_count is not None and len(selected) == max_count:
             break
 

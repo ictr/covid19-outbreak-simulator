@@ -205,13 +205,14 @@ class testing(BasePlugin):
             for name, sz in population.group_sizes.items():
                 prop = proportions.get(name if name in proportions else '', 1.0)
                 count = int(sz * prop) if prop < 1 else sz
+                if count == 0:
+                    continue
 
                 spIDs = [
                     x.id
                     for x in population.individuals.values()
                     if (name == '' or x.group == name)
                 ]
-
                 IDs.extend([
                     x for x in select_individuals(population, spIDs,
                                                   args.target, count)

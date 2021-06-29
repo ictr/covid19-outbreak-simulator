@@ -82,6 +82,8 @@ class quarantine(BasePlugin):
             IDs = []
             for name, sz in population.group_sizes.items():
                 count = int(counts.get(name if name in counts else '1'))
+                if count == 0:
+                    continue
 
                 spIDs = [
                     x.id
