@@ -119,6 +119,11 @@ class Event(object):
                     f'{self.time:.2f}\t{EventType.WARNING.name}\t{self.target}\tmsg=REINTEGRATION target no longer exists\n'
                 )
                 return []
+            elif not isinstance(self.target.quarantined, float):
+                self.logger.write(
+                    f'{self.time:.2f}\t{EventType.WARNING.name}\t{self.target}\tmsg=REINTEGRATION target is not in quarantine\n'
+                )
+                return []
             else:
                 self.logger.write(
                     f'{self.time:.2f}\t{EventType.REINTEGRATION.name}\t{self.target}\tsucc=True\n'

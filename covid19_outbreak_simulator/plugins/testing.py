@@ -79,10 +79,11 @@ class testing(BasePlugin):
             default='remove',
             help='''How to handle individuals who are tested positive, which should be
                 "keep" (do not do anything), "replace" (remove from population), "recover"
-                (instant recover, to model constant workforce size), and "quarantine"
-                (put aside until it recovers). Quarantine can be specified as "quarantine_7" etc
-                to specify  duration of quarantine. Individuals that are already in quarantine
-                will continue to be quarantined. Default to "remove", meaning all symptomatic cases
+                (instant recover, to model constant workforce size),  "quarantine"
+                (put aside until it recovers), and "reintegrate" (remove from quarantine).
+                Quarantine can be specified as "quarantine_7" etc to specify  duration of
+                quarantine. Individuals that are already in quarantine will continue to be
+                quarantined. Default to "remove", meaning all symptomatic cases
                 will be removed from population.''')
         return parser
 
@@ -254,6 +255,14 @@ class testing(BasePlugin):
                         keep=['vaccinated'],
                         target=population[ID],
                         logger=self.logger))
+            elif args.handle_positive.startswith('reintegrate'):
+                if population[ID].quarantined:
+                    events.append(
+                        Event(
+                            time + args.turnaround_time,
+                            EventType.REINTEGRATION,
+                            target=population[ID],
+                            logger=self.logger))
             elif args.handle_positive != 'keep':
                 raise ValueError(
                     'Unsupported action for patients who test positive.')
