@@ -3,7 +3,7 @@ import math
 import numpy as np
 from numpy.random import choice, rand
 from fnmatch import fnmatch
-from .utils import as_float
+from .utils import as_float, parse_handle_symptomatic_options
 from .event import Event, EventType
 import re
 
@@ -45,10 +45,7 @@ class Individual(object):
         self.quarantined = till
         return [
             Event(
-                till,
-                EventType.REINTEGRATION,
-                target=self,
-                logger=self.logger)
+                till, EventType.REINTEGRATION, target=self, logger=self.logger)
         ]
 
     def vaccinate(self, time, immunity, infectivity, **kwargs):
@@ -104,12 +101,9 @@ class Individual(object):
             lead_time = 0
 
         self.infected = float(time - lead_time)
+        handle_symptomatic = parse_handle_symptomatic_options(
+            kwargs.get("handle_symptomatic", None), self.group)
 
-        if "handle_symptomatic" not in kwargs or kwargs[
-                "handle_symptomatic"] is None:
-            handle_symptomatic = ["remove", 1]
-        else:
-            handle_symptomatic = kwargs["handle_symptomatic"]
         # show symptom
         kept = True
         evts = []
@@ -128,19 +122,11 @@ class Individual(object):
         #
         if self.quarantined and self.quarantined > symp_time:
             # show symptom during quarantine, check if need to reintegrate when show symptom
-            if handle_symptomatic[0] == 'reintegrate':
-                if len(handle_symptomatic) == 1:
-                    proportion = 1
-                else:
-                    proportion = as_float(
-                        handle_symptomatic[1],
-                        "Proportion in --handle-symptomatic remove/keep prop should be a float number",
-                    )
-                if proportion > 1 or proportion < 0:
-                    raise ValueError(
-                        f'Proportion in "--handle-symptomatic remove/keep prop" should be a float number between 0 and 1: {proportion} provided'
-                    )
-                if proportion == 1 or np.random.uniform(0, 1, 1)[0] <= proportion:
+            if handle_symptomatic['reaction'] == 'reintegrate':
+                proportion = handle_symptomatic.get('proportion', 1)
+
+                if proportion == 1 or np.random.uniform(0, 1,
+                                                        1)[0] <= proportion:
                     if symp_time >= 0:
                         evts.append(
                             # scheduling reintegration
@@ -155,21 +141,11 @@ class Individual(object):
                         self.logger.write(
                             f'{time:.2f}\t{EventType.WARNING.name}\t{self.id}\tmsg="Individual not reintegrated before it show symptom before {time}"\n'
                         )
-        elif handle_symptomatic[0] in ("remove", "keep"):
-            if len(handle_symptomatic) == 1:
-                proportion = 1
-            else:
-                proportion = as_float(
-                    handle_symptomatic[1],
-                    "Proportion in --handle-symptomatic remove/keep prop should be a float number",
-                )
-            if proportion > 1 or proportion < 0:
-                raise ValueError(
-                    f'Proportion in "--handle-symptomatic remove/keep prop" should be a float number between 0 and 1: {proportion} provided'
-                )
-            if (handle_symptomatic[0] == "keep" and
+        elif handle_symptomatic['reaction'] in ("remove", "keep"):
+            proportion = handle_symptomatic.get('proportion', 1)
+            if (handle_symptomatic['reaction'] == "keep" and
                     np.random.uniform(0, 1, 1)[0] > proportion) or (
-                        handle_symptomatic[0] == "remove" and
+                        handle_symptomatic['reaction'] == "remove" and
                         (proportion == 1 or
                          np.random.uniform(0, 1, 1)[0] <= proportion)):
                 kept = False
@@ -187,7 +163,7 @@ class Individual(object):
                     self.logger.write(
                         f'{time:.2f}\t{EventType.WARNING.name}\t{self.id}\tmsg="Individual not removed before it show symptom before {time}"\n'
                     )
-        elif handle_symptomatic[0] == "replace":
+        elif handle_symptomatic['reaction'] == "replace":
             if symp_time >= 0:
                 evts.append(
                     # scheduling REMOVAL
@@ -204,25 +180,9 @@ class Individual(object):
                 self.logger.write(
                     f'{time:.2f}\t{EventType.WARNING.name}\t{self.id}\tmsg="Individual not replaced before it show symptom before {time}"\n'
                 )
-        elif handle_symptomatic[0].startswith("quarantine"):
-            if handle_symptomatic[0] == "quarantine":
-                quarantine_duration = 14
-            else:
-                quarantine_duration = as_float(
-                    handle_symptomatic[0].split("_", 1)[1],
-                    "quanrantine duration should be specified as quarantine_DURATION",
-                )
-            if len(handle_symptomatic) == 1:
-                proportion = 1
-            else:
-                proportion = as_float(
-                    handle_symptomatic[1],
-                    "Proportion in --handle-symptomatic quarantine_DURATION prop should be a float number",
-                )
-            if proportion > 1 or proportion < 0:
-                raise ValueError(
-                    f'Proportion in "--handle-symptomatic quarantine_DUURATION prop" should be a float number between 0 and 1: {proportion} provided'
-                )
+        elif handle_symptomatic['reaction'] == "quarantine":
+            quarantine_duration = handle_symptomatic.get('duration', 14)
+            proportion = handle_symptomatic.get('proportion', 1)
             if proportion == 1 or np.random.uniform(0, 1, 1)[0] <= proportion:
                 kept = False
                 if symp_time >= 0:
@@ -237,9 +197,9 @@ class Individual(object):
                         ))
                 else:
                     self.quarantined = symp_time + quarantine_duration
-        else:
+        elif handle_symptomatic['reaction'] != 'reintegrate':
             raise ValueError(
-                f'Unrecognizable symptomatic case handling method: {" ".join(handle_symptomatic)}'
+                f'Unrecognizable symptomatic case handling method: {handle_symptomatic}'
             )
 
         # infect only before removal or quarantine
@@ -513,7 +473,8 @@ class Individual(object):
             return viral_load / lod
 
     def infect(self, time, **kwargs):
-        if isinstance(self.infected, float) and not isinstance(self.recovered, float):
+        if isinstance(self.infected,
+                      float) and not isinstance(self.recovered, float):
             # during infection
             by_id = "." if kwargs["by"] is None else kwargs["by"]
             self.logger.write(
@@ -670,17 +631,11 @@ class Population(object):
         ind.id = f'{grp}_{idx}' if grp else str(idx)
 
         # we keep the susceptibility parameter...
-        for attr, def_value in [
-            ('infected', False),
-            ('infectivity', None),
-            ('show_symptom', False),
-            ('recovered', False),
-            ('symptomatic', None),
-            ('vaccinated', False),
-            ('quarantined', False),
-            ('r0', None),
-            ('incubation_period', None)
-        ]:
+        for attr, def_value in [('infected', False), ('infectivity', None),
+                                ('show_symptom', False), ('recovered', False),
+                                ('symptomatic', None), ('vaccinated', False),
+                                ('quarantined', False), ('r0', None),
+                                ('incubation_period', None)]:
             if attr not in keep:
                 setattr(ind, attr, def_value)
 

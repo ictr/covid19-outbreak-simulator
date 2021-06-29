@@ -81,7 +81,7 @@ def test_infect_with_leadtime(individual_factory):
 
 @pytest.mark.parametrize(
     'by, handle_symptomatic, proportion, quarantined, leadtime',
-    product([None, 1], ['keep', 'remove', 'quarantine', 'quarantine_14'],
+    product([None, 1], ['keep', 'remove', 'quarantine', 'quarantine@duration=14'],
             [None, 0, 0.2, 1], [True, False], [None, 2, 'any', 'asymptomatic']))
 def test_symptomatic_infect(individual_factory, by, handle_symptomatic,
                             proportion, quarantined, leadtime):
@@ -102,7 +102,7 @@ def test_symptomatic_infect(individual_factory, by, handle_symptomatic,
         res = ind1.symptomatic_infect(
             5.0,
             by=None if by is None or leadtime is not None else ind2.id,
-            handle_symptomatic=[handle_symptomatic, proportion],
+            handle_symptomatic=[f'{handle_symptomatic}@proportion={proportion}'],
             leadtime=leadtime)
 
     if leadtime:

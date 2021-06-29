@@ -119,10 +119,11 @@ def parse_args(args=None):
             so that the individual is susceptible again), "quarantine" (put aside until
             it recovers). "reintegrate" (remove from quarantine, which is counterintuitive but
             can be used for selecting uninfected indivudal through quarantine). All options can
-            be followed by a "proportion", and quarantine can be specified as "quarantine_7" etc
-            to specify duration of quarantine. Default to  "remove", meaning all symptomatic
-            cases will be removed from population.'''
-    )
+            be followed by a "proportion" in the format of "remove?proportion=0.7", and quarantine can be
+            specified as "quarantine?duration=7" etc to specify duration of quarantine. If multiple
+            subpopulation will have different ways to handle symptomatic cases, they should be specified
+            as multipliers (e.g. A=remove B=quarantine). Default to  "remove", meaning all symptomatic cases will be
+            removed from population.''')
     parser.add_argument(
         '--infectors',
         nargs='*',

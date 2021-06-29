@@ -117,3 +117,43 @@ def select_individuals(population, IDs, targets, max_count=None):
         if max_count is not None and len(selected) == max_count:
             break
     return selected
+
+
+def parse_handle_symptomatic_options(handle_symptomatic_arg, group):
+    hs_args = None
+    for hs in handle_symptomatic_arg or []:
+        if '=' in hs:
+            if hs.startswith(group + '='):
+                hs_args = hs[len(group) + 1:]
+                break
+        else:
+            hs_args = hs
+
+    if not hs_args:
+        handle_symptomatic = {'reaction': "remove", 'proportion': 1}
+    else:
+        handle_symptomatic = {'reaction': hs_args.split('?')[0]}
+        if '?' in hs_args:
+            for option in hs_args.split('?')[1].split('&'):
+                if '=' not in option:
+                    raise ValueError(f'Wrong option {hs_args}')
+                k, v = option.split('=', 1)
+                if k not in ('proportion', 'duration'):
+                    raise ValueError(
+                        f'Unrecognized option {k} in option {hs_args}')
+
+                try:
+                    handle_symptomatic[k] = float(v)
+                except:
+                    raise ValueError(
+                        f"Option {k} in --handle-symptomatic should be a float number, {v} specified"
+                    )
+                if k == 'proportion' and (handle_symptomatic[k] > 1 or
+                                          handle_symptomatic[k] < 0):
+                    raise ValueError(
+                        f'Proportion in "--handle-symptomatic remove/keep prop" should be a float number between 0 and 1: {handle_symptomatic[k]} provided'
+                    )
+        else:
+            handle_symptomatic['proportion'] = 1
+
+    return handle_symptomatic

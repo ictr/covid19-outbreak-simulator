@@ -7,7 +7,7 @@ from covid19_outbreak_simulator.event import Event, EventType
 from covid19_outbreak_simulator.model import Model, Params
 from covid19_outbreak_simulator.plugin import BasePlugin
 from covid19_outbreak_simulator.population import Individual
-from covid19_outbreak_simulator.utils import parse_param_with_multiplier, select_individuals
+from covid19_outbreak_simulator.utils import parse_param_with_multiplier, parse_handle_symptomatic_options, select_individuals
 
 
 class testing(BasePlugin):
@@ -76,7 +76,8 @@ class testing(BasePlugin):
         )
         parser.add_argument(
             '--handle-positive',
-            default='remove',
+            nargs='*',
+            default=['remove'],
             help='''How to handle individuals who are tested positive, which should be
                 "keep" (do not do anything), "replace" (remove from population), "recover"
                 (instant recover, to model constant workforce size),  "quarantine"
@@ -84,7 +85,8 @@ class testing(BasePlugin):
                 Quarantine can be specified as "quarantine_7" etc to specify  duration of
                 quarantine. Individuals that are already in quarantine will continue to be
                 quarantined. Default to "remove", meaning all symptomatic cases
-                will be removed from population.''')
+                will be removed from population. Multipliers are allows to specify
+                different reactions for individuals from different subpopulations.''')
         return parser
 
     def summarize_model(self, simu_args, args):
@@ -226,19 +228,25 @@ class testing(BasePlugin):
         for ID in IDs:
             if ID not in population:
                 raise ValueError(f'Invalid ID to quanrantine {ID}')
-            if args.handle_positive == 'remove':
-                events.append(
-                    Event(
-                        time + args.turnaround_time,
-                        EventType.REMOVAL,
-                        target=population[ID],
-                        logger=self.logger))
-            elif args.handle_positive.startswith('quarantine'):
-                if args.handle_positive == 'quarantine':
-                    duration = 14
-                else:
-                    duration = int(args.handle_positive.split('_', 1)[1])
-                if not population[ID].quarantined:
+
+            handle_positive = parse_handle_symptomatic_options(
+                args.handle_positive, population[ID].group)
+            proportion = handle_positive.get('proportion', 1)
+
+            if handle_positive['reaction'] == 'remove':
+                if proportion == 1 or np.random.uniform(0, 1,
+                                                        1)[0] <= proportion:
+                    events.append(
+                        Event(
+                            time + args.turnaround_time,
+                            EventType.REMOVAL,
+                            target=population[ID],
+                            logger=self.logger))
+            elif handle_positive['reaction'] == 'quarantine':
+                duration = handle_symptomatic.get('duration', 14)
+                if not population[ID].quarantined and (
+                        proportion == 1 or
+                        np.random.uniform(0, 1, 1)[0] <= proportion):
                     events.append(
                         Event(
                             time + args.turnaround_time,
@@ -246,26 +254,30 @@ class testing(BasePlugin):
                             target=population[ID],
                             logger=self.logger,
                             till=time + duration))
-            elif args.handle_positive == 'replace':
-                events.append(
-                    Event(
-                        time + args.turnaround_time,
-                        EventType.REPLACEMENT,
-                        reason='detected',
-                        keep=['vaccinated'],
-                        target=population[ID],
-                        logger=self.logger))
-            elif args.handle_positive.startswith('reintegrate'):
-                if population[ID].quarantined:
+            elif handle_positive['reaction'] == 'replace':
+                if proportion == 1 or np.random.uniform(0, 1,
+                                                        1)[0] <= proportion:
+                    events.append(
+                        Event(
+                            time + args.turnaround_time,
+                            EventType.REPLACEMENT,
+                            reason='detected',
+                            keep=['vaccinated'],
+                            target=population[ID],
+                            logger=self.logger))
+            elif handle_positive['reaction'] == 'reintegrate':
+                if population[ID].quarantined and (
+                        proportion == 1 or
+                        np.random.uniform(0, 1, 1)[0] <= proportion):
                     events.append(
                         Event(
                             time + args.turnaround_time,
                             EventType.REINTEGRATION,
                             target=population[ID],
                             logger=self.logger))
-            elif args.handle_positive != 'keep':
+            elif handle_positive['reaction'] != 'keep':
                 raise ValueError(
-                    'Unsupported action for patients who test positive.')
+                    f'Unsupported action for patients who test positive: {handle_positive}')
 
         res = dict(
             n_tested=n_tested,
