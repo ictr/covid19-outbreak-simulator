@@ -50,20 +50,30 @@ class move(BasePlugin):
             required=True,
             dest='to_subpop',
             help='Name of the subpopulation of the destination.')
+        parser.add_argument(
+            '--reintegrate',
+            action='store_true',
+            help='''If specified, remove the quarantine status of moved
+                individuals
+            '''
+        )
         return parser
 
     def move(self, time, population, args, IDs):
         ID_map = {}
         for ID in IDs:
             new_id = population.move(ID, args.to_subpop)
+            if args.reintegrate and isinstance(population[new_id].quarantined, float):
+                population[new_id].reintegrate()
+
             ID_map[ID] = new_id
-        if args.verbosity > 0:
+        if args.verbosity > 1 and ID_map:
             ID_map = ',ID_map=' + ','.join(
                 [f'{x}->{y}' for x, y in ID_map.items()])
         else:
             ID_map = ''
         self.logger.write(
-            f'{time:.2f}\t{EventType.PLUGIN.name}\t.\tname=move,from={args.from_subpop},to={args.to_subpop}{ID_map}\n'
+            f'{time:.2f}\t{EventType.PLUGIN.name}\t.\tname=move,from={args.from_subpop},to={args.to_subpop},n_moved={len(IDs)},{ID_map}\n'
         )
         return []
 

@@ -116,5 +116,4 @@ def select_individuals(population, IDs, targets, max_count=None):
                 None if max_count is None else max_count - len(selected)))
         if max_count is not None and len(selected) == max_count:
             break
-
     return selected
