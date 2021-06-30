@@ -36,8 +36,8 @@ def parse_args(args=None):
         '--vicinity',
         nargs='*',
         help='''Number of "neighbors" from group "B" for individuals in
-        aubpopulation "A", specified as "A-B=n". For example, "A-A=0" avoids infection
-        within group "A", "A-A=10 A-B=5" will make infections twiece as likely
+        subpopulation "A", specified as "A-B=n". For example, "A-A=0" avoids infection
+        within group "A", "A-A=10 A-B=5" will make infections twice as likely
         to happen within group A then to group B, regardless of size of
         groups A and B. As specifial cases, 'A=10` etc refers to cases when
         infection happens from outside of the simulated population (community

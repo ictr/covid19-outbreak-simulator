@@ -81,10 +81,10 @@ class Individual(object):
              self.incubation_period, self.r0 * self.r0_multiplier,
              self.infect_params)
 
-        by = kwargs.get("by", None)
+        by_ind = kwargs.get("by", None)
 
         if "leadtime" in kwargs and kwargs["leadtime"] is not None:
-            if by is not None:
+            if by_ind is not None:
                 raise ValueError(
                     "leadtime is only allowed during initialization of infection event (no by option.)"
                 )
@@ -229,7 +229,7 @@ class Individual(object):
                             EventType.INFECTION_AVOIDED,
                             target=self,
                             logger=self.logger,
-                            by=self.id,
+                            by=self,
                         ))
                     infected[idx] = 0
         #
@@ -241,7 +241,7 @@ class Individual(object):
                         EventType.INFECTION,
                         target=None,
                         logger=self.logger,
-                        by=self.id,
+                        by=self,
                         handle_symptomatic=kwargs.get("handle_symptomatic",
                                                       None),
                     ))
@@ -253,7 +253,7 @@ class Individual(object):
                 target=self,
                 logger=self.logger,
             ))
-        params = [f"by={'.' if by is None else by}"]
+        params = [f"by={'.' if by_ind is None else by_ind.id}"]
         if lead_time:
             params.append(f"leadtime={lead_time:.2f}")
         #
@@ -284,7 +284,7 @@ class Individual(object):
 
         self.incubation_period = -1
 
-        by = kwargs.get("by")
+        by_ind = kwargs.get("by")
         self.infect_params = self.model.draw_infection_params(symptomatic=False)
 
         (x_grid,
@@ -292,7 +292,7 @@ class Individual(object):
              self.r0 * self.r0_multiplier, self.infect_params)
 
         if "leadtime" in kwargs and kwargs["leadtime"] is not None:
-            if by is not None:
+            if by_ind is not None:
                 raise ValueError(
                     "leadtime is only allowed during initialization of infection event (no by option.)"
                 )
@@ -337,7 +337,7 @@ class Individual(object):
                             EventType.INFECTION_AVOIDED,
                             target=self,
                             logger=self.logger,
-                            by=self.id,
+                            by=self,
                         ))
                     infected[idx] = 0
         #
@@ -349,7 +349,7 @@ class Individual(object):
                         EventType.INFECTION,
                         target=None,
                         logger=self.logger,
-                        by=self.id,
+                        by=self,
                         handle_symptomatic=kwargs.get("handle_symptomatic",
                                                       None),
                     ))
@@ -360,7 +360,7 @@ class Individual(object):
                 target=self,
                 logger=self.logger))
 
-        params = [f"by={'.' if by is None else by}"]
+        params = [f"by={'.' if by_ind is None else by_ind.id}"]
         if lead_time > 0:
             params.append(f"leadtime={lead_time:.2f}")
         #
@@ -476,14 +476,14 @@ class Individual(object):
         if isinstance(self.infected,
                       float) and not isinstance(self.recovered, float):
             # during infection
-            by_id = "." if kwargs["by"] is None else kwargs["by"]
+            by_id = "." if kwargs["by"] is None else kwargs["by"].id
             self.logger.write(
                 f"{time:.2f}\t{EventType.INFECTION_IGNORED.name}\t{self.id}\tby={by_id}\n"
             )
             return []
 
         if self.susceptibility < 1 and rand() > self.susceptibility:
-            by_id = "." if kwargs["by"] is None else kwargs["by"]
+            by_id = "." if kwargs["by"] is None else kwargs["by"].id
             self.logger.write(
                 f"{time:.2f}\t{EventType.INFECTION_FAILED.name}\t{self.id}\tby={by_id},reason=susceptibility\n"
             )
@@ -700,6 +700,8 @@ class Population(object):
                     # now, we know the number of qualified invidiauls from each
                     # group, but we still have excluded and quarantined....
             total = sum(freq.values())
+            if total == 0:
+                return None
             freq = {x: y / total for x, y in freq.items()}
             # first determine which group ...
             grp = choice(groups, 1, p=[freq[x] for x in groups])

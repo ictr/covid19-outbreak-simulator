@@ -69,16 +69,16 @@ class Event(object):
 
             if self.kwargs['by'] is not None:
                 # if infector is removed or quarantined
-                if self.kwargs['by'] not in population:
+                if self.kwargs['by'].id not in population:
                     self.logger.write(
                         f'{self.time:.2f}\t{EventType.INFECTION_AVOIDED.name}\t.\tby={self.kwargs["by"]},reason=REMOVED\n'
                     )
                     return []
                 #
-                by_ind = population[self.kwargs['by']]
+                by_ind = self.kwargs['by']
                 if by_ind.quarantined and by_ind.quarantined >= self.time:
                     self.logger.write(
-                        f'{self.time:.2f}\t{EventType.INFECTION_AVOIDED.name}\t.\tby={by_ind.id},reason=QUARANTINED\n'
+                        f'{self.time:.2f}\t{EventType.INFECTION_AVOIDED.name}\t.\tby={by_ind},reason=QUARANTINED\n'
                     )
                     return []
 
@@ -93,7 +93,7 @@ class Event(object):
                 infectee = self.target
             else:
                 # select infectee from the population, subject to vicinity of infector
-                infectee = population.select(infector=self.kwargs['by'])
+                infectee = population.select(infector=self.kwargs['by'].id)
 
                 if not infectee:
                     self.logger.write(

@@ -182,7 +182,7 @@ class Simulator(object):
                 if event.action.name in ('SHOW_SYMPTOM', 'RECOVER', 'REMOVAL') and event.target.id not in population:
                     continue
                 if event.action.name in ('INFECTION'):
-                    if event.kwargs['by'] in population:
+                    if event.kwargs['by'].id in population:
                         infected_by.add(event.kwargs['by'])
                     else:
                         continue
