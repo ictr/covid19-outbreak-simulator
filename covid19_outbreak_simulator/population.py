@@ -194,6 +194,7 @@ class Individual(object):
                             target=self,
                             logger=self.logger,
                             till=symp_time + quarantine_duration,
+                            reason='show symptom'
                         ))
                 else:
                     self.quarantined = symp_time + quarantine_duration

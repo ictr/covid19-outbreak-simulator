@@ -253,7 +253,8 @@ class testing(BasePlugin):
                             EventType.QUARANTINE,
                             target=population[ID],
                             logger=self.logger,
-                            till=time + duration))
+                            till=time + duration,
+                            reason='detected'))
             elif handle_positive['reaction'] == 'replace':
                 if proportion == 1 or np.random.uniform(0, 1,
                                                         1)[0] <= proportion:
