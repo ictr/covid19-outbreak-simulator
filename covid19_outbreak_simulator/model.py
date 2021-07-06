@@ -206,30 +206,38 @@ class Params:
 
         pars = [x for x in val if x in ("normal", "lognormal") or "=" not in x]
         if pars:
-            if len(pars) < 3:
-                raise ValueError(
-                    f"Parameter incubation period requires aat least three values: {len(val)} provided"
+            if pars[0] in ("normal", "lognormal"):
+                self.set(
+                    "incubation_period",
+                    "mean" if pars[0] == "lognormal" else "loc",
+                    as_float(
+                        pars[1],
+                        "Second parameter of incubation_period should be a float number",
+                    ),
                 )
-            if pars[0] not in ("normal", "lognormal"):
-                raise ValueError(
-                    f"Only normal or lognormal distribution for incubation period is supported. {pars[0]} provided"
+                self.set(
+                    "incubation_period",
+                    "sigma" if pars[0] == "lognormal" else "scale",
+                    as_float(
+                        pars[2],
+                        "Third parameter of lognormal incubation_period should be a float number",
+                    ),
                 )
-            self.set(
-                "incubation_period",
-                "mean" if pars[0] == "lognormal" else "loc",
-                as_float(
-                    pars[1],
-                    "Second parameter of incubation_period should be a float number",
-                ),
-            )
-            self.set(
-                "incubation_period",
-                "sigma" if pars[0] == "lognormal" else "scale",
-                as_float(
-                    pars[2],
-                    "Third parameter of lognormal incubation_period should be a float number",
-                ),
-            )
+            elif len(pars) == 1:
+                self.set(
+                    "incubation_period",
+                    "mean",
+                    np.log(
+                        as_float(
+                            pars[0],
+                            "First parameter of incubation_period should be a float number if not model name",
+                        )) - 1 / 2 * 0.418**2,
+                )
+                self.set("incubation_period", "sigma", 0.418)
+            else:
+                raise ValueError(
+                    'Unacceptable specification of incubation period')
+
         # multipliers
         for multiplier in [x for x in val if "=" in x]:
             self._set_multiplier(multiplier, "incubation_period")
@@ -373,8 +381,8 @@ class Params:
         self.set("prop_asym_carriers", "scale", 0)
         self.set("symptomatic_r0", "loc", (1.4 + 2.8) / 2)
         self.set("symptomatic_r0", "quantile_2.5", 1.4)
-        self.set("asymptomatic_r0", "loc", (0.28 + 0.56) / 2)
-        self.set("asymptomatic_r0", "quantile_2.5", 0.28)
+        self.set("asymptomatic_r0", "loc", (1.4 + 2.8) * 0.75 / 2)
+        self.set("asymptomatic_r0", "quantile_2.5", 1.4 * 0.75)
         self.set("incubation_period", "mean", 1.621)
         self.set("incubation_period", "sigma", 0.418)
         self.symptomatic_transmissibility_model = {"name": "normal"}

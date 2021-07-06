@@ -94,8 +94,9 @@ def parse_args(args=None):
     parser.add_argument(
         '--incubation-period',
         nargs='+',
-        help='''Incubation period period, should be specified as "lognormal" followed by two
-            numbers as mean and sigma, or "normal" followed by mean and sd. Multipliers are
+        help='''Incubation period period, should be specified as a number for the mean
+            incubation period, which will be fitted to a lognormal distribution, or
+            "lognormal" followed by two numbers as mean and sigma, or "normal" followed by mean and sd. Multipliers are
             allowed to specify incubation period for each group. Default to
             "lognormal 1.621 0.418"''')
     parser.add_argument(

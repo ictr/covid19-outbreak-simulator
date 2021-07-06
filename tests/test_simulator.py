@@ -1,5 +1,7 @@
 import os
 import pytest
+import numpy as np
+
 from covid19_outbreak_simulator.cli import parse_args, main
 from covid19_outbreak_simulator.model import Params
 
@@ -144,9 +146,7 @@ def test_option_asymptomatic_r0():
 
 
 def test_option_inclubation_period():
-    with pytest.raises(ValueError):
-        args = parse_args(["--incubation-period", "1.0"])
-        params = Params(args)
+
 
     with pytest.raises(ValueError):
         args = parse_args(["--incubation-period", "1.0", "2.0"])
@@ -170,6 +170,11 @@ def test_option_inclubation_period():
     params = Params(args)
     assert params.incubation_period_mean == 1.0
     assert params.incubation_period_sigma == 2.5
+
+    args = parse_args(["--incubation-period", "5.0"])
+    params = Params(args)
+    assert params.incubation_period_mean == np.log(5.0) - 0.5 * 0.418 **2
+    assert params.incubation_period_sigma == 0.418
 
     args = parse_args(
         ["--popsize", "A=500", "B=300", "--incubation-period", "A=0.8"])
