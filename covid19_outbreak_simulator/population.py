@@ -15,9 +15,11 @@ class Individual(object):
         self.model = model
         self.susceptibility = 1.0 if susceptibility is None else min(
             1, susceptibility)
+
         self.logger = logger
 
         # these will be set to event happen time
+        self.immunity = None
         self.infectivity = None
         self.infected = False
         self.show_symptom = False
@@ -50,7 +52,7 @@ class Individual(object):
 
     def vaccinate(self, time, immunity, infectivity, **kwargs):
         self.vaccinated = time
-        self.susceptibility = 1 - immunity
+        self.immunity = immunity
         self.infectivity = infectivity
 
     def reintegrate(self):
@@ -62,9 +64,7 @@ class Individual(object):
         self.r0 = self.model.draw_random_r0(symptomatic=True, group=self.group)
 
         if self.infectivity is not None:
-            self.r0 *= self.infectivity
-            if self.r0 < 1:
-                return self.asymptomatic_infect(time, r0=self.r0, **kwargs)
+            self.r0 *= self.infectivity[0]
 
         self.r0_multiplier = getattr(self.model.params,
                                      f"symptomatic_r0_multiplier_{self.group}",
@@ -277,7 +277,7 @@ class Individual(object):
         else:
             self.r0 = self.model.draw_random_r0(symptomatic=False)
             if self.infectivity is not None:
-                self.r0 *= self.infectivity
+                self.r0 *= self.infectivity[1]
 
         self.r0_multiplier = getattr(
             self.model.params, f"asymptomatic_r0_multiplier_{self.group}", 1.0)
@@ -490,8 +490,22 @@ class Individual(object):
             return []
 
         if self.model.draw_is_asymptomatic():
+            if self.immunity is not None and self.immunity[1] > 0 and rand(
+            ) < self.immunity[1]:
+                by_id = "." if kwargs["by"] is None else kwargs["by"].id
+                self.logger.write(
+                    f"{time:.2f}\t{EventType.INFECTION_FAILED.name}\t{self.id}\tby={by_id},reason=immunity\n"
+                )
+                return []
             return self.asymptomatic_infect(time, **kwargs)
         else:
+            if self.immunity is not None and self.immunity[0] > 0 and rand(
+            ) < self.immunity[0]:
+                by_id = "." if kwargs["by"] is None else kwargs["by"].id
+                self.logger.write(
+                    f"{time:.2f}\t{EventType.INFECTION_FAILED.name}\t{self.id}\tby={by_id},reason=immunity\n"
+                )
+                return []
             return self.symptomatic_infect(time, **kwargs)
 
 
@@ -631,11 +645,11 @@ class Population(object):
         ind.id = f'{grp}_{idx}' if grp else str(idx)
 
         # we keep the susceptibility parameter...
-        for attr, def_value in [('infected', False), ('infectivity', None),
-                                ('show_symptom', False), ('recovered', False),
-                                ('symptomatic', None), ('vaccinated', False),
-                                ('quarantined', False), ('r0', None),
-                                ('incubation_period', None)]:
+        for attr, def_value in [('infected', False), ('immunity', None),
+                                ('infectivity', None), ('show_symptom', False),
+                                ('recovered', False), ('symptomatic', None),
+                                ('vaccinated', False), ('quarantined', False),
+                                ('r0', None), ('incubation_period', None)]:
             if attr not in keep:
                 setattr(ind, attr, def_value)
 

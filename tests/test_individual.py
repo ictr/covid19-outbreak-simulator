@@ -66,7 +66,7 @@ def test_infect_infected(individual_factory):
     ind.model.draw_prop_asym_carriers()
     ind.infected = 5.5
 
-    res = ind.infect(5.0, by=ind1.id)
+    res = ind.infect(5.0, by=ind1)
 
     assert not res
 
@@ -95,13 +95,13 @@ def test_symptomatic_infect(individual_factory, by, handle_symptomatic,
     if proportion is None:
         res = ind1.symptomatic_infect(
             5.0,
-            by=None if by is None or leadtime is not None else ind2.id,
+            by=None if by is None or leadtime is not None else ind2,
             handle_symptomatic=[handle_symptomatic],
             leadtime=leadtime)
     else:
         res = ind1.symptomatic_infect(
             5.0,
-            by=None if by is None or leadtime is not None else ind2.id,
+            by=None if by is None or leadtime is not None else ind2,
             handle_symptomatic=[f'{handle_symptomatic}@proportion={proportion}'],
             leadtime=leadtime)
 
@@ -129,7 +129,7 @@ def test_asymptomatic_infect(individual_factory, by, handle_symptomatic,
     # asymptomatic case does not care about handle_symptomatic and proportion etc
     res = ind1.asymptomatic_infect(
         5.0,
-        by=None if by is None or leadtime is not None else ind2.id,
+        by=None if by is None or leadtime is not None else ind2,
         handle_symptomatic=[handle_symptomatic, proportion],
         leadtime=leadtime)
 
@@ -150,7 +150,7 @@ def test_vaccination(individual_factory, immunity, infectivity):
     ind.model.draw_prop_asym_carriers()
 
     assert ind.model.params.prop_asym_carriers == 0.2
-    ind.vaccinate(time=0, immunity=immunity, infectivity=infectivity)
+    ind.vaccinate(time=0, immunity=[immunity, immunity], infectivity=[infectivity, infectivity])
     #
     # try to infect the individual
     #
@@ -174,12 +174,6 @@ def test_vaccination(individual_factory, immunity, infectivity):
         assert N_symptomatic == 0
     elif immunity == 0:
         assert N_infected == N
-        assert N_asymptomatic / (
-            N_asymptomatic +
-            N_symptomatic) > 0.2, 'expect {N_asymptomatic/N} to be > 0.2'
     else:
         assert N_infected < N * (1 - immunity + 0.1)
         assert N_infected > N * (1 - immunity - 0.1)
-        assert N_asymptomatic / (
-            N_asymptomatic +
-            N_symptomatic) > 0.2, 'expect {N_asymptomatic/N} to be > 0.2'

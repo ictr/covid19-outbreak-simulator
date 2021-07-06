@@ -189,8 +189,8 @@ class Event(object):
 
             if not removed:
                 self.target.recovered = self.time
-                self.target.susceptibility = 0.01
-                self.target.infectivity = 0.01
+                self.target.immunity = [0.99, 0.99]
+                self.target.infectivity = [0.50, 0.50]
             else:
                 self.logger.write(
                     f'{self.time:.2f}\t{EventType.WARNING.name}\t{self.target}\tmsg=RECOVER target no longer exists\n'

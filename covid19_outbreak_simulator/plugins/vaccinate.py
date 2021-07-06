@@ -35,18 +35,21 @@ class vaccinate(BasePlugin):
         parser.add_argument(
             '--immunity',
             type=float,
-            default=0.95,
+            nargs='+',
+            default=[0.95, 0.95],
             help='''The probability to resist an infection event, essentially 1 - susceptibility.
             The default susceptibility is 1, meaning all infection event will cause an infection,
             if immunity == 0.85, susceptibility will be set to 0.15 so that only 15% of infection
-            events will succeed.''')
+            events will succeed. If two numbers are given, they are assumed to be for symptomatic
+            cases and asyptoatic carriers respectively.''')
         parser.add_argument(
             '--infectivity',
             type=float,
-            default=0.05,
+            nargs='+',
+            default=[0.5, 0.5],
             help='''The reduction of infectivity, which will be simulated as a reduction
-            of R0.
-            ''')
+            of R0.  If two numbers are given, they are assumed to be for symptomatic cases
+            and asyptoatic carriers respectively.''')
 
         return parser
 
@@ -84,6 +87,14 @@ class vaccinate(BasePlugin):
                 else:
                     IDs.extend(spIDs)
 
+        def expandto2(val):
+            if val is None:
+                return val
+            if len(val) == 1:
+                return val*2
+            assert len(val) == 2
+            return val
+
         events = []
         for ID in IDs:
             events.append(
@@ -92,14 +103,14 @@ class vaccinate(BasePlugin):
                     EventType.VACCINATION,
                     target=population[ID],
                     priority=True,
-                    immunity=args.immunity,
-                    infectivity=args.infectivity,
+                    immunity=expandto2(args.immunity),
+                    infectivity=expandto2(args.infectivity),
                     logger=self.logger))
 
         vaccinated_list = f',vaccinated={",".join(IDs)}' if args.verbosity > 1 else ''
         if args.verbosity > 0:
             self.logger.write(
-                f'{time:.2f}\t{EventType.PLUGIN.name}\t.\tname=vaccine,proportion={args.proportion},immunity={args.immunity},infectivity={args.infectivity},n_vaccinated={len(IDs)}{vaccinated_list}\n'
+                f'{time:.2f}\t{EventType.PLUGIN.name}\t.\tname=vaccine,proportion={args.proportion},immunity={",".join([str(x) for x in args.immunity])},infectivity={",".join([str(x) for x in args.infectivity])},n_vaccinated={len(IDs)}{vaccinated_list}\n'
             )
 
         return events

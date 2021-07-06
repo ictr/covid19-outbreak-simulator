@@ -262,7 +262,7 @@ class testing(BasePlugin):
                             time + args.turnaround_time,
                             EventType.REPLACEMENT,
                             reason='detected',
-                            keep=['vaccinated'],
+                            keep=['vaccinated', 'immunity', 'infectivity'],
                             target=population[ID],
                             logger=self.logger))
             elif handle_positive['reaction'] == 'reintegrate':
