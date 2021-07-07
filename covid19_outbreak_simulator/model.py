@@ -283,15 +283,15 @@ class Params:
                 miniaml duration after incubation, and parameters for a lognormal distribution that
                 determines the duration of infectivity. "{' '.join(val)}" (length {len(val)}) provided"""
             )
-
-        self.symptomatic_transmissibility_model = dict(
-            name=val[0],
-            noninfectivity_proportion=as_float(val[1]),
-            peak_proportion=as_float(val[2]),
-            duration_shift=as_float(val[3]),
-            duration_mean=as_float(val[4]),
-            duration_sigma=as_float(val[5]),
-        )
+        else:
+            self.symptomatic_transmissibility_model = dict(
+                name=val[0],
+                noninfectivity_proportion=as_float(val[1]),
+                peak_proportion=as_float(val[2]),
+                duration_shift=as_float(val[3]),
+                duration_mean=as_float(val[4]),
+                duration_sigma=as_float(val[5]),
+            )
 
     # n = 1
     # a, b = normal_parameters(math.log(2-n), 0.025, math.log(8-n), 0.975)
