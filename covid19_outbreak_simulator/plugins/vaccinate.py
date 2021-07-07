@@ -1,7 +1,5 @@
 import random
 
-import numpy as np
-
 from covid19_outbreak_simulator.event import Event, EventType
 from covid19_outbreak_simulator.plugin import BasePlugin
 from covid19_outbreak_simulator.utils import parse_param_with_multiplier
@@ -79,7 +77,7 @@ class vaccinate(BasePlugin):
                 spIDs = [
                     x.id
                     for x in population.individuals.values()
-                    if (name == '' or x.group == name) and x.vaccinated is False
+                    if name in ('', x.group) and x.vaccinated is False
                 ]
 
                 if prop < 1:

@@ -458,9 +458,9 @@ class Individual(object):
         idx = peak_idx + (idx - peak_idx) // 2
         if idx >= len(x_grid):
             return 0
-        else:
-            return (multiplier * trans_prob[idx] /
-                    self.model.params.simulation_interval) * 20
+
+        return (multiplier * trans_prob[idx] /
+                self.model.params.simulation_interval) * 20
 
     def test_sensitivity(self, time, lod):
         # return transmissibility at specified time
@@ -468,10 +468,11 @@ class Individual(object):
         if viral_load == 0.0:
             # if it is 0, it will already be 0
             return 0
-        elif viral_load >= lod:
+
+        if viral_load >= lod:
             return 1
-        else:
-            return viral_load / lod
+
+        return viral_load / lod
 
     def infect(self, time, **kwargs):
         if isinstance(self.infected,
@@ -499,15 +500,15 @@ class Individual(object):
                 )
                 return []
             return self.asymptomatic_infect(time, **kwargs)
-        else:
-            if self.immunity is not None and self.immunity[0] > 0 and rand(
-            ) < self.immunity[0]:
-                by_id = "." if kwargs["by"] is None else kwargs["by"].id
-                self.logger.write(
-                    f"{time:.2f}\t{EventType.INFECTION_FAILED.name}\t{self.id}\tby={by_id},reason=immunity\n"
-                )
-                return []
-            return self.symptomatic_infect(time, **kwargs)
+
+        if self.immunity is not None and self.immunity[0] > 0 and rand(
+        ) < self.immunity[0]:
+            by_id = "." if kwargs["by"] is None else kwargs["by"].id
+            self.logger.write(
+                f"{time:.2f}\t{EventType.INFECTION_FAILED.name}\t{self.id}\tby={by_id},reason=immunity\n"
+            )
+            return []
+        return self.symptomatic_infect(time, **kwargs)
 
 
 class Population(object):
@@ -517,7 +518,7 @@ class Population(object):
         self.group_sizes = {
             (ps.split("=", 1)[0] if "=" in ps else ""): 0 for ps in popsize
         }
-        self.max_ids = {x: y for x, y in self.group_sizes.items()}
+        self.max_ids = copy.deepcopy(self.group_sizes)
         self.subpop_from_id = re.compile(r"^(.*?)[\d]+$")
         self.vicinity = self.parse_vicinity(vicinity)
 
@@ -534,7 +535,8 @@ class Population(object):
                 sz = int(sz)
             except Exception as e:
                 raise ValueError(
-                    f"Named population size should be name=int: {ps} provided") from e
+                    f"Named population size should be name=int: {ps} provided"
+                ) from e
 
             self.add(
                 [
@@ -555,7 +557,7 @@ class Population(object):
         if subpop not in self.group_sizes:
             raise ValueError(f'Invalid subpopulation name {subpop}')
         if ID not in self.individuals:
-            return
+            return None
         from_sp = self.individuals[ID].group
 
         assert from_sp != subpop

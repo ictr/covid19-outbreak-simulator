@@ -6,19 +6,19 @@ from fnmatch import fnmatch
 def as_float(val, msg=''):
     try:
         return float(val)
-    except Exception:
+    except Exception as e:
         raise ValueError(
             f'A float number is expected{" (" + msg + ")" if msg else ""}: {val} provided'
-        )
+        ) from e
 
 
 def as_int(val, msg=''):
     try:
         return int(val)
-    except Exception:
+    except Exception as e:
         raise ValueError(
             f'An integer number is expected{" (" + msg + ")" if msg else ""}: {val} provided'
-        )
+        ) from e
 
 
 def parse_param_with_multiplier(args, subpops=None, default=None):
@@ -32,15 +32,14 @@ def parse_param_with_multiplier(args, subpops=None, default=None):
     if not base:
         if default is None:
             raise ValueError(f'No vase value for multiplier: {" ".join(args)}')
-        else:
-            base = default
+        base = default
     else:
         try:
             base = [float(x) for x in base]
             if len(base) == 1:
                 base = base[0]
-        except:
-            raise ValueError(f'Invalid parameter {" ".join(base)}')
+        except Exception as e:
+            raise ValueError(f'Invalid parameter {" ".join(base)}') from e
 
     if not subpops:
         return {'': base}
@@ -59,8 +58,8 @@ def parse_param_with_multiplier(args, subpops=None, default=None):
             raise ValueError(f'Invalid group name {sp}')
         try:
             val = float(val)
-        except:
-            raise ValueError(f'Invalid multiplier: {val}')
+        except Exception as e:
+            raise ValueError(f'Invalid multiplier: {val}') from e
         #
         for sp in sps:
             if isinstance(base, (list, tuple)):
@@ -107,7 +106,6 @@ def select_individuals(population, IDs, targets, max_count=None):
         from_IDs = list(set(from_IDs) - set(res))
         return res
 
-    count = 0
     selected = []
     for target in targets or ['all']:
         selected.extend(
@@ -144,10 +142,10 @@ def parse_handle_symptomatic_options(handle_symptomatic_arg, group):
 
                 try:
                     handle_symptomatic[k] = float(v)
-                except:
+                except Exception as e:
                     raise ValueError(
                         f"Option {k} in --handle-symptomatic should be a float number, {v} specified"
-                    )
+                    ) from e
                 if k == 'proportion' and (handle_symptomatic[k] > 1 or
                                           handle_symptomatic[k] < 0):
                     raise ValueError(

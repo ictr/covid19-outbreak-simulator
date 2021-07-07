@@ -203,7 +203,7 @@ def parse_args(args=None):
 class FilteredStringIO(StringIO):
 
     def __init__(self, track_events=None):
-        super(FilteredStringIO, self).__init__()
+        super().__init__()
         self._track_events = track_events
         if self._track_events is not None:
             self._track_events = set(self._track_events)
@@ -213,7 +213,7 @@ class FilteredStringIO(StringIO):
 
     def write(self, text):
         if not self._track_events or text.split('\t')[1] in self._track_events:
-            super(FilteredStringIO, self).write(text)
+            super().write(text)
 
 
 class Worker(multiprocessing.Process):
@@ -286,10 +286,10 @@ def main(argv=None):
             except Exception as e:
                 raise ValueError(
                     f'Invalid value for option --stop-if "{args.stop_if[0]}": {e}'
-                )
+                ) from e
         else:
             raise ValueError(
-                f'Option --stop-if currently only supports t>TIME to stop after certain time point.'
+                'Option --stop-if currently only supports t>TIME to stop after certain time point.'
             )
 
     if args.summarize_model:

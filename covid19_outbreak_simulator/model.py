@@ -123,7 +123,7 @@ class Params:
         if name == 'all':
             self.set(param_name, "multiplier_", value)
         else:
-            names = [x for x in self.groups.keys() if fnmatch(x, name)]
+            names = [x for x, y in self.groups.items() if fnmatch(x, name)]
             if not names:
                 raise ValueError(
                     f"Invalid group name {name} in multiplier {multiplier}")
@@ -261,8 +261,10 @@ class Params:
     def set_symptomatic_transmissibility_model(self, val):
         if not val or val[0] not in ('normal', 'piecewise'):
             raise ValueError("Only a normal and a piecewise model is supported")
-        elif val[0] == "normal":
+
+        if val[0] == "normal":
             self.symptomatic_transmissibility_model = dict(name="normal")
+
         elif len(val) == 1:
             self.symptomatic_transmissibility_model = dict(
                 name=val[0],
@@ -272,6 +274,7 @@ class Params:
                 duration_mean=0.8653416550012768,
                 duration_sigma=1.0332881142805803,
             )
+
         elif len(val) != 6:
             raise ValueError(
                 f"""Parameter --symptomatic-transmissibility-model should be
@@ -280,15 +283,15 @@ class Params:
                 miniaml duration after incubation, and parameters for a lognormal distribution that
                 determines the duration of infectivity. "{' '.join(val)}" (length {len(val)}) provided"""
             )
-        else:
-            self.symptomatic_transmissibility_model = dict(
-                name=val[0],
-                noninfectivity_proportion=as_float(val[1]),
-                peak_proportion=as_float(val[2]),
-                duration_shift=as_float(val[3]),
-                duration_mean=as_float(val[4]),
-                duration_sigma=as_float(val[5]),
-            )
+
+        self.symptomatic_transmissibility_model = dict(
+            name=val[0],
+            noninfectivity_proportion=as_float(val[1]),
+            peak_proportion=as_float(val[2]),
+            duration_shift=as_float(val[3]),
+            duration_mean=as_float(val[4]),
+            duration_sigma=as_float(val[5]),
+        )
 
     # n = 1
     # a, b = normal_parameters(math.log(2-n), 0.025, math.log(8-n), 0.975)
@@ -363,13 +366,13 @@ class Params:
         elif len(pars) == 2:
             if pars[0] > pars[1]:
                 raise ValueError(
-                    f"Proportions for parameter prop-asym-carriers should be incremental."
+                    "Proportions for parameter prop-asym-carriers should be incremental."
                 )
             self.set("prop_asym_carriers", "loc", (pars[0] + pars[1]) / 2)
             self.set("prop_asym_carriers", "quantile_2.5", pars[0])
         elif len(pars) > 2:
             raise ValueError(
-                f"Parameter prop-asym-carriers accepts one or two numbers.")
+                "Parameter prop-asym-carriers accepts one or two numbers.")
         #
         for multiplier in [x for x in val if "=" in x]:
             self._set_multiplier(multiplier, "prop_asym_carriers")
@@ -601,20 +604,6 @@ class Model(object):
         y
             probability of transmission for each time point
         """
-        """Asymptomatic Transmission probability.
-        R0
-            reproductive number, which is the expected number of infectees
-
-        interval
-            interval of simulation, default to 1/24, which is by hours
-
-        returns
-
-        x
-            time point
-        y
-            probability of transmission for each time point
-        """
         duration = incu + params[0]
         #
         x = np.linspace(0, duration,
@@ -724,7 +713,7 @@ def print_stats(data, name):
 
 def sample_prop_asymp_carriers(model, N=1000):
     asym_carriers = []
-    for i in range(N):
+    for _ in range(N):
         model.draw_prop_asym_carriers()
         asym_carriers.append(model.draw_is_asymptomatic())
     return asym_carriers
@@ -763,7 +752,7 @@ def summarize_model(args):
     with open(os.devnull, 'w') as logger:
         logger.id = 1
         model.draw_prop_asym_carriers()
-        for i in range(N):
+        for _ in range(N):
             ind = Individual(
                 id='0', susceptibility=1, model=model, logger=logger)
             evts = ind.symptomatic_infect(
@@ -779,7 +768,7 @@ def summarize_model(args):
     with open(os.devnull, 'w') as logger:
         logger.id = 1
         model.draw_prop_asym_carriers()
-        for i in range(N):
+        for _ in range(N):
             ind = Individual(
                 id='0', susceptibility=1, model=model, logger=logger)
             evts = ind.asymptomatic_infect(
@@ -801,7 +790,7 @@ def summarize_model(args):
     with open(os.devnull, 'w') as logger:
         logger.id = 1
         model.draw_prop_asym_carriers()
-        for i in range(N):
+        for _ in range(N):
             ind = Individual(
                 id='0', susceptibility=1, model=model, logger=logger)
             evts = ind.symptomatic_infect(

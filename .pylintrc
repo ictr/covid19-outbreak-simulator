@@ -180,7 +180,9 @@ disable=print-statement,
         import-self,
         no-name-in-module,
         eval-used,
-
+        useless-super-delegation,
+        no-else-return,
+        redefined-builtin,
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option

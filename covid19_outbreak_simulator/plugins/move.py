@@ -1,5 +1,3 @@
-import random
-
 from covid19_outbreak_simulator.event import EventType
 from covid19_outbreak_simulator.plugin import BasePlugin
 from covid19_outbreak_simulator.utils import select_individuals

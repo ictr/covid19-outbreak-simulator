@@ -29,13 +29,13 @@ def load_plugins(args, simulator=None):
             try:
                 mod = import_module(module_name)
             except Exception as e:
-                raise ValueError(f'Failed to import module {module_name}: {e}')
+                raise ValueError(f'Failed to import module {module_name}: {e}') from e
         try:
             obj = getattr(mod, plugin_name)(simulator)
         except Exception as e:
             raise ValueError(
                 f'Failed to retrieve plugin {plugin_name} from module {module_name}: {e}'
-            )
+            ) from e
         # if there is a parser
         parser = obj.get_parser()
         args = parser.parse_args(group[1:])
@@ -181,7 +181,7 @@ class Simulator(object):
             for event in events_at_time:
                 if event.action.name in ('SHOW_SYMPTOM', 'RECOVER', 'REMOVAL') and event.target.id not in population:
                     continue
-                if event.action.name in ('INFECTION'):
+                if event.action.name == 'INFECTION':
                     if event.kwargs['by'].id in population:
                         infected_by.add(event.kwargs['by'])
                     else:

@@ -87,7 +87,7 @@ class quarantine(BasePlugin):
                 spIDs = [
                     x.id
                     for x in population.individuals.values()
-                    if (name == '' or x.group == name)
+                    if name in ('', x.group)
                 ]
                 IDs = select_individuals(population, spIDs, args.target, count)
 

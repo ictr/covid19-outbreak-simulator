@@ -19,7 +19,7 @@ class testing(BasePlugin):
         super().__init__(*args, **kwargs)
 
     def get_parser(self):
-        parser = super(testing, self).get_parser()
+        parser = super().get_parser()
         parser.prog = '--plugin testing'
         parser.description = '''PCR-based test that can pick out all active cases.'''
         parser.add_argument(
@@ -219,7 +219,7 @@ class testing(BasePlugin):
                 spIDs = [
                     x.id
                     for x in population.individuals.values()
-                    if (name == '' or x.group == name)
+                    if name in ('', x.group)
                 ]
                 IDs.extend([
                     x for x in select_individuals(population, spIDs,

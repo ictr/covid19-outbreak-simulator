@@ -44,10 +44,10 @@ class BasePlugin(object):
     def get_parser(self):
         parser = argparse.ArgumentParser(
             '--plugin', description='A plugin for covid19-outbreak-simulator')
-        parser.add_argument('--disable',
+        parser.add_argument(
+            '--disable',
             action='store_true',
-            help='Disable the plugin if this parameter is specified.'
-        )
+            help='Disable the plugin if this parameter is specified.')
         parser.add_argument(
             '--start',
             type=float,
@@ -72,24 +72,23 @@ class BasePlugin(object):
             nargs='*',
             help='''Events that triggers this plug in.''')
         parser.add_argument(
-            '-v', '--verbosity',
+            '-v',
+            '--verbosity',
             default=1,
             type=int,
             choices=[0, 1, 2],
             help='''Set verbosity level of the plugin, default to 1 (general), can be
-                set to 0 (warning and error) only, and 2 (more output)'''
-        )
+                set to 0 (warning and error) only, and 2 (more output)''')
         return parser
 
     def summarize_model(self, simu_args, args):
         print(f'\nPlugin {self} does not support summarize_model.')
-        return
 
     def get_plugin_events(self, args):
         events = []
 
         if args.disable:
-            raise RuntimeError(f'Disabled plugin should not be triggered')
+            raise RuntimeError('Disabled plugin should not be triggered')
 
         if args.interval is not None and args.interval <= 0:
             return events

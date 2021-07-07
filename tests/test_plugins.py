@@ -227,7 +227,7 @@ def test_plugin_testing(clear_log):
 
     main([
         '--jobs', '1', '--repeats', '100', '--popsize', 'A=100', 'B=200',
-        '--infector', 'A_2', 'A_7', '--plugin', 'testing', 'A_2', 'A_7',
+        '--infector', 'A_2', 'A_7', '--handle-symptomatic', 'keep', '--plugin', 'testing', 'A_2', 'A_7',
         '--at', '3', '--handle-positive', 'quarantine@duration=14'
     ])
 

@@ -43,6 +43,7 @@ def summarize_simulations(logfile, output):
         outfile = sys.stdout
     else:
         outfile = open(output, 'w')
+
     with open(logfile) as lines:
         infection_from_seed_per_sim = defaultdict(int)
         infection_time_from_seed_per_sim = defaultdict(int)
@@ -143,7 +144,7 @@ def summarize_simulations(logfile, output):
                 # an error has happened
                 # params = line.split('\t')[-1]
                 # err = eval(params.split('=', 1)[-1])
-                sys.exit(f'Simulator exists with error')
+                sys.exit('Simulator exists with error')
 
             else:
                 # customized events
@@ -205,9 +206,9 @@ def summarize_simulations(logfile, output):
             f'incubation_period\t{args.incubation_period[0]}({args.incubation_period[1]}, {args.incubation_period[2]}) '
             + ' '.join(args.incubation_period[3:]), file=outfile)
     if args.interval == 1 / 24:
-        print(f'interval\t1 hour', file=outfile)
+        print('interval\t1 hour', file=outfile)
     elif args.interval == 1:
-        print(f'interval\t1 day', file=outfile)
+        print('interval\t1 day', file=outfile)
     else:
         print(f'interval\t{args.interval:.2f} day', file=outfile)
     if args.prop_asym_carriers:
@@ -220,7 +221,7 @@ def summarize_simulations(logfile, output):
                 f'prop_asym_carriers\t{float(args.prop_asym_carriers[0])*100:.1f}% to {float(args.prop_asym_carriers[1])*100:.1f}%'
             , file=outfile)
     else:
-        print(f'prop_asym_carriers\t10% to 40%', file=outfile)
+        print('prop_asym_carriers\t10% to 40%', file=outfile)
     print(f'leadtime\t{"yes" if args.leadtime else "no"}', file=outfile)
     print(f'n_simulation\t{n_simulation}', file=outfile)
     print(f'total_infection\t{total_infection}', file=outfile)
