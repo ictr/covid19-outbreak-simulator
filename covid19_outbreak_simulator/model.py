@@ -1,13 +1,14 @@
 import os
 import re
+from fnmatch import fnmatch
 
 import numpy as np
 import pandas as pd
+import yaml
 from scipy.optimize import bisect
 from scipy.stats import norm
+
 from covid19_outbreak_simulator.utils import as_float, as_int
-from fnmatch import fnmatch
-import yaml
 
 
 class Params:
@@ -120,7 +121,7 @@ class Params:
         value = as_float(value,
                          "Multiplier should have format name=float_value")
         if name == 'all':
-            self.set(param_name, f"multiplier_", value)
+            self.set(param_name, "multiplier_", value)
         else:
             names = [x for x in self.groups.keys() if fnmatch(x, name)]
             if not names:
@@ -158,7 +159,7 @@ class Params:
 
         elif len(pars) > 2:
             raise ValueError(
-                f"The symptomatic_r0 should be one or two float number.")
+                "The symptomatic_r0 should be one or two float number.")
         #
         for multiplier in [x for x in val if "=" in x]:
             self._set_multiplier(multiplier, "symptomatic_r0")
@@ -195,7 +196,7 @@ class Params:
             )
         elif len(pars) > 2:
             raise ValueError(
-                f"The asymptomatic_r0 should be one or two float number.")
+                "The asymptomatic_r0 should be one or two float number.")
         #
         for multiplier in [x for x in val if "=" in x]:
             self._set_multiplier(multiplier, "asymptomatic_r0")
@@ -352,10 +353,10 @@ class Params:
             return
         try:
             pars = [float(x) for x in val if "=" not in x]
-        except Exception:
+        except Exception as e:
             raise ValueError(
                 f'Paramter prop-asym-carriers expect one or two float value or multipliers: {" ".join(val)} provided'
-            )
+            ) from e
         if len(pars) == 1:
             self.set("prop_asym_carriers", "loc", as_float(pars[0]))
             self.set("prop_asym_carriers", "scale", 0)

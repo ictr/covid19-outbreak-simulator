@@ -1,7 +1,6 @@
-from datetime import datetime
 import subprocess
-
 from collections import defaultdict
+from datetime import datetime
 from importlib import import_module
 from itertools import groupby
 

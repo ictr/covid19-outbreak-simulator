@@ -1,18 +1,17 @@
 from covid19_outbreak_simulator.event import Event, EventType
 from covid19_outbreak_simulator.plugin import BasePlugin
-from covid19_outbreak_simulator.utils import parse_param_with_multiplier, select_individuals
-
-import random
+from covid19_outbreak_simulator.utils import (parse_param_with_multiplier,
+                                              select_individuals)
 
 
 class quarantine(BasePlugin):
 
     def __init__(self, *args, **kwargs):
         # this will set self.simualtor, self.logger
-        super(quarantine, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def get_parser(self):
-        parser = super(quarantine, self).get_parser()
+        parser = super().get_parser()
         parser.prog = '--plugin quarantine'
         parser.description = '''Quarantine specified or all infected individuals
             for specified durations.'''

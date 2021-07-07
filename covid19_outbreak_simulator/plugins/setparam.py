@@ -1,5 +1,5 @@
-from covid19_outbreak_simulator.plugin import BasePlugin
 from covid19_outbreak_simulator.event import EventType
+from covid19_outbreak_simulator.plugin import BasePlugin
 
 
 #
@@ -9,10 +9,10 @@ class setparam(BasePlugin):
 
     def __init__(self, *args, **kwargs):
         # this will set self.simualtor, self.logger
-        super(setparam, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def get_parser(self):
-        parser = super(setparam, self).get_parser()
+        parser = super().get_parser()
         parser.description = 'Change parameters of simulation.'
         parser.prog = '--plugin setparam'
         parser.add_argument(

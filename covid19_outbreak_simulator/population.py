@@ -1,11 +1,12 @@
 import copy
-import math
+import re
+from fnmatch import fnmatch
+
 import numpy as np
 from numpy.random import choice, rand
-from fnmatch import fnmatch
-from .utils import as_float, parse_handle_symptomatic_options
+
 from .event import Event, EventType
-import re
+from .utils import as_float, parse_handle_symptomatic_options
 
 
 class Individual(object):
@@ -194,8 +195,7 @@ class Individual(object):
                             target=self,
                             logger=self.logger,
                             till=symp_time + quarantine_duration,
-                            reason='show symptom'
-                        ))
+                            reason='show symptom'))
                 else:
                     self.quarantined = symp_time + quarantine_duration
         elif handle_symptomatic['reaction'] != 'reintegrate':
@@ -400,12 +400,12 @@ class Individual(object):
             raise ValueError('Individual has not been infected yet.')
 
         if self.symptomatic:
-            (x_grid,
+            (_,
              trans_prob) = self.model.get_symptomatic_transmission_probability(
                  self.incubation_period, self.r0 * self.r0_multiplier,
                  self.infect_params)
         else:
-            (x_grid,
+            (_,
              trans_prob) = self.model.get_asymptomatic_transmission_probability(
                  self.r0 * self.r0_multiplier, self.infect_params)
         prob = np.array(trans_prob)
@@ -417,12 +417,12 @@ class Individual(object):
             raise ValueError('Individual has not been infected yet.')
 
         if self.symptomatic:
-            (x_grid,
+            (_,
              trans_prob) = self.model.get_symptomatic_transmission_probability(
                  self.incubation_period, self.r0 * self.r0_multiplier,
                  self.infect_params)
         else:
-            (x_grid,
+            (_,
              trans_prob) = self.model.get_asymptomatic_transmission_probability(
                  self.r0 * self.r0_multiplier, self.infect_params)
         prob = np.array(trans_prob)
@@ -447,7 +447,7 @@ class Individual(object):
                  self.r0, self.infect_params)
         peak_idx = np.argmax(trans_prob)
         idx = int(interval / self.model.params.simulation_interval)
-        multiplier = 1 # 0.8 if self.symptomatic else 1.3
+        multiplier = 1  # 0.8 if self.symptomatic else 1.3
         # translate to log10 CP/ML.
         # prob / iterval ==> daily probability from 0.1 up to 0.8
         # 0.01 to 3
@@ -518,7 +518,7 @@ class Population(object):
             (ps.split("=", 1)[0] if "=" in ps else ""): 0 for ps in popsize
         }
         self.max_ids = {x: y for x, y in self.group_sizes.items()}
-        self.subpop_from_id = re.compile("^(.*?)[\d]+$")
+        self.subpop_from_id = re.compile(r"^(.*?)[\d]+$")
         self.vicinity = self.parse_vicinity(vicinity)
 
         idx = 0
@@ -532,16 +532,16 @@ class Population(object):
                 sz = ps
             try:
                 sz = int(sz)
-            except Exception:
+            except Exception as e:
                 raise ValueError(
-                    f"Named population size should be name=int: {ps} provided")
+                    f"Named population size should be name=int: {ps} provided") from e
 
             self.add(
                 [
                     Individual(
                         f"{name}_{idx}" if name else str(idx),
                         susceptibility=getattr(model.params,
-                                               f"susceptibility_mean", 1) *
+                                               "susceptibility_mean", 1) *
                         getattr(model.params,
                                 f"susceptibility_multiplier_{name}", 1),
                         model=model,
@@ -574,13 +574,13 @@ class Population(object):
 
         res = {}
         for param in params:
-            matched = re.match("^(.*)-(.*)=(\d+)$", param)
+            matched = re.match(r"^(.*)-(.*)=(\d+)$", param)
             if matched:
                 infector_sp = matched.group(1)
                 infectee_sp = matched.group(2)
                 neighbor_size = int(matched.group(3))
             else:
-                matched = re.match("^(.*)=(\d+)$", param)
+                matched = re.match(r"^(.*)=(\d+)$", param)
                 if matched:
                     infector_sp = ""
                     infectee_sp = matched.group(1)
@@ -631,7 +631,7 @@ class Population(object):
         sz = len(self.individuals)
         self.individuals.update({x.id: x for x in items})
         if sz + len(items) != len(self.individuals):
-            raise ValueError(f"One or more IDs are already in the population.")
+            raise ValueError("One or more IDs are already in the population.")
         self.group_sizes[subpop] += len(items)
         self.max_ids[subpop] += len(items)
 

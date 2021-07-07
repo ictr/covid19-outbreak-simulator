@@ -1,7 +1,8 @@
 import random
 
-from covid19_outbreak_simulator.plugin import BasePlugin
 from covid19_outbreak_simulator.event import EventType
+from covid19_outbreak_simulator.plugin import BasePlugin
+
 
 #
 # This plugin take random samples from the population during evolution.
@@ -10,10 +11,10 @@ class sample(BasePlugin):
 
     def __init__(self, *args, **kwargs):
         # this will set self.simualtor, self.logger
-        super(sample, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def get_parser(self):
-        parser = super(sample, self).get_parser()
+        parser = super().get_parser()
         parser.prog = '--plugin sample'
         parser.description = 'Draw random sample from the population'
         grp = parser.add_mutually_exclusive_group(required=True)

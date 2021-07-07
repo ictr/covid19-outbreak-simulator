@@ -1,5 +1,5 @@
-import sys
 import shlex
+import sys
 from collections import defaultdict
 
 

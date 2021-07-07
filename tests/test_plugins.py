@@ -1,7 +1,5 @@
-import os
 import pytest
 from covid19_outbreak_simulator.cli import parse_args, main
-from covid19_outbreak_simulator.model import Params
 
 
 def test_option_base_plugin_help(clear_log):
@@ -27,7 +25,7 @@ def test_plugin_no_module(clear_log):
         ])
 
 
-def test_plugin_no_module(clear_log):
+def test_plugin_no_module_1(clear_log):
     with pytest.raises(Exception):
         main([
             '--jobs', '1', '--repeats', '100', '--infectors', '1', '--plugin',

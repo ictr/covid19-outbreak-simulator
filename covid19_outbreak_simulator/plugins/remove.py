@@ -11,10 +11,10 @@ class remove(BasePlugin):
 
     def __init__(self, *args, **kwargs):
         # this will set self.simualtor, self.logger
-        super(remove, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def get_parser(self):
-        parser = super(remove, self).get_parser()
+        parser = super().get_parser()
         parser.prog = '--plugin remove'
         parser.description = 'remove individuals from the population'
         parser.add_argument(

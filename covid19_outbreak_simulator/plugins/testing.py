@@ -1,21 +1,22 @@
 import os
 
-import numpy
-import pandas as pd
 import numpy as np
+import pandas as pd
 
 from covid19_outbreak_simulator.event import Event, EventType
 from covid19_outbreak_simulator.model import Model, Params
 from covid19_outbreak_simulator.plugin import BasePlugin
 from covid19_outbreak_simulator.population import Individual
-from covid19_outbreak_simulator.utils import parse_param_with_multiplier, parse_handle_symptomatic_options, select_individuals
+from covid19_outbreak_simulator.utils import (parse_handle_symptomatic_options,
+                                              parse_param_with_multiplier,
+                                              select_individuals)
 
 
 class testing(BasePlugin):
 
     def __init__(self, *args, **kwargs):
         # this will set self.simualtor, self.logger
-        super(testing, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def get_parser(self):
         parser = super(testing, self).get_parser()
@@ -178,7 +179,7 @@ class testing(BasePlugin):
                 lod_sensitivity = ind.test_sensitivity(time, test_lod)
                 #
                 sensitivity = lod_sensitivity * args.sensitivity[0]
-                res = sensitivity == 1 or sensitivity > numpy.random.uniform()
+                res = sensitivity == 1 or sensitivity > np.random.uniform()
 
                 if isinstance(ind.recovered, float):
                     n_recovered += 1
@@ -194,7 +195,7 @@ class testing(BasePlugin):
             else:
                 n_uninfected += 1
 
-                res = args.specificity != 1 and args.specificity <= numpy.random.uniform(
+                res = args.specificity != 1 and args.specificity <= np.random.uniform(
                 )
                 if res:
                     n_false_positive += 1

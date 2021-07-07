@@ -12,10 +12,10 @@ class insert(BasePlugin):
 
     def __init__(self, *args, **kwargs):
         # this will set self.simualtor, self.logger
-        super(insert, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def get_parser(self):
-        parser = super(insert, self).get_parser()
+        parser = super().get_parser()
         parser.prog = '--plugin insert'
         parser.description = 'insert new individuals to the population'
         parser.add_argument(
@@ -47,7 +47,7 @@ class insert(BasePlugin):
             sz = int(ps.split('=', 1)[1]) if '=' in ps else int(ps)
 
             if name not in population.group_sizes:
-                raise ValueError(f'can only add to existing groups')
+                raise ValueError('can only add to existing groups')
 
             IDs = [f'{name}_{idx}' if name else str(idx) for idx in range(
                         population.max_ids[name], population.max_ids[name] + sz)]
@@ -55,7 +55,7 @@ class insert(BasePlugin):
                 Individual(
                     ID,
                     susceptibility=getattr(self.simulator.model.params,
-                                           f'susceptibility_mean',
+                                           'susceptibility_mean',
                                            1) * getattr(self.simulator.model.params,
                                            f'susceptibility_multiplier_{name}',
                                            1),

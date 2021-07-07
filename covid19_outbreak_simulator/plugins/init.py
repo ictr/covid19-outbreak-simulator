@@ -1,5 +1,7 @@
 import random
+
 import numpy as np
+
 from covid19_outbreak_simulator.event import Event, EventType
 from covid19_outbreak_simulator.plugin import BasePlugin
 from covid19_outbreak_simulator.utils import parse_param_with_multiplier
@@ -12,10 +14,10 @@ class init(BasePlugin):
 
     def __init__(self, *args, **kwargs):
         # this will set self.simualtor, self.logger
-        super(init, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def get_parser(self):
-        parser = super(init, self).get_parser()
+        parser = super().get_parser()
         parser.prog = '--plugin init'
         parser.description = '''Initialize population with initial prevalence and seroprevalence.
             IDs of infected individuals will be output with -v 2.'''

@@ -9,32 +9,32 @@ class stat(BasePlugin):
 
     def __init__(self, *args, **kwargs):
         # this will set self.simualtor, self.logger
-        super(stat, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def get_parser(self):
-        parser = super(stat, self).get_parser()
+        parser = super().get_parser()
         parser.prog = '--plugin stat'
         parser.description = 'Print STAT information'
         return parser
 
     def apply(self, time, population, args=None):
         res = {}
-        res[f'n_recovered'] = len([
+        res['n_recovered'] = len([
             x for x, ind in population.items()
             if isinstance(ind.recovered, float)
         ])
-        res[f'n_infected'] = len([
+        res['n_infected'] = len([
             x for x, ind in population.items()
             if isinstance(ind.infected, float)
         ])
-        res[f'n_active'] = res['n_infected'] - res['n_recovered']
-        res[f'n_popsize'] = len(population)
-        res[f'incidence_rate'] = '0' if res[
-            f'n_popsize'] == 0 else '{:.5f}'.format(res[f'n_active'] /
-                                                    res[f'n_popsize'])
-        res[f'seroprevalence'] = '0' if res[
-            f'n_popsize'] == 0 else '{:.5f}'.format(res[f'n_infected'] /
-                                                    res[f'n_popsize'])
+        res['n_active'] = res['n_infected'] - res['n_recovered']
+        res['n_popsize'] = len(population)
+        res['incidence_rate'] = '0' if res[
+            'n_popsize'] == 0 else '{:.5f}'.format(res['n_active'] /
+                                                    res['n_popsize'])
+        res['seroprevalence'] = '0' if res[
+            'n_popsize'] == 0 else '{:.5f}'.format(res['n_infected'] /
+                                                    res['n_popsize'])
 
         groups = sorted(list(population.group_sizes.keys()))
         for group in groups:

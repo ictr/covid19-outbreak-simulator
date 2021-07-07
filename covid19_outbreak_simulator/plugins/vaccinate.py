@@ -1,4 +1,5 @@
 import random
+
 import numpy as np
 
 from covid19_outbreak_simulator.event import Event, EventType
@@ -13,10 +14,10 @@ class vaccinate(BasePlugin):
 
     def __init__(self, *args, **kwargs):
         # this will set self.simualtor, self.logger
-        super(vaccinate, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def get_parser(self):
-        parser = super(vaccinate, self).get_parser()
+        parser = super().get_parser()
         parser.prog = '--plugin vaccinate'
         parser.description = '''Vaccine all or selected individual, which will reduce
             the chance that he or she gets infected (susceptibility), the duration of

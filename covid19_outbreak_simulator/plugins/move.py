@@ -1,6 +1,6 @@
 import random
 
-from covid19_outbreak_simulator.event import Event, EventType
+from covid19_outbreak_simulator.event import EventType
 from covid19_outbreak_simulator.plugin import BasePlugin
 from covid19_outbreak_simulator.utils import select_individuals
 
@@ -12,10 +12,10 @@ class move(BasePlugin):
 
     def __init__(self, *args, **kwargs):
         # this will set self.simualtor, self.logger
-        super(move, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def get_parser(self):
-        parser = super(move, self).get_parser()
+        parser = super().get_parser()
         parser.prog = '--plugin move'
         parser.description = 'move individuals from one subpopulation to another.'
         parser.add_argument(
@@ -55,8 +55,7 @@ class move(BasePlugin):
             action='store_true',
             help='''If specified, remove the quarantine status of moved
                 individuals
-            '''
-        )
+            ''')
         return parser
 
     def move(self, time, population, args, IDs):
@@ -64,9 +63,12 @@ class move(BasePlugin):
         ID_map = {}
         for ID in IDs:
             new_id = population.move(ID, args.to_subpop)
-            if args.reintegrate and isinstance(population[new_id].quarantined, float):
+            if args.reintegrate and isinstance(population[new_id].quarantined,
+                                               float):
                 population[new_id].reintegrate()
-            if isinstance(population[new_id].infected, float) and not isinstance(population[new_id].recovered, float):
+            if isinstance(population[new_id].infected,
+                          float) and not isinstance(
+                              population[new_id].recovered, float):
                 n_infected += 1
                 ID_map[ID] = new_id + '*'
             else:

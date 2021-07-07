@@ -1,4 +1,3 @@
-import random
 import numpy as np
 
 from covid19_outbreak_simulator.event import Event, EventType
@@ -13,10 +12,10 @@ class community_infection(BasePlugin):
 
     def __init__(self, *args, **kwargs):
         # this will set self.simualtor, self.logger
-        super(community_infection, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def get_parser(self):
-        parser = super(community_infection, self).get_parser()
+        parser = super().get_parser()
         parser.prog = '--plugin community_infection'
         parser.description = '''Community infection that infect everyone in the population randomly.
             IDs of list of infected will be output with -v 2.'''

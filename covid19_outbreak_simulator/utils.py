@@ -1,6 +1,6 @@
-from fnmatch import fnmatch
 import copy
 import random
+from fnmatch import fnmatch
 
 
 def as_float(val, msg=''):

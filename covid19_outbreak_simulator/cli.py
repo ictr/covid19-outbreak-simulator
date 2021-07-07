@@ -1,18 +1,18 @@
 """Console script for covid19_outbreak_simulator."""
 import argparse
 import multiprocessing
-import sys
-from io import StringIO
 import os
-from datetime import datetime
 import subprocess
+import sys
+from datetime import datetime
+from io import StringIO
 
 import numpy as np
 from tqdm import tqdm
 
 from .model import Params, summarize_model
-from .simulator import Simulator, load_plugins
 from .report import summarize_simulations
+from .simulator import Simulator, load_plugins
 
 
 def parse_args(args=None):
