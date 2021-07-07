@@ -179,6 +179,14 @@ def parse_args(args=None):
         action='store_true',
         help='Print version information')
     parser.add_argument(
+        '--verbosity',
+        default=1,
+        type=int,
+        choices=[0, 1, 2],
+        help='''Set verbosity level of the simulator, default to 1 (general), can be
+            set to 0 (suppress warning and commands for START etc) only.'''
+    )
+    parser.add_argument(
         '--summarize-model',
         action='store_true',
         help='''If specified, output key statistics calculated such as mean serial interval directly
@@ -189,12 +197,6 @@ def parse_args(args=None):
         '--summary-report',
         help='''Generate a summary report and write to the specified file,
           which can be "-" for standard output.''')
-    parser.add_argument(
-        '--sensitivity',
-        nargs='+',
-        type=float,
-        default=[1.0],
-        help=argparse.SUPPRESS)
     return parser.parse_args(args)
 
 

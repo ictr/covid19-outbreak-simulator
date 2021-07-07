@@ -110,9 +110,10 @@ class Simulator(object):
 
         start_params = {
             'id': self.logger.id,
-            'time': datetime.now().strftime("%m/%d/%Y-%H:%M:%S"),
-            'args': subprocess.list2cmdline(self.cmd)
+            'time': datetime.now().strftime("%m/%d/%Y-%H:%M:%S")
         }
+        if self.simu_args.verbosity > 1:
+            start_params['args'] = subprocess.list2cmdline(self.cmd)
         start_params = ','.join([f'{x}={y}' for x, y in start_params.items()])
 
         self.logger.write(
