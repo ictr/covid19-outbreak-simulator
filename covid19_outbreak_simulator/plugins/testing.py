@@ -2,6 +2,7 @@ import os
 
 import numpy
 import pandas as pd
+import numpy as np
 
 from covid19_outbreak_simulator.event import Event, EventType
 from covid19_outbreak_simulator.model import Model, Params
@@ -153,6 +154,9 @@ class testing(BasePlugin):
         if args.ignore_vaccinated:
             args.target = ['unvaccinated']
 
+        if not args.target:
+            args.target = ['all']
+
         def select(ind):
             nonlocal n_tested
             nonlocal n_infected
@@ -222,7 +226,6 @@ class testing(BasePlugin):
                     if select(population[x])
                 ])
 
-        #print(f'SELECT {" ".join(IDs)}')
         events = []
 
         for ID in IDs:
@@ -232,7 +235,6 @@ class testing(BasePlugin):
             handle_positive = parse_handle_symptomatic_options(
                 args.handle_positive, population[ID].group)
             proportion = handle_positive.get('proportion', 1)
-
             if handle_positive['reaction'] == 'remove':
                 if proportion == 1 or np.random.uniform(0, 1,
                                                         1)[0] <= proportion:
@@ -243,7 +245,7 @@ class testing(BasePlugin):
                             target=population[ID],
                             logger=self.logger))
             elif handle_positive['reaction'] == 'quarantine':
-                duration = handle_symptomatic.get('duration', 14)
+                duration = handle_positive.get('duration', 14)
                 if not population[ID].quarantined and (
                         proportion == 1 or
                         np.random.uniform(0, 1, 1)[0] <= proportion):
