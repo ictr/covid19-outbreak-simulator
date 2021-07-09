@@ -120,7 +120,8 @@ def select_individuals(population, IDs, targets, max_count=None):
 def parse_handle_symptomatic_options(handle_symptomatic_arg, group):
     hs_args = None
     for hs in handle_symptomatic_arg or []:
-        if '=' in hs:
+        # multiplier
+        if '=' in hs.split('?', 1)[0]:
             if hs.startswith(group + '='):
                 hs_args = hs[len(group) + 1:]
                 break

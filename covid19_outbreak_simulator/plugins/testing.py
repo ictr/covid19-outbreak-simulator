@@ -88,7 +88,8 @@ class testing(BasePlugin):
                 quarantine. Individuals that are already in quarantine will continue to be
                 quarantined. Default to "remove", meaning all symptomatic cases
                 will be removed from population. Multipliers are allows to specify
-                different reactions for individuals from different subpopulations.''')
+                different reactions for individuals from different subpopulations.'''
+        )
         return parser
 
     def summarize_model(self, simu_args, args):
@@ -247,9 +248,8 @@ class testing(BasePlugin):
                             logger=self.logger))
             elif handle_positive['reaction'] == 'quarantine':
                 duration = handle_positive.get('duration', 14)
-                if not population[ID].quarantined and (
-                        proportion == 1 or
-                        np.random.uniform(0, 1, 1)[0] <= proportion):
+                if proportion == 1 or np.random.uniform(0, 1,
+                                                        1)[0] <= proportion:
                     events.append(
                         Event(
                             time + args.turnaround_time,
@@ -270,9 +270,8 @@ class testing(BasePlugin):
                             target=population[ID],
                             logger=self.logger))
             elif handle_positive['reaction'] == 'reintegrate':
-                if population[ID].quarantined and (
-                        proportion == 1 or
-                        np.random.uniform(0, 1, 1)[0] <= proportion):
+                if proportion == 1 or np.random.uniform(0, 1,
+                                                        1)[0] <= proportion:
                     events.append(
                         Event(
                             time + args.turnaround_time,
@@ -281,7 +280,8 @@ class testing(BasePlugin):
                             logger=self.logger))
             elif handle_positive['reaction'] != 'keep':
                 raise ValueError(
-                    f'Unsupported action for patients who test positive: {handle_positive}')
+                    f'Unsupported action for patients who test positive: {handle_positive}'
+                )
 
         res = dict(
             n_tested=n_tested,
