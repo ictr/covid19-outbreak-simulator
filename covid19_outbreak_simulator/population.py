@@ -676,8 +676,15 @@ class Population(object):
     def __getitem__(self, id):
         return self.individuals[id]
 
-    def items(self):
-        return self.individuals.items()
+    def items(self, subpop=None):
+        if not subpop:
+            return self.individuals.items()
+        #
+        if subpop not in self.group_sizes:
+            raise ValueError(f'Unrecognized subpop {subpop}')
+
+        prefix = subpop + '_'
+        return filter(lambda x: x[0].startswith(prefix), self.individuals.items())
 
     def values(self):
         return self.individuals.values()

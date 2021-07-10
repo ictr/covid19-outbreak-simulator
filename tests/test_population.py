@@ -3,7 +3,6 @@ from itertools import product
 from covid19_outbreak_simulator.simulator import Population
 
 
-
 def test_population(population_factory):
     pop = population_factory(popsize=['100'])
     assert len(pop.individuals) == 100
@@ -41,16 +40,20 @@ def test_select(population_factory):
         selected = pop.select(infector='B_10')
         cnt[selected.group] += 1
 
-    assert cnt['A'] / (cnt['A'] + cnt['B']) > 0.15 and cnt['A'] / (cnt['A'] + cnt['B']) < 0.35
-    assert cnt['B'] / (cnt['A'] + cnt['B']) > 0.60 and cnt['B'] / (cnt['A'] + cnt['B']) < 0.90
+    assert cnt['A'] / (cnt['A'] + cnt['B']) > 0.15 and cnt['A'] / (
+        cnt['A'] + cnt['B']) < 0.35
+    assert cnt['B'] / (cnt['A'] + cnt['B']) > 0.60 and cnt['B'] / (
+        cnt['A'] + cnt['B']) < 0.90
 
     cnt = {'A': 0, 'B': 0}
     for i in range(1000):
         selected = pop.select(infector='A_10')
         cnt[selected.group] += 1
 
-    assert cnt['A'] / (cnt['A'] + cnt['B']) > 0.15 and cnt['A'] / (cnt['A'] + cnt['B']) < 0.35
-    assert cnt['B'] / (cnt['A'] + cnt['B']) > 0.60 and cnt['B'] / (cnt['A'] + cnt['B']) < 0.90
+    assert cnt['A'] / (cnt['A'] + cnt['B']) > 0.15 and cnt['A'] / (
+        cnt['A'] + cnt['B']) < 0.35
+    assert cnt['B'] / (cnt['A'] + cnt['B']) > 0.60 and cnt['B'] / (
+        cnt['A'] + cnt['B']) < 0.90
 
     # no within group infection
     pop = population_factory(popsize=['A=100', 'B=200'], vicinity=['A-A=0'])
@@ -60,24 +63,30 @@ def test_select(population_factory):
         assert not selected.id.startswith('A')
 
     #
-    pop = population_factory(popsize=['A=100', 'B=200'], vicinity=['A-A=50', 'A-B=10'])
+    pop = population_factory(
+        popsize=['A=100', 'B=200'], vicinity=['A-A=50', 'A-B=10'])
 
     cnt = {'A': 0, 'B': 0}
     for i in range(1000):
         selected = pop.select(infector='A_0')
         cnt[selected.group] += 1
 
-    assert cnt['A'] / (cnt['A'] + cnt['B']) > 0.5 and cnt['A'] / (cnt['A'] + cnt['B']) < 0.95
-    assert cnt['B'] / (cnt['A'] + cnt['B']) < 0.5 and cnt['B'] / (cnt['A'] + cnt['B']) > 0.05
+    assert cnt['A'] / (cnt['A'] + cnt['B']) > 0.5 and cnt['A'] / (
+        cnt['A'] + cnt['B']) < 0.95
+    assert cnt['B'] / (cnt['A'] + cnt['B']) < 0.5 and cnt['B'] / (
+        cnt['A'] + cnt['B']) > 0.05
 
-    pop = population_factory(popsize=['A=100', 'B=300'], vicinity=['A-A=50', 'A-B=10'])
+    pop = population_factory(
+        popsize=['A=100', 'B=300'], vicinity=['A-A=50', 'A-B=10'])
     cnt = {'A': 0, 'B': 0}
     for i in range(1000):
         selected = pop.select(infector='B_10')
         cnt[selected.group] += 1
 
-    assert cnt['A'] / (cnt['A'] + cnt['B']) > 0.15 and cnt['A'] / (cnt['A'] + cnt['B']) < 0.35
-    assert cnt['B'] / (cnt['A'] + cnt['B']) > 0.60 and cnt['B'] / (cnt['A'] + cnt['B']) < 0.90
+    assert cnt['A'] / (cnt['A'] + cnt['B']) > 0.15 and cnt['A'] / (
+        cnt['A'] + cnt['B']) < 0.35
+    assert cnt['B'] / (cnt['A'] + cnt['B']) > 0.60 and cnt['B'] / (
+        cnt['A'] + cnt['B']) < 0.90
 
     # outside?
     pop = population_factory(popsize=['A=100', 'B=200'], vicinity=['A=0'])
@@ -88,23 +97,39 @@ def test_select(population_factory):
 
     #
     # ! match
-    pop = population_factory(popsize=['A=100', 'B=200'], vicinity=['A=50', 'B=10', 'A-A=50', 'A-!A=10'])
+    pop = population_factory(
+        popsize=['A=100', 'B=200'],
+        vicinity=['A=50', 'B=10', 'A-A=50', 'A-!A=10'])
 
     cnt = {'A': 0, 'B': 0}
     for i in range(1000):
         selected = pop.select(infector=None)
         cnt[selected.group] += 1
 
-    assert cnt['A'] / (cnt['A'] + cnt['B']) > 0.5 and cnt['A'] / (cnt['A'] + cnt['B']) < 0.95
-    assert cnt['B'] / (cnt['A'] + cnt['B']) < 0.5 and cnt['B'] / (cnt['A'] + cnt['B']) > 0.05
+    assert cnt['A'] / (cnt['A'] + cnt['B']) > 0.5 and cnt['A'] / (
+        cnt['A'] + cnt['B']) < 0.95
+    assert cnt['B'] / (cnt['A'] + cnt['B']) < 0.5 and cnt['B'] / (
+        cnt['A'] + cnt['B']) > 0.05
 
     # wildcard
-    pop = population_factory(popsize=['A=100', 'B=200'], vicinity=['A=50', 'B=10', 'A-*=50'])
+    pop = population_factory(
+        popsize=['A=100', 'B=200'], vicinity=['A=50', 'B=10', 'A-*=50'])
 
     cnt = {'A': 0, 'B': 0}
     for i in range(1000):
         selected = pop.select(infector='A_10')
         cnt[selected.group] += 1
 
-    assert cnt['A'] / (cnt['A'] + cnt['B']) > 0.4 and cnt['A'] / (cnt['A'] + cnt['B']) < 0.6
-    assert cnt['B'] / (cnt['A'] + cnt['B']) > 0.4 and cnt['B'] / (cnt['A'] + cnt['B']) < 0.6
+    assert cnt['A'] / (cnt['A'] + cnt['B']) > 0.4 and cnt['A'] / (
+        cnt['A'] + cnt['B']) < 0.6
+    assert cnt['B'] / (cnt['A'] + cnt['B']) > 0.4 and cnt['B'] / (
+        cnt['A'] + cnt['B']) < 0.6
+
+
+def test_get_items(population_factory):
+    pop = population_factory(popsize=['A=100', 'B=200'])
+    for id, ind in pop.items(subpop='A'):
+        assert ind.group == 'A'
+
+    assert len(list(pop.items(subpop='A'))) == 100
+    assert len(list(pop.items())) == 300

@@ -54,9 +54,8 @@ class community_infection(BasePlugin):
                     leadtime=0,
                     handle_symptomatic=self.simulator.simu_args
                     .handle_symptomatic)
-                for id, ind in population.individuals.items()
-                if population[id].group == subpop and
-                not population[id].quarantined and random.random() < prob *
+                for id, ind in population.items(group=subpop)
+                if not ind.quarantined and random.random() < prob *
                 ind.susceptibility
             ]
         IDs = [x.target.id for x in events]
