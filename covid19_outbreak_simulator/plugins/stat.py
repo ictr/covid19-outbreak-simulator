@@ -41,17 +41,17 @@ class stat(BasePlugin):
             if group == '':
                 continue
             res[f'n_{group}_recovered'] = len([
-                x for x, ind in population.items()
-                if isinstance(ind.recovered, float) and ind.group == group
+                x for x, ind in population.items(group=group)
+                if isinstance(ind.recovered, float)
             ])
             res[f'n_{group}_infected'] = len([
-                x for x, ind in population.items()
-                if isinstance(ind.infected, float) and ind.group == group
+                x for x, ind in population.items(group=group)
+                if isinstance(ind.infected, float)
             ])
             res[f'n_{group}_active'] = res[f'n_{group}_infected'] - res[
                 f'n_{group}_recovered']
             res[f'n_{group}_popsize'] = len(
-                [x for x, ind in population.items() if ind.group == group])
+                [x for x, ind in population.items(group=group)])
             res[f'{group}_incidence_rate'] = 0 if res[
                 f'n_{group}_popsize'] == '0' else '{:.3f}'.format(
                     res[f'n_{group}_active'] / res[f'n_{group}_popsize'])
