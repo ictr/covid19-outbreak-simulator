@@ -676,15 +676,25 @@ class Population(object):
     def __getitem__(self, id):
         return self.individuals[id]
 
-    def items(self, group=None):
-        if not group:
+    def items(self, group=None, filter_func=None):
+        if not group and not filter_func:
             return self.individuals.items()
         #
-        if group not in self.group_sizes:
-            raise ValueError(f'Unrecognized subpop {group}')
+        if group:
+            if group not in self.group_sizes:
+                raise ValueError(f'Unrecognized subpop {group}')
+
+        if group and not filter_func:
+            prefix = group + '_'
+            return filter(lambda x: x[0].startswith(prefix),
+                          self.individuals.items())
+
+        if filter_func and not group:
+            return filter(filter_func, self.individuals.items())
 
         prefix = group + '_'
-        return filter(lambda x: x[0].startswith(prefix), self.individuals.items())
+        return filter(lambda x: filter_func(x) and x[0].startswith(prefix),
+                      self.individuals.items())
 
     def values(self):
         return self.individuals.values()
@@ -733,8 +743,8 @@ class Population(object):
 
             # then select a random individual from the group.
             ids = [
-                id for id, ind in self.items(group=grp) if
-                infector != ind.id and not ind.quarantined
+                id for id, ind in self.items(group=grp)
+                if infector != ind.id and not ind.quarantined
             ]
 
         if not ids:

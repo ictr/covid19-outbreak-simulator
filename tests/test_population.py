@@ -133,3 +133,10 @@ def test_get_items(population_factory):
 
     assert len(list(pop.items(group='A'))) == 100
     assert len(list(pop.items())) == 300
+
+    for id, ind in pop.items(filter_func=lambda x: x[0].startswith('B_')):
+        assert ind.group == 'B'
+
+    pop['A_1'].infected = 1
+    for id, ind in pop.items(group='A', filter_func=lambda x: x[1].infected != False):
+        assert ind.infected == 1
