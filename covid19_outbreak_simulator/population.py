@@ -676,24 +676,15 @@ class Population(object):
     def __getitem__(self, id):
         return self.individuals[id]
 
-    def items(self, group=None, filter_func=None):
-        if not group and not filter_func:
+    def items(self, group=None):
+        if not group:
             return self.individuals.items()
         #
-        if group:
-            if group not in self.group_sizes:
-                raise ValueError(f'Unrecognized subpop {group}')
-
-        if group and not filter_func:
-            prefix = group + '_'
-            return filter(lambda x: x[0].startswith(prefix),
-                          self.individuals.items())
-
-        if filter_func and not group:
-            return filter(filter_func, self.individuals.items())
+        if group not in self.group_sizes:
+            raise ValueError(f'Unrecognized subpop {group}')
 
         prefix = group + '_'
-        return filter(lambda x: filter_func(x) and x[0].startswith(prefix),
+        return filter(lambda x: x[0].startswith(prefix),
                       self.individuals.items())
 
     def values(self):
