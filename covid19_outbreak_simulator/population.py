@@ -728,7 +728,7 @@ class Population(object):
                 return None
             freq = {x: y / total for x, y in freq.items()}
             # first determine which group ...
-            grp = choice(groups, 1, p=[freq[x] for x in groups])
+            grp = choice(groups, 1, p=[freq[x] for x in groups])[0]
 
             # then select a random individual from the group.
             ids = [
