@@ -128,8 +128,8 @@ def test_select(population_factory):
 
 def test_get_items(population_factory):
     pop = population_factory(popsize=['A=100', 'B=200'])
-    for id, ind in pop.items(subpop='A'):
+    for id, ind in pop.items(group='A'):
         assert ind.group == 'A'
 
-    assert len(list(pop.items(subpop='A'))) == 100
+    assert len(list(pop.items(group='A'))) == 100
     assert len(list(pop.items())) == 300
