@@ -42,6 +42,8 @@ class community_infection(BasePlugin):
             args.probability, subpops=population.group_sizes.keys())
 
         for subpop, prob in probability.items():
+            if prob == 0.0:
+                continue
             # drawning random number one by one
             events += [
                 Event(
@@ -58,6 +60,12 @@ class community_infection(BasePlugin):
                 if not ind.quarantined and random.random() < prob *
                 ind.susceptibility
             ]
+            sus = [id for id, ind in population.items(group=subpop)
+                if not ind.quarantined]
+            self.logger.write(
+                f'{time:.2f}\t{EventType.PLUGIN.name}\t.\tname=community_infection,subpop={subpop},n_qualified={len(sus)},mean_sub={",".join(sus)}\n'
+            )
+
         IDs = [x.target.id for x in events]
         ID_list = f',infected={",".join(IDs)}' if IDs and args.verbosity > 1 else ''
 
