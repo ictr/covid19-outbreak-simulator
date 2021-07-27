@@ -63,7 +63,7 @@ class community_infection(BasePlugin):
             sus = [id for id, ind in population.items(group=subpop)
                 if not ind.quarantined]
             self.logger.write(
-                f'{time:.2f}\t{EventType.PLUGIN.name}\t.\tname=community_infection,subpop={subpop},n_qualified={len(sus)},mean_sub={",".join(sus)}\n'
+                f'{time:.2f}\t{EventType.PLUGIN.name}\t.\tname=community_infection,subpop={subpop},n_qualified={len(sus)}\n'
             )
 
         IDs = [x.target.id for x in events]

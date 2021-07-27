@@ -639,13 +639,10 @@ class Population(object):
 
     def replace(self, ind, keep=[], **kwargs):
         assert isinstance(ind, Individual)
-        old_id = ind.id
+
         grp = ind.group
         idx = self.max_ids[grp]
-
         self.max_ids[grp] += 1
-
-        ind.id = f'{grp}_{idx}' if grp else str(idx)
 
         if ('vaccinated' in keep and isinstance(ind.vaccinated, float)) or \
             ('recovered' in keep and isinstance(ind.recovered, float)):
@@ -657,16 +654,19 @@ class Population(object):
             if 'infectivity' not in keep:
                 keep.append('infectivity')
 
-        # we keep the susceptibility parameter...
-        for attr, def_value in [('infected', False), ('immunity', None),
-                                ('infectivity', None), ('show_symptom', False),
-                                ('recovered', False), ('symptomatic', None),
-                                ('vaccinated', False), ('quarantined', False),
-                                ('r0', None), ('incubation_period', None)]:
-            if attr not in keep:
-                setattr(ind, attr, def_value)
+        new_ind = Individual(
+            f'{grp}_{idx}' if grp else str(idx),
+            susceptibility=None,
+            model=ind.model,
+            logger=ind.logger)
 
-        self.individuals[ind.id] = self.individuals.pop(old_id)
+        # we keep the susceptibility parameter...
+        for attr in keep:
+            setattr(new_ind, attr, getattr(ind, attr))
+
+        # remove old one, add new one
+        self.individuals.pop(ind.id)
+        self.individuals[new_ind.id] = new_ind
 
     @property
     def ids(self):
