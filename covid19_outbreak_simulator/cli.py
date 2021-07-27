@@ -1,5 +1,6 @@
 """Console script for covid19_outbreak_simulator."""
 import argparse
+import cProfile
 import multiprocessing
 import os
 import subprocess
@@ -197,6 +198,10 @@ def parse_args(args=None):
         '--summary-report',
         help='''Generate a summary report and write to the specified file,
           which can be "-" for standard output.''')
+    parser.add_argument(
+        '--profile',
+        help='''Profile worker and write profile result to specified file'''
+    )
     return parser.parse_args(args)
 
 
@@ -229,6 +234,9 @@ class Worker(multiprocessing.Process):
     def run(self):
         # set random seed to a random number
         np.random.seed()
+        if self.simu_args.profile:
+            pr = cProfile.Profile()
+            pr.enable()
 
         while True:
             id = self.task_queue.get()
@@ -255,6 +263,9 @@ class Worker(multiprocessing.Process):
                 self.task_queue.task_done()
                 self.result_queue.put(logger.getvalue())
 
+        if self.simu_args.profile:
+            pr.disable()
+            pr.dump_stats(self.simu_args.profile)
 
 def main(argv=None):
     """Console script for covid19_outbreak_simulator."""
@@ -276,7 +287,10 @@ def main(argv=None):
         plugins = load_plugins(args.plugin)
 
     if not args.jobs:
-        args.jobs = multiprocessing.cpu_count()
+        args.jobs = 1 if args.profile else multiprocessing.cpu_count()
+
+    if args.profile and args.jobs > 1:
+        raise ValueError(f'Please use a single worker (-j 1) when profiling is enabled with --profile.')
 
     if args.stop_if is not None:
         if args.stop_if[0].startswith('t>'):

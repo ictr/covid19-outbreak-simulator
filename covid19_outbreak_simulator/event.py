@@ -176,7 +176,7 @@ class Event(object):
         elif self.action == EventType.REPLACEMENT:
             if self.target.id in population:
                 self.logger.write(
-                    f'{self.time:.2f}\t{EventType.REPLACEMENT.name}\t{self.target}\treason={self.kwargs["reason"]},infected={"False" if population[self.target].infected is False else "True"}\n'
+                    f'{self.time:.2f}\t{EventType.REPLACEMENT.name}\t{self.target}\treason={self.kwargs["reason"]},infected={"False" if self.target.infected is False else "True"}\n'
                 )
                 population.replace(self.target, **self.kwargs)
             else:

@@ -7,7 +7,7 @@ import pandas as pd
 import yaml
 from scipy.optimize import bisect
 from scipy.stats import norm
-
+from .event import EventType
 from covid19_outbreak_simulator.utils import as_float, as_int
 
 
@@ -710,6 +710,11 @@ def print_stats(data, name):
     for q in (0.025, 0.05, 0.5, 0.95, 0.975):
         print(f'  {q*100:4.1f}% quantile:  {series.quantile(q):.4f}')
 
+def print_cnt(data, name):
+    nums = sorted(list(set(data)))
+    print('\n' + name + ':')
+    for n in nums:
+        print(f'    {n}:\t{data.count(n)/len(data)*100:.1f}%')
 
 def sample_prop_asymp_carriers(model, N=1000):
     asym_carriers = []
@@ -749,6 +754,7 @@ def summarize_model(args):
 
     cp = []
     du = []
+    cnt = []
     with open(os.devnull, 'w') as logger:
         logger.id = 1
         model.draw_prop_asym_carriers()
@@ -757,6 +763,7 @@ def summarize_model(args):
                 id='0', susceptibility=1, model=model, logger=logger)
             evts = ind.symptomatic_infect(
                 time=0, by=None, handle_symptomatic=['keep'])
+            cnt.append(len([x for x in evts if x.action == EventType.INFECTION]))
             cp.append(ind.communicable_period())
             du.append(ind.total_duration())
 
@@ -765,6 +772,7 @@ def summarize_model(args):
 
     acp = []
     adu = []
+    acnt = []
     with open(os.devnull, 'w') as logger:
         logger.id = 1
         model.draw_prop_asym_carriers()
@@ -773,13 +781,16 @@ def summarize_model(args):
                 id='0', susceptibility=1, model=model, logger=logger)
             evts = ind.asymptomatic_infect(
                 time=0, by=None, handle_symptomatic=['keep'])
+            acnt.append(len([x for x in evts if x.action == EventType.INFECTION]))
             acp.append(ind.communicable_period())
             adu.append(ind.total_duration())
 
     print_stats(cp, 'Communicable Period (Symptomatic)')
     print_stats(du, 'Total Duration (Symptomatic)')
+    print_cnt(cnt, 'Number of infections (Symptomatic)')
     print_stats(acp, 'Communicable Period (Asymptomatic)')
     print_stats(adu, 'Total Duration (Asymptomatic)')
+    print_cnt(acnt, 'Number of infections (Asymptomatic)')
 
     model.params.set('prop_asym_carriers', 'loc', 0)
     model.params.set('prop_asym_carriers', 'scale', 0)

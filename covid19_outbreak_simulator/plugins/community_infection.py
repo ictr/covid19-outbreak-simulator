@@ -1,4 +1,4 @@
-import numpy as np
+import random
 
 from covid19_outbreak_simulator.event import Event, EventType
 from covid19_outbreak_simulator.plugin import BasePlugin
@@ -38,10 +38,12 @@ class community_infection(BasePlugin):
     def apply(self, time, population, args=None):
         events = []
 
-        probability = parse_param_with_multiplier(args.probability,
-            subpops=population.group_sizes.keys())
+        probability = parse_param_with_multiplier(
+            args.probability, subpops=population.group_sizes.keys())
 
         for subpop, prob in probability.items():
+            if prob == 0.0:
+                continue
             # drawning random number one by one
             events += [
                 Event(
@@ -54,10 +56,16 @@ class community_infection(BasePlugin):
                     leadtime=0,
                     handle_symptomatic=self.simulator.simu_args
                     .handle_symptomatic)
-                for id, ind in population.individuals.items()
-                if population[id].group == subpop and not population[id].quarantined and np.random.binomial(1,
-                    min(1, prob * ind.susceptibility), 1)[0]
+                for id, ind in population.items(group=subpop)
+                if not ind.quarantined and random.random() < prob *
+                ind.susceptibility
             ]
+            sus = [id for id, ind in population.items(group=subpop)
+                if not ind.quarantined]
+            self.logger.write(
+                f'{time:.2f}\t{EventType.PLUGIN.name}\t.\tname=community_infection,subpop={subpop},n_qualified={len(sus)},mean_sub={",".join(sus)}\n'
+            )
+
         IDs = [x.target.id for x in events]
         ID_list = f',infected={",".join(IDs)}' if IDs and args.verbosity > 1 else ''
 
