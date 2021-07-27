@@ -647,6 +647,16 @@ class Population(object):
 
         ind.id = f'{grp}_{idx}' if grp else str(idx)
 
+        if ('vaccinated' in keep and isinstance(ind.vaccinated, float)) or \
+            ('recovered' in keep and isinstance(ind.recovered, float)):
+            # if vaccinated is kept, so should be immunity and infectivity
+            # however, if vaccinated is not kept, immunity and infectiviity
+            # caused by recover should not be counted
+            if 'immunity' not in keep:
+                keep.append('immunity')
+            if 'infectivity' not in keep:
+                keep.append('infectivity')
+
         # we keep the susceptibility parameter...
         for attr, def_value in [('infected', False), ('immunity', None),
                                 ('infectivity', None), ('show_symptom', False),
