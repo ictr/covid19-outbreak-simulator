@@ -45,8 +45,7 @@ class community_infection(BasePlugin):
             if prob == 0.0:
                 continue
             # drawning random number one by one
-            events += [
-                Event(
+            sp_events = [Event(
                     time,
                     EventType.INFECTION,
                     target=ind,
@@ -57,20 +56,19 @@ class community_infection(BasePlugin):
                     handle_symptomatic=self.simulator.simu_args
                     .handle_symptomatic)
                 for id, ind in population.items(group=subpop)
-                if not ind.quarantined and random.random() < prob *
+                if not isinstance(ind.quarantined, float) and random.random() < prob *
                 ind.susceptibility
             ]
             sus = [id for id, ind in population.items(group=subpop)
                 if not ind.quarantined]
-            self.logger.write(
-                f'{time:.2f}\t{EventType.PLUGIN.name}\t.\tname=community_infection,subpop={subpop},n_qualified={len(sus)}\n'
-            )
 
-        IDs = [x.target.id for x in events]
-        ID_list = f',infected={",".join(IDs)}' if IDs and args.verbosity > 1 else ''
+            IDs = [x.target.id for x in sp_events]
+            ID_list = f',infected={",".join(IDs)}' if IDs and args.verbosity > 1 else ''
 
-        if args.verbosity > 0 and IDs:
-            self.logger.write(
-                f'{time:.2f}\t{EventType.PLUGIN.name}\t.\tname=community_infection,n_infected={len(events)}{ID_list}\n'
-            )
+            if args.verbosity > 0:
+                self.logger.write(
+                        f'{time:.2f}\t{EventType.PLUGIN.name}\t.\tname=community_infection,subpop={subpop if subpop else "all"},n_qualified={len(sus)},n_infected={len(IDs)}{ID_list if args.verbosity > 1.else ""}\n'
+                    )
+
+            events += sp_events
         return events
