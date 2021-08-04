@@ -79,6 +79,8 @@ def status_to_condition(status):
         return lambda ind: isinstance(ind.recovered, float)
     elif status == 'quarantined':
         return lambda ind: isinstance(ind.quarantined, float)
+    elif status == 'unquarantined':
+        return lambda ind: not isinstance(ind.quarantined, float)
     elif status == 'vaccinated':
         return lambda ind: isinstance(ind.vaccinated, float)
     elif status == 'unvaccinated':

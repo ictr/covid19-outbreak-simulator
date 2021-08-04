@@ -109,6 +109,11 @@ class Event(object):
                     f'{self.time:.2f}\t{EventType.WARNING.name}\t{self.target}\treason={self.kwargs["reason"]},msg=QUARANTINE target no longer exists.\n'
                 )
                 return []
+            if isinstance(self.target.quarantined, float):
+                self.logger.write(
+                    f'{self.time:.2f}\t{EventType.WARNING.name}\t{self.target}\treason={self.kwargs["reason"]},msg=QUARANTINE target already quarantined\n'
+                )
+                return []
             self.logger.write(
                 f'{self.time:.2f}\t{EventType.QUARANTINE.name}\t{self.target}\ttill={self.kwargs["till"]:.2f},reason={self.kwargs["reason"]}\n'
             )

@@ -38,7 +38,7 @@ class testing(BasePlugin):
             '--target',
             nargs='*',
             choices=[
-                "infected", "uninfected", "quarantined", "recovered",
+                "infected", "uninfected", "unquarantined", "quarantined", "recovered",
                 "vaccinated", "unvaccinated", "all"
             ],
             help='''Type of individuals to be tested, can be "infected", "uninfected",
