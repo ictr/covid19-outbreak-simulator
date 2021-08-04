@@ -37,7 +37,6 @@ class testing(BasePlugin):
         parser.add_argument(
             '--target',
             nargs='*',
-            required=True,
             choices=[
                 "infected", "uninfected", "unquarantined", "quarantined", "recovered",
                 "vaccinated", "unvaccinated", "all"
@@ -157,7 +156,8 @@ class testing(BasePlugin):
         if args.ignore_vaccinated:
             args.target = ['unvaccinated']
 
-        assert args.target
+        if not args.target:
+            raise RuntimeError(f'Please specify target of testing with parameter --target')
 
         def select(ind):
             nonlocal n_tested
