@@ -106,7 +106,6 @@ class Individual(object):
             kwargs.get("handle_symptomatic", None), self.group)
 
         # show symptom
-        kept = True
         evts = []
         symp_time = time + self.incubation_period - lead_time
         if symp_time < 0:
@@ -149,7 +148,6 @@ class Individual(object):
                         handle_symptomatic['reaction'] == "remove" and
                         (proportion == 1 or
                          np.random.uniform(0, 1, 1)[0] <= proportion)):
-                kept = False
                 if symp_time >= 0:
                     evts.append(
                         # scheduling REMOVAL
@@ -185,7 +183,6 @@ class Individual(object):
             quarantine_duration = handle_symptomatic.get('duration', 14)
             proportion = handle_symptomatic.get('proportion', 1)
             if proportion == 1 or np.random.uniform(0, 1, 1)[0] <= proportion:
-                kept = False
                 if symp_time >= 0:
                     evts.append(
                         # scheduling QUARANTINE
@@ -204,25 +201,18 @@ class Individual(object):
             )
 
         # infect only before removal or quarantine
-        if kept:
-            x_before = x_grid
-        else:
-            # remove or quanratine
-            x_before = [
-                x for x in x_grid if x < self.incubation_period - lead_time
-            ]
-        infected = np.random.binomial(1, trans_prob[:len(x_before)],
-                                      len(x_before))
+        infected = np.random.binomial(1, trans_prob,
+                                      len(trans_prob))
         presymptomatic_infected = [
-            xx for xx, ii in zip(x_before, infected)
+            xx for xx, ii in zip(x_grid, infected)
             if ii and xx < self.incubation_period
         ]
         symptomatic_infected = [
-            xx for xx, ii in zip(x_before, infected)
+            xx for xx, ii in zip(x_grid, infected)
             if ii and xx >= self.incubation_period
         ]
         if self.quarantined:
-            for idx, x in enumerate(x_before):
+            for idx, x in enumerate(x_grid):
                 if time + x < self.quarantined and infected[idx] != 0:
                     evts.append(
                         Event(
@@ -234,7 +224,7 @@ class Individual(object):
                         ))
                     infected[idx] = 0
         #
-        for x, infe in zip(x_before, infected):
+        for x, infe in zip(x_grid, infected):
             if infe:
                 evts.append(
                     Event(
