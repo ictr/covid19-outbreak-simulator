@@ -163,22 +163,26 @@ class Individual(object):
                         f'{time:.2f}\t{EventType.WARNING.name}\t{self.id}\tmsg="Individual not removed before it show symptom before {time}"\n'
                     )
         elif handle_symptomatic['reaction'] == "replace":
-            if symp_time >= 0:
-                evts.append(
-                    # scheduling REMOVAL
-                    Event(
-                        symp_time,
-                        EventType.REPLACEMENT,
-                        target=self,
-                        reason='symptom',
-                        keep=['vaccinated'],
-                        logger=self.logger,
-                    ))
-            else:
-                # just ignore
-                self.logger.write(
-                    f'{time:.2f}\t{EventType.WARNING.name}\t{self.id}\tmsg="Individual not replaced before it show symptom before {time}"\n'
-                )
+            replace_duration = handle_symptomatic.get('duration', 14)
+            proportion = handle_symptomatic.get('proportion', 1)
+            if proportion == 1 or np.random.uniform(0, 1, 1)[0] <= proportion:
+                if symp_time >= 0:
+                    evts.append(
+                        # scheduling REMOVAL
+                        Event(
+                            symp_time,
+                            EventType.REPLACEMENT,
+                            target=self,
+                            reason='symptom',
+                            till=symp_time + replace_duration,
+                            keep=['vaccinated'],
+                            logger=self.logger,
+                        ))
+                else:
+                    # just ignore
+                    self.logger.write(
+                        f'{time:.2f}\t{EventType.WARNING.name}\t{self.id}\tmsg="Individual not replaced before it show symptom before {time}"\n'
+                    )
         elif handle_symptomatic['reaction'] == "quarantine":
             quarantine_duration = handle_symptomatic.get('duration', 14)
             proportion = handle_symptomatic.get('proportion', 1)
@@ -655,8 +659,20 @@ class Population(object):
             setattr(new_ind, attr, getattr(ind, attr))
 
         # remove old one, add new one
+        ind.replaced_by = new_ind
         self.individuals.pop(ind.id)
         self.individuals[new_ind.id] = new_ind
+
+        if "till" in kwargs:
+            till = kwargs["till"]
+        else:
+            raise ValueError(
+                "No till parameter is specified for quarantine event.")
+        return [
+            Event(
+                till, EventType.REINTEGRATION,
+                target=ind, logger=self.logger)
+        ]
 
     @property
     def ids(self):

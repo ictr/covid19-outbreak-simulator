@@ -220,8 +220,12 @@ def test_plugin_insert_hetero_pop(clear_log):
     ])
 
 
+def test_plugin_testing_error(clear_log):
+    with pytest.raises(Exception):
+        main(['--jobs', '1', '--repeats', '100', '--plugin', 'testing'])
+
 def test_plugin_testing(clear_log):
-    main(['--jobs', '1', '--repeats', '100', '--plugin', 'testing'])
+    main(['--jobs', '1', '--repeats', '100', '--plugin', 'testing', '--target', 'all'])
 
     main(['--jobs', '1', '--repeats', '100', '--plugin', 'testing', '1', '2'])
 

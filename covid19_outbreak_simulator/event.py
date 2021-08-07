@@ -120,6 +120,22 @@ class Event(object):
             return self.target.quarantine(**self.kwargs)
 
         elif self.action == EventType.REINTEGRATION:
+            # reintegrate from REPLACEMENT
+            if hasattr(self.target, 'replaced_by'):
+                restore_to = self.target.replaced_by
+                while True:
+                    if restore_to.id in population:
+                        break
+                    restore_to = restore_to.replaced_by
+
+                self.individuals.pop(restore_to.id)
+                self.individuals[self.target.id] = self.target
+                self.logger.write(
+                    f'{self.time:.2f}\t{EventType.REINTEGRATION.name}\t{self.target}\treason=replacement,from={restore_to}\n'
+                )
+                return []
+
+            # reintegrate from quarantine
             if self.target.id not in population:
                 self.logger.write(
                     f'{self.time:.2f}\t{EventType.WARNING.name}\t{self.target}\tmsg=REINTEGRATION target no longer exists\n'
@@ -132,7 +148,7 @@ class Event(object):
                 return []
             else:
                 self.logger.write(
-                    f'{self.time:.2f}\t{EventType.REINTEGRATION.name}\t{self.target}\tsucc=True\n'
+                    f'{self.time:.2f}\t{EventType.REINTEGRATION.name}\t{self.target}\treason=quarantine\n'
                 )
                 return self.target.reintegrate(**self.kwargs)
 
@@ -179,16 +195,16 @@ class Event(object):
             return []
 
         elif self.action == EventType.REPLACEMENT:
-            if self.target.id in population:
-                self.logger.write(
-                    f'{self.time:.2f}\t{EventType.REPLACEMENT.name}\t{self.target}\treason={self.kwargs["reason"]},infected={"False" if self.target.infected is False else "True"}\n'
-                )
-                population.replace(self.target, **self.kwargs)
-            else:
+            if self.target.id not in population:
                 self.logger.write(
                     f'{self.time:.2f}\t{EventType.WARNING.name}\t{self.target}\tmsg=REPLACEMENT target no longer exists\n'
                 )
-            return []
+                return []
+
+            self.logger.write(
+                f'{self.time:.2f}\t{EventType.REPLACEMENT.name}\t{self.target}\treason={self.kwargs["reason"]},infected={"False" if self.target.infected is False else "True"}\n'
+            )
+            return population.replace(self.target, **self.kwargs)
 
         elif self.action == EventType.RECOVER:
             removed = self.target.id not in population

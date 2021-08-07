@@ -156,8 +156,8 @@ class testing(BasePlugin):
         if args.ignore_vaccinated:
             args.target = ['unvaccinated']
 
-        if not args.target:
-            raise RuntimeError(f'Please specify target of testing with parameter --target')
+        if not args.target and not args.IDs:
+            raise RuntimeError(f'Please specify target of testing with parameter --target or directly with IDs')
 
         def select(ind):
             nonlocal n_tested
@@ -259,6 +259,7 @@ class testing(BasePlugin):
                             till=time + duration,
                             reason='detected'))
             elif handle_positive['reaction'] == 'replace':
+                duration = handle_positive.get('duration', 14)
                 if proportion == 1 or np.random.uniform(0, 1,
                                                         1)[0] <= proportion:
                     events.append(
@@ -266,6 +267,7 @@ class testing(BasePlugin):
                             time + args.turnaround_time,
                             EventType.REPLACEMENT,
                             reason='detected',
+                            till=time + duration,
                             keep=['vaccinated'],
                             target=population[ID],
                             logger=self.logger))
