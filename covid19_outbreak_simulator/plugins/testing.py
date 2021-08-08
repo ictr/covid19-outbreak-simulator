@@ -242,11 +242,11 @@ class testing(BasePlugin):
             )
             proportion = handle_positive.get("proportion", 1)
             infected_only = handle_positive.get("infected", None)
-            if infected_only and (
+
+            if infected_only and not (
                 isinstance(population[ID].infected, float)
                 and not isinstance(population[ID].recovered, float)
             ):
-
                 continue
             if handle_positive["reaction"] == "remove":
                 if proportion == 1 or np.random.uniform(0, 1, 1)[0] <= proportion:

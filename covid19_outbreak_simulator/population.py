@@ -662,17 +662,7 @@ class Population(object):
         ind.replaced_by = new_ind
         self.individuals.pop(ind.id)
         self.individuals[new_ind.id] = new_ind
-
-        if "till" in kwargs:
-            till = kwargs["till"]
-        else:
-            raise ValueError(
-                "No till parameter is specified for quarantine event.")
-        return [
-            Event(
-                till, EventType.REINTEGRATION,
-                target=ind, logger=self.logger)
-        ]
+        return new_ind
 
     @property
     def ids(self):
