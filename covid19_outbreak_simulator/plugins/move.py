@@ -24,13 +24,9 @@ class move(BasePlugin):
         parser.add_argument(
             '--target',
             nargs='*',
-            choices=[
-                "infected", "uninfected", "quarantined", "recovered",
-                "vaccinated", "unvaccinated", "all"
-            ],
             help='''One or more types of individuals to be removed, can be "infected", "uninfected",
-            "quarantined", "recovered", "vaccinated", "unvaccinated", or "all". If
-            count is not specified, all matching individuals will be removed, otherwise
+            "quarantined", "recovered", "vaccinated", "unvaccinated",  "all", or combinations
+            separated by | or &. If count is not specified, all matching individuals will be removed, otherwise
             count number will be moved, following the order of types. Default to "all".'''
         )
         parser.add_argument(

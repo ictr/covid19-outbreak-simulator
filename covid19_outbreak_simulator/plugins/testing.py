@@ -39,16 +39,6 @@ class testing(BasePlugin):
         parser.add_argument(
             "--target",
             nargs="*",
-            choices=[
-                "infected",
-                "uninfected",
-                "unquarantined",
-                "quarantined",
-                "recovered",
-                "vaccinated",
-                "unvaccinated",
-                "all",
-            ],
             help="""Type of individuals to be tested, can be "infected", "uninfected",
             "quarantined", "recovered", "vaccinated", "unvaccinated", or "all", or
             any combination of '&' and '|' of these. If
@@ -256,6 +246,7 @@ class testing(BasePlugin):
                 isinstance(population[ID].infected, float)
                 and not isinstance(population[ID].recovered, float)
             ):
+
                 continue
             if handle_positive["reaction"] == "remove":
                 if proportion == 1 or np.random.uniform(0, 1, 1)[0] <= proportion:
