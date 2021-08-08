@@ -115,7 +115,7 @@ class Event(object):
                 )
                 return []
             self.logger.write(
-                f'{self.time:.2f}\t{EventType.QUARANTINE.name}\t{self.target}\ttill={self.kwargs["till"]:.2f},reason={self.kwargs["reason"]}\n'
+                f'{self.time:.2f}\t{EventType.QUARANTINE.name}\t{self.target}\ttill={self.kwargs["till"]:.2f},reason={self.kwargs["reason"]},infected={isinstance(self.target.infected, float)},recovered={isinstance(self.target.recovered, float)}\n'
             )
             return self.target.quarantine(**self.kwargs)
 
