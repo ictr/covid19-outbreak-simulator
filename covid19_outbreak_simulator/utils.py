@@ -70,6 +70,17 @@ def parse_param_with_multiplier(args, subpops=None, default=None):
 
 
 def status_to_condition(status):
+    if '&' in status:
+        if status.count('&') > 1:
+            raise ValueError(f'Currently only 1 & condition is allowed.')
+        sts = status.split('&')
+        return lambda ind: status_to_condition(sts[0])(ind) and status_to_condition(sts[1])(ind)
+    if '|' in status:
+        if status.count('|') > 1:
+            raise ValueError(f'Currently only 1 & condition is allowed.')
+        sts = status.split('|')
+        return lambda ind: status_to_condition(sts[0])(ind) or status_to_condition(sts[1])(ind)
+
     if status == 'infected':
         return lambda ind: isinstance(ind.infected, float) and not isinstance(
             ind.recovered, float)

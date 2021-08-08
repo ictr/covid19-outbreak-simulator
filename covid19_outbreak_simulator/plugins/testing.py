@@ -42,9 +42,10 @@ class testing(BasePlugin):
                 "vaccinated", "unvaccinated", "all"
             ],
             help='''Type of individuals to be tested, can be "infected", "uninfected",
-            "quarantined", "recovered", "vaccinated", "unvaccinated", or "all". If
-            count is not specified, all matching individuals will be removed, otherwise
-            count number will be moved, following the order of types. Default to "all".'''
+            "quarantined", "recovered", "vaccinated", "unvaccinated", or "all", or
+            any combination of '&' and '|' of these. If
+            count is not specified, all matching individuals will be tested, otherwise
+            count number will be tested, following the order of types. Default to "all".'''
         )
         parser.add_argument(
             '--ignore-vaccinated',
@@ -84,8 +85,11 @@ class testing(BasePlugin):
                 "keep" (do not do anything), "replace" (remove from population), "recover"
                 (instant recover, to model constant workforce size),  "quarantine"
                 (put aside until it recovers), and "reintegrate" (remove from quarantine).
-                Quarantine can be specified as "quarantine_7" etc to specify  duration of
-                quarantine. Individuals that are already in quarantine will continue to be
+                Parameters to these options should be specified in the format of ?name=var,
+                such as "quarantine?duration=7". Acceptable parameters are "proportion"
+                for proporiton of individuals to take the action, "duration" for quarantine or
+                replacement durations, and "infected=true" to take action only on truely
+                infected carriers. Individuals that are already in quarantine will continue to be
                 quarantined. Default to "remove", meaning all symptomatic cases
                 will be removed from population. Multipliers are allows to specify
                 different reactions for individuals from different subpopulations.'''
