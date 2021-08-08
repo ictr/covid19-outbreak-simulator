@@ -150,21 +150,29 @@ def parse_handle_symptomatic_options(handle_symptomatic_arg, group):
                 if '=' not in option:
                     raise ValueError(f'Wrong option {hs_args}')
                 k, v = option.split('=', 1)
-                if k not in ('proportion', 'duration'):
+                if k not in ('proportion', 'duration', 'infected'):
                     raise ValueError(
                         f'Unrecognized option {k} in option {hs_args}')
 
-                try:
-                    handle_symptomatic[k] = float(v)
-                except Exception as e:
-                    raise ValueError(
-                        f"Option {k} in --handle-symptomatic should be a float number, {v} specified"
-                    ) from e
-                if k == 'proportion' and (handle_symptomatic[k] > 1 or
-                                          handle_symptomatic[k] < 0):
-                    raise ValueError(
-                        f'Proportion in "--handle-symptomatic remove/keep prop" should be a float number between 0 and 1: {handle_symptomatic[k]} provided'
-                    )
+                if k in ('proportion', 'duration'):
+                    try:
+                        handle_symptomatic[k] = float(v)
+                    except Exception as e:
+                        raise ValueError(
+                            f"Option {k} in --handle-symptomatic should be a float number, {v} specified"
+                        ) from e
+                    if k == 'proportion' and (handle_symptomatic[k] > 1 or
+                                            handle_symptomatic[k] < 0):
+                        raise ValueError(
+                            f'Proportion in "--handle-symptomatic remove/keep prop" should be a float number between 0 and 1: {handle_symptomatic[k]} provided'
+                        )
+                elif k == 'infected':
+                    if v.lower() == 'true':
+                        handle_symptomatic[k] = True
+                    elif v.lower() == 'false':
+                        handle_symptomatic[k] = False
+                    else:
+                        raise ValueError(f'Parameter infected can only be True or False. {v} specified')
         else:
             handle_symptomatic['proportion'] = 1
 

@@ -252,16 +252,11 @@ class testing(BasePlugin):
             )
             proportion = handle_positive.get("proportion", 1)
             infected_only = handle_positive.get("infected", None)
-            if infected_only.lower() == "true":
-                if isinstance(population[ID].infected, float) and not isinstance(
-                    population[ID].recovered, float
-                ):
-                    continue
-            elif infected_only is not None and infected_only.lower() != "false":
-                raise ValueError(
-                    "infected parameter can only be true or false, or unspecified"
-                )
-
+            if infected_only and (
+                isinstance(population[ID].infected, float)
+                and not isinstance(population[ID].recovered, float)
+            ):
+                continue
             if handle_positive["reaction"] == "remove":
                 if proportion == 1 or np.random.uniform(0, 1, 1)[0] <= proportion:
                     events.append(
