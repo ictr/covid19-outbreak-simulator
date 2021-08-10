@@ -13,4 +13,8 @@ Please refer to our [homepage](https://ictr.github.io/covid19-outbreak-simulator
 
 > Bo Peng, Rowland W Pettit, Christopher I Amos, Population simulations of COVID-19  outbreaks provide tools for risk assessment and continuity planning, JAMIA Open, 2021;, ooaa074, https://doi.org/10.1093/jamiaopen/ooaa074
 
-if you have used the simulator for your work.
+if you have used the simulator for your work. You can also have a look at
+
+> Peng B, Zhou W, Pettit RW, et al, Reducing COVID-19 quarantine with SARS-CoV-2 testing: a simulation study BMJ Open 2021;11:e050473. doi: 10.1136/bmjopen-2021-050473
+
+for an example for the application of the simulator.
