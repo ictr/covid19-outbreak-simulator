@@ -15,6 +15,6 @@ Please refer to our [homepage](https://ictr.github.io/covid19-outbreak-simulator
 
 if you have used the simulator for your work. You can also have a look at
 
-> Peng B, Zhou W, Pettit RW, et al, Reducing COVID-19 quarantine with SARS-CoV-2 testing: a simulation study BMJ Open 2021;11:e050473. doi: 10.1136/bmjopen-2021-050473
+> Peng B, Zhou W, Pettit RW, et al, Reducing COVID-19 quarantine with SARS-CoV-2 testing: a simulation study BMJ Open 2021;11:e050473. https://doi.org/10.1136/bmjopen-2021-050473
 
 for an example for the application of the simulator.
