@@ -43,7 +43,10 @@ def parse_args(args=None):
         groups A and B. As specifial cases, 'A=10` etc refers to cases when
         infection happens from outside of the simulated population (community
         infection), and "*", "?" and "[]" (range) can be used to refer to multiple
-        groups using the same rules as filename expansion, and !name as "not".'''
+        groups using the same rules as filename expansion, and !name as "not".
+        Finally "&" means myself, so "A*-&=10" means vivinity within its all
+        group if 10, and "A*-!&=0" meaning "A*" is isolated and will not infect
+        other groups.'''
     )
     parser.add_argument(
         '--susceptibility',

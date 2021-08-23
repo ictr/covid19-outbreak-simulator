@@ -570,17 +570,17 @@ class Population(object):
 
         res = {}
         for param in params:
-            matched = re.match(r"^(.*)-(.*)=(\d+)$", param)
+            matched = re.match(r"^(.*)-(.*)=([\.\d]+)$", param)
             if matched:
                 infector_sp = matched.group(1)
                 infectee_sp = matched.group(2)
-                neighbor_size = int(matched.group(3))
+                neighbor_size = float(matched.group(3))
             else:
-                matched = re.match(r"^(.*)=(\d+)$", param)
+                matched = re.match(r"^(.*)=([\.\d]+)$", param)
                 if matched:
                     infector_sp = ""
                     infectee_sp = matched.group(1)
-                    neighbor_size = int(matched.group(2))
+                    neighbor_size = float(matched.group(2))
                 if not matched:
                     raise ValueError(
                         f'Vicinity should be specified as "INFECTOR_SO-INFECTEE_SP=SIZE": {param} specified'
@@ -599,28 +599,36 @@ class Population(object):
                     if fnmatch(x, infector_sp)
                 ]
 
-            if infectee_sp.startswith("!"):
-                infectee_sps = [
-                    x for x in self.group_sizes.keys()
-                    if not fnmatch(x, infectee_sp[1:])
-                ]
-            else:
-                infectee_sps = [
-                    x for x in self.group_sizes.keys()
-                    if fnmatch(x, infectee_sp)
-                ]
-
             if infector_sp != "" and not infector_sps:
                 raise ValueError(f"Unrecognized group {infector_sp}")
-            if not infectee_sps:
-                raise ValueError(f"Unrecognized group {infectee_sp}")
 
             for infector_sp in infector_sps:
-                for infectee_sp in infectee_sps:
+                if infectee_sp == "&":
+                    infectee_sps = [infector_sp]
+                elif infectee_sp == "!&":
+                    infectee_sps = [
+                        x for x in self.group_sizes.keys()
+                        if x != infector_sp
+                    ]
+                elif infectee_sp.startswith("!"):
+                    infectee_sps = [
+                        x for x in self.group_sizes.keys()
+                        if not fnmatch(x, infectee_sp[1:])
+                    ]
+                else:
+                    infectee_sps = [
+                        x for x in self.group_sizes.keys()
+                        if fnmatch(x, infectee_sp)
+                    ]
+
+                if not infectee_sps:
+                    raise ValueError(f"Unrecognized group {infectee_sp}")
+
+                for tsp in infectee_sps:
                     if infector_sp in res:
-                        res[infector_sp][infectee_sp] = neighbor_size
+                        res[infector_sp][tsp] = neighbor_size
                     else:
-                        res[infector_sp] = {infectee_sp: neighbor_size}
+                        res[infector_sp] = {tsp: neighbor_size}
         return res
 
     def add(self, items, subpop):
