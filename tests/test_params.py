@@ -102,6 +102,35 @@ def test_draw_prop_asym_carriers(default_model):
     assert math.fabs(
         sum(props) / 1000 - default_model.params.prop_asym_carriers_loc) < 0.05
 
+def test_immunity_of_recovered(default_model):
+    assert default_model.params.immunity_of_recovered[0] == 0.99
+    assert default_model.params.immunity_of_recovered[1] == 0.99
+
+    default_model.params.set_immunity_of_recovered([0.8])
+
+    assert default_model.params.immunity_of_recovered[0] == 0.80
+    assert default_model.params.immunity_of_recovered[1] == 0.80
+
+    default_model.params.set_immunity_of_recovered([0.7, 0.6])
+
+    assert default_model.params.immunity_of_recovered[0] == 0.7
+    assert default_model.params.immunity_of_recovered[1] == 0.6
+
+
+def test_infectivity_of_recovered(default_model):
+    assert default_model.params.infectivity_of_recovered[0] == 0.50
+    assert default_model.params.infectivity_of_recovered[1] == 0.50
+
+    default_model.params.set_infectivity_of_recovered([0.2])
+
+    assert default_model.params.infectivity_of_recovered[0] == 0.20
+    assert default_model.params.infectivity_of_recovered[1] == 0.20
+
+    default_model.params.set_infectivity_of_recovered([0.3, 0.1])
+
+    assert default_model.params.infectivity_of_recovered[0] == 0.3
+    assert default_model.params.infectivity_of_recovered[1] == 0.1
+
 
 def test_drawn_is_asymptomatic(default_model):
     prop = default_model.draw_prop_asym_carriers()

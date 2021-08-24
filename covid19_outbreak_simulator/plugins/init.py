@@ -90,8 +90,8 @@ class init(BasePlugin):
                         ind_id = f'{name}_{idx}' if name else str(idx)
                         population[ind_id].infected = -10.0
                         population[ind_id].recovered = -2.0
-                        population[ind_id].immunity = [0.99, 0.99]
-                        population[ind_id].infectivity = [0.5, 0.5]
+                        population[ind_id].immunity = population.model.params.immunity_of_recovered
+                        population[ind_id].infectivity = population.model.params.infectivity_of_recovered
                     if sts == 1:
                         ID = f'{name}_{idx}' if name else str(idx)
                         infected.append(ID)

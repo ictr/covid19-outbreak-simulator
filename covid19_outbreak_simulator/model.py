@@ -24,6 +24,8 @@ class Params:
             "susceptibility",
             "symptomatic_transmissibility_model",
             "asymptomatic_transmissibility_model",
+            "immunity_of_recovered",
+            "infectivity_of_recovered",
         }
         self.groups = {}
         self.set_params(args)
@@ -377,10 +379,33 @@ class Params:
         for multiplier in [x for x in val if "=" in x]:
             self._set_multiplier(multiplier, "prop_asym_carriers")
 
+    def set_immunity_of_recovered(self, val):
+        if not val:
+            return
+        if len(val) == 1:
+            self.set('immunity_of_recovered', 'self', [val[0], val[0]])
+        elif len(val) == 2:
+            self.set('immunity_of_recovered', 'self', val)
+        else:
+            raise ValueError('Immunity of recovered should be an array of one or two values.')
+
+    def set_infectivity_of_recovered(self, val):
+        if not val:
+            return
+        if len(val) == 1:
+            self.set('infectivity_of_recovered', 'self', [val[0], val[0]])
+        elif len(val) == 2:
+            self.set('infectivity_of_recovered', 'self', val)
+        else:
+            raise ValueError('Infectivity of recovered should be an array of one or two values.')
+
+
     def set_params(self, args):
         # set some default values first
         self.set("simulation_interval", "self",
                  args.interval if args else 1 / 24)
+        self.set("immunity_of_recovered", "self", [0.99, 0.99])
+        self.set("infectivity_of_recovered", "self", [0.50, 0.50])
         self.set("prop_asym_carriers", "loc", 0.4)
         self.set("prop_asym_carriers", "scale", 0)
         self.set("symptomatic_r0", "loc", (1.4 + 2.8) / 2)
@@ -407,6 +432,8 @@ class Params:
             args.asymptomatic_transmissibility_model)
         self.set_susceptibility(args.susceptibility)
         self.set_prop_asym_carriers(args.prop_asym_carriers)
+        self.set_immunity_of_recovered(args.immunity_of_recovered)
+        self.set_infectivity_of_recovered(args.infectivity_of_recovered)
 
 
 class Model(object):

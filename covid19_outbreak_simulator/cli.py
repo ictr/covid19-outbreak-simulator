@@ -49,6 +49,20 @@ def parse_args(args=None):
         other groups.'''
     )
     parser.add_argument(
+        '--immunity-of-recovered',
+        nargs=*,
+        help='''Specifies the immunity (probability to fend off an infection event)
+            of carries who recovers from an infection. It can be a single number, or
+            two numbers for symptomatic and asyptomatic carriers separately. Default
+            to 0.99.''')
+    parser.add_argument(
+        '--infectivity-of-recovered',
+        nargs=*,
+        help='''Specifies the infectivity (reduction of viral load for recovered
+            individuals once they have infected). It can be a single number, or
+            two numbers for symptomatic and asyptomatic carriers separately. Default
+            to 0.99.''')
+    parser.add_argument(
         '--susceptibility',
         nargs='+',
         help='''Probability of being infected if an infection event happens, default to 1.

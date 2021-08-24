@@ -512,6 +512,7 @@ class Population(object):
         self.group_sizes = {
             (ps.split("=", 1)[0] if "=" in ps else ""): 0 for ps in popsize
         }
+        self.model = model
         self.max_ids = copy.deepcopy(self.group_sizes)
         self.subpop_from_id = re.compile(r"^(.*?)[\d]+$")
         self.vicinity = self.parse_vicinity(vicinity)
