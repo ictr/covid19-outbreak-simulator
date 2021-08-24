@@ -31,10 +31,9 @@ class init(BasePlugin):
         parser.add_argument(
             '--seroprevalence',
             nargs='*',
-            help='''Seroprevalence of the population (default to zero). This aprameter
+            help='''Seroprevalence of the population (default to zero). This parameter
             specify the probability (or proportion if --as-proportion is set) of idividuals
-            who have had the virus but have recovered, and will not be infected again (according
-            to current simulation model, which might change later).''')
+            who have had the virus but have recovered.''')
         parser.add_argument(
             '--as-proportion',
             action='store_true',
