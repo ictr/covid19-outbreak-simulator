@@ -191,7 +191,7 @@ class Event(object):
             if self.target.id in population:
                 population.remove(self.target)
                 self.logger.write(
-                    f"{self.time:.2f}\t{EventType.REMOVAL.name}\t{self.target}\tpopsize={len(population)}\n"
+                    f"{self.time:.2f}\t{EventType.REMOVAL.name}\t{self.target}\tpopsize={len(population)},reason={self.kwargs.get('reason', 'unspecified')}\n"
                 )
             else:
                 self.logger.write(

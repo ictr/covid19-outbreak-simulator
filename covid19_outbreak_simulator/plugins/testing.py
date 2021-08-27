@@ -254,6 +254,7 @@ class testing(BasePlugin):
                         Event(
                             time + args.turnaround_time,
                             EventType.REMOVAL,
+                            reason="detected",
                             target=population[ID],
                             logger=self.logger,
                         )

@@ -154,6 +154,7 @@ class Individual(object):
                         Event(
                             symp_time,
                             EventType.REMOVAL,
+                            reason='show symptoms',
                             target=self,
                             logger=self.logger,
                         ))
