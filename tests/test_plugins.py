@@ -200,6 +200,16 @@ def test_plugin_remove(clear_log):
     ])
 
 
+def test_plugin_replace(clear_log):
+    main([
+        '--jobs', '1', '--repeats', '100', '--stop-if', 't>10', '--plugin',
+        'replace', '--count', '2', '--at', '1', '--target', 'all', '--keep', 'vaccinated'
+    ])
+    main([
+        '--jobs', '1', '--repeats', '100', '--popsize', 'A=100', 'B=100',
+        '--stop-if', 't>10', '--plugin', 'replace', '--count', 'A=2', '--interval', '1', '--target', 'all'
+    ])
+
 def test_plugin_community_infection(clear_log):
     main([
         '--jobs', '1', '--repeats', '10', '--stop-if', 't>4', '--plugin',

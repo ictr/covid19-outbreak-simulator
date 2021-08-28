@@ -225,16 +225,18 @@ class Event(object):
             )
             if "till" in self.kwargs:
                 till = self.kwargs["till"]
-            else:
-                raise ValueError("No till parameter is specified for quarantine event.")
-            return [
-                Event(
+                if till is None:
+                    return []
+                return [
+                    Event(
                     till,
                     EventType.REINTEGRATION,
                     target=self.target,
                     logger=self.logger,
-                )
-            ]
+                    )
+                ]
+            else:
+                return []
 
         elif self.action == EventType.RECOVER:
             removed = self.target.id not in population
