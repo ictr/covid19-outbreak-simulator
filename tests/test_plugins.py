@@ -192,11 +192,11 @@ def test_plugin_insert(clear_log):
 def test_plugin_remove(clear_log):
     main([
         '--jobs', '1', '--repeats', '100', '--stop-if', 't>10', '--plugin',
-        'remove', '2', '--at', '1'
+        'remove', '--count', '2', '--at', '1', '--target', 'all'
     ])
     main([
         '--jobs', '1', '--repeats', '100', '--popsize', 'A=100', 'B=100',
-        '--stop-if', 't>10', '--plugin', 'remove', 'A=2', '--interval', '1'
+        '--stop-if', 't>10', '--plugin', 'remove', '--count', 'A=2', '--interval', '1', '--target', 'all'
     ])
 
 
