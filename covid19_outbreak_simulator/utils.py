@@ -80,6 +80,8 @@ def status_to_condition(status):
             raise ValueError(f'Currently only 1 & condition is allowed.')
         sts = status.split('|')
         return lambda ind: status_to_condition(sts[0])(ind) or status_to_condition(sts[1])(ind)
+    if status.startswith('!'):
+        return lambda ind: not status_to_condition(status[1:])(ind)
 
     if status == 'infected':
         return lambda ind: isinstance(ind.infected, float) and not isinstance(

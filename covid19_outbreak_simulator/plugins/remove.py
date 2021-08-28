@@ -31,7 +31,7 @@ class remove(BasePlugin):
             nargs="*",
             help="""Type of individuals to be tested, can be "infected", "uninfected",
             "quarantined", "recovered", "vaccinated", "unvaccinated", or "all", or
-            any combination of '&' and '|' of these. If
+            '!' of its negation, and any combination of '&' and '|' of these. If
             count is not specified, all matching individuals will be removed, otherwise
             count number will be removed, following the order of types. Default to "all".""",
         )
