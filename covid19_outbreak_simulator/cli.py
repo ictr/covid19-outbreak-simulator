@@ -299,6 +299,10 @@ def main(argv=None):
         print(f'COVID10 Outbreak Simulator version {__version__}')
         sys.exit(0)
 
+    if args.logfile and '/' in args.logfile:
+        dirname = os.path.dirname(args.logfile)
+        os.makedirs(dirname, exist_ok=True)
+
     plugins = []
     if args.plugin:
         if args.plugin[0] == '-h':

@@ -154,7 +154,7 @@ class Individual(object):
                         Event(
                             symp_time,
                             EventType.REMOVAL,
-                            reason='show symptoms',
+                            reason='symptoms',
                             target=self,
                             logger=self.logger,
                         ))
@@ -197,7 +197,7 @@ class Individual(object):
                             target=self,
                             logger=self.logger,
                             till=symp_time + quarantine_duration,
-                            reason='show symptom'))
+                            reason='symptom'))
                 else:
                     self.quarantined = symp_time + quarantine_duration
         elif handle_symptomatic['reaction'] != 'reintegrate':
