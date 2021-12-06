@@ -100,6 +100,7 @@ class Simulator(object):
                     logger=self.logger,
                     by=None,
                     handle_symptomatic=self.simu_args.handle_symptomatic,
+                    handle_infection=self.simu_args.handle_infection,
                     leadtime=self.simu_args.leadtime))
 
         # load the plugins

@@ -240,6 +240,8 @@ class Individual(object):
                         by=self,
                         handle_symptomatic=kwargs.get("handle_symptomatic",
                                                       None),
+                        handle_infection=kwargs.get("handle_infection",
+                                                      None),
                     ))
 
         evts.append(
@@ -347,6 +349,8 @@ class Individual(object):
                         logger=self.logger,
                         by=self,
                         handle_symptomatic=kwargs.get("handle_symptomatic",
+                                                      None),
+                        handle_infection=kwargs.get("handle_infection",
                                                       None),
                     ))
         evts.append(
@@ -475,7 +479,7 @@ class Individual(object):
             # during infection
             by_id = "." if kwargs["by"] is None else kwargs["by"].id
             self.logger.write(
-                f"{time:.2f}\t{EventType.INFECTION_IGNORED.name}\t{self.id}\tby={by_id}\n"
+                f"{time:.2f}\t{EventType.INFECTION_IGNORED.name}\t{self.id}\tby={by_id},reason=infected\n"
             )
             return []
 
