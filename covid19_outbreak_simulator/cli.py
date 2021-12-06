@@ -71,6 +71,13 @@ def parse_args(args=None):
             With options such as "--susceptibility nurse=0.8 patients=1" you can model a scenario
             when nurses are better prepared and protected than patients.''')
     parser.add_argument(
+        '--ignore-infections-if',
+        nargs='+',
+        help='''Ignore infections according to specified conditions. Right now the only
+            supported condition is "t/7<2", which basically means infection during the
+            first two days are ignored (weekend).'''
+        )
+    parser.add_argument(
         '--symptomatic-r0',
         nargs='+',
         help='''Production number of symptomatic infectors, should be specified as a single

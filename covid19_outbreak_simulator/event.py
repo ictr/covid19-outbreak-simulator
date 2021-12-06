@@ -78,6 +78,15 @@ class Event(object):
                         f"{self.time:.2f}\t{EventType.INFECTION_AVOIDED.name}\t.\tby={by_ind},reason=QUARANTINED\n"
                     )
                     return []
+                #
+                if 'ignore_infection_by' in self.kwargs:
+                    if self.kwargs['ignore_infection_by'] != 't/7<2':
+                        raise ValueError(f'Currently ignore-infection-by only support option t/7<2')
+                    if self.time % 7 < 2:
+                        self.logger.write(
+                            f'{self.time:.2f}\t{EventType.INFECTION_IGNORED.name}\t.\tby={self.kwargs["by"]},reason=t/7<2\n'
+                        )
+                        return []
 
             # determin einfectee
             if self.target is not None:
