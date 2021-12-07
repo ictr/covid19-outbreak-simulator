@@ -654,7 +654,7 @@ class Model(object):
                 lambda y: (duration - y) / (duration - peak_time),
             ],
         )
-        y = y / sum(y) * R0
+        y = np.minimum(y / sum(y) * R0, 1)
         return x, y
 
     def get_normal_asymptomatic_transmissibility_probability(self, R0, params):
@@ -717,7 +717,7 @@ class Model(object):
                 lambda y: (duration - y) / (duration - peak_time),
             ],
         )
-        y = y / sum(y) * R0
+        y = np.minimum(y / sum(y) * R0, 1)
         # we assume that viral load is 2 times the transmissibility
         # for asymptomatic cases.
         return x, y

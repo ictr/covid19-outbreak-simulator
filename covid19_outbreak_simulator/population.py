@@ -263,6 +263,8 @@ class Individual(object):
             f"r_sym={len(symptomatic_infected)}",
             f"incu={self.incubation_period:.2f}",
         ])
+        if lead_time != 0:
+            params.append(f'leadtime={lead_time}')
         self.logger.write(
             f'{time:.2f}\t{EventType.INFECTION.name}\t{self.id}\t{",".join(params)}\n'
         )
@@ -370,6 +372,9 @@ class Individual(object):
             f"r={asymptomatic_infected}",
             f"r_asym={asymptomatic_infected}",
         ])
+        if lead_time != 0:
+            params.append(f'leadtime={lead_time}')
+
         self.logger.write(
             f'{time:.2f}\t{EventType.INFECTION.name}\t{self.id}\t{",".join(params)}\n'
         )
