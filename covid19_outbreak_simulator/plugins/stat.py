@@ -61,6 +61,6 @@ class stat(BasePlugin):
         param = ','.join(f'{k}={v}' for k, v in res.items())
         if args.verbosity > 0:
             self.logger.write(
-                f'{time:.2f}\t{EventType.STAT.name}\t.\t{param}\n')
+                f'{time:.2f}\t{EventType.PLUGIN.name}\t.\tname=stat,{param}\n')
 
         return []
