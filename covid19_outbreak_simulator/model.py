@@ -56,14 +56,18 @@ class Params:
             setattr(self, f"{param}_{prop}", value)
         elif prop.startswith("multiplier_"):
             group = prop[11:]
-            if group not in self.groups:
+            if group != "" and group not in self.groups:
                 raise ValueError(
-                    f'Group {group} does not exist. Available groups are: {", ".join(self.groups.keys())}'
+                    f'Group {group} does not exist for parameter {param}. Available groups are: {", ".join(self.groups.keys())}'
                 )
             if value < 0:
                 raise ValueError(
                     f"Multiplier should be positive {value} specified")
-            setattr(self, f"{param}_{prop}", value)
+            if group == "":
+                for grp in self.groups:
+                    setattr(self, f"{param}_{prop}{group}", value)
+            else:
+                setattr(self, f"{param}_{prop}", value)
         elif re.match("quantile_(.*)", prop):
             lq = float(re.match("quantile_(.*)", prop)[1]) / 100
             loc = getattr(self, f"{param}_loc")
