@@ -60,7 +60,7 @@ class swap(BasePlugin):
         population.group_sizes[sp2] = sz1
 
         self.logger.write(
-            f'{time:.2f}\t{EventType.WARNING.name}\t.\tsubpops={args.subpops[0]},{args.subpops[1]},size1={sz1},size2={sz2}"\n'
+            f'{time:.2f}\t{EventType.PLUGIN.name}\t.\tname=swap,subpops={args.subpops[0]},{args.subpops[1]},size1={sz1},size2={sz2}"\n'
         )
 
         return []
