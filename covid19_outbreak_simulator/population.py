@@ -678,7 +678,8 @@ class Population(object):
             setattr(new_ind, attr, getattr(ind, attr))
 
         # remove old one, add new one
-        ind.replaced_by = new_ind
+        if 'till' in kwargs and kwargs['till'] is not None:
+            ind.replaced_by = new_ind
         self.individuals.pop(ind.id)
         self.individuals[new_ind.id] = new_ind
         return new_ind
