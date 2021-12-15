@@ -86,7 +86,9 @@ class testing(BasePlugin):
                 Parameters to these options should be specified in the format of ?name=var,
                 such as "quarantine?duration=7". Acceptable parameters are "proportion"
                 for proporiton of individuals to take the action, "duration" for quarantine or
-                replacement durations, and "infected=true" to take action only on truely
+                replacement durations, "tracing=XX" to indicate that contact tracing will be
+                performed for positive individuals, with XX being the success rate for
+                contact tracing, and "infected=true" to take action only on truely
                 infected carriers. Individuals that are already in quarantine will continue to be
                 quarantined. Default to "remove", meaning all symptomatic cases
                 will be removed from population. Multipliers are allows to specify
@@ -242,12 +244,17 @@ class testing(BasePlugin):
             )
             proportion = handle_positive.get("proportion", 1)
             infected_only = handle_positive.get("infected", None)
+            trace_succ_rate = handle_positive.get('tracing', None)
 
             if infected_only and not (
                 isinstance(population[ID].infected, float)
                 and not isinstance(population[ID].recovered, float)
             ):
                 continue
+
+            if trace_succ_rate is not None:
+                population[ID].traced = [time + args.turnaround_time, trace_succ_rate]
+
             if handle_positive["reaction"] == "remove":
                 if proportion == 1 or np.random.uniform(0, 1, 1)[0] <= proportion:
                     events.append(

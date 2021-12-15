@@ -144,19 +144,19 @@ def parse_handle_symptomatic_options(handle_symptomatic_arg, group):
             hs_args = hs
 
     if not hs_args:
-        handle_symptomatic = {'reaction': "remove", 'proportion': 1}
+        handle_symptomatic = {'reaction': "remove", 'proportion': 1, "tracing": None}
     else:
-        handle_symptomatic = {'reaction': hs_args.split('?')[0]}
+        handle_symptomatic = {'reaction': hs_args.split('?')[0], "tracing": None}
         if '?' in hs_args:
             for option in hs_args.split('?')[1].split('&'):
                 if '=' not in option:
                     raise ValueError(f'Wrong option {hs_args}')
                 k, v = option.split('=', 1)
-                if k not in ('proportion', 'duration', 'infected'):
+                if k not in ('proportion', 'duration', 'infected', 'tracing'):
                     raise ValueError(
                         f'Unrecognized option {k} in option {hs_args}')
 
-                if k in ('proportion', 'duration'):
+                if k in ('proportion', 'duration', 'tracing'):
                     try:
                         handle_symptomatic[k] = float(v)
                     except Exception as e:

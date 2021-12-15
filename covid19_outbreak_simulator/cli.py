@@ -141,7 +141,9 @@ def parse_args(args=None):
             it recovers). "reintegrate" (remove from quarantine, which is counterintuitive but
             can be used for selecting uninfected indivudal through quarantine). All options can
             be followed by a "proportion" in the format of "remove?proportion=0.7", and quarantine can be
-            specified as "quarantine?duration=7" etc to specify duration of quarantine. If multiple
+            specified as "quarantine?duration=7" etc to specify duration of quarantine. "tracing=XX"
+            can be used to indicate that contact tracing will be performed for positive individuals,
+            with XX being the success rate for contact tracing, If multiple
             subpopulation will have different ways to handle symptomatic cases, they should be specified
             as multipliers (e.g. A=remove B=quarantine). Default to  "remove", meaning all symptomatic cases will be
             removed from population.''')
