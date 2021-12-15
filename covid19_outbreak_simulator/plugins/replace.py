@@ -32,7 +32,7 @@ class replace(BasePlugin):
         parser.add_argument(
             "--target",
             nargs="*",
-            help="""Type of individuals to be tested, can be "infected", "uninfected",
+            help="""Type of individuals to be replaced, can be "infected", "uninfected",
             "quarantined", "recovered", "vaccinated", "unvaccinated", or "all", or
             '!' of its negation, and any combination of '&' and '|' of these. If
             count is not specified, all matching individuals will be replaced, otherwise

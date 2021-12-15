@@ -31,7 +31,7 @@ def parse_param_with_multiplier(args, subpops=None, default=None):
     base = [x for x in args if not isinstance(x, str) or '=' not in x]
     if not base:
         if default is None:
-            raise ValueError(f'No vase value for multiplier: {" ".join(args)}')
+            raise ValueError(f'No base value for multiplier: {" ".join(args)}')
         base = default
     else:
         try:
