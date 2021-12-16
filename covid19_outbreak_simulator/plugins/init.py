@@ -4,7 +4,8 @@ import numpy as np
 
 from covid19_outbreak_simulator.event import Event, EventType
 from covid19_outbreak_simulator.plugin import BasePlugin
-from covid19_outbreak_simulator.utils import parse_param_with_multiplier
+from covid19_outbreak_simulator.utils import parse_param_with_multiplier, parse_target_param
+from covid19_outbreak_simulator.population import Population
 
 
 class init(BasePlugin):
@@ -30,13 +31,13 @@ class init(BasePlugin):
             for each group.""",
         )
         parser.add_argument(
-            "--vaccinated-incidence-rate",
+            "--target",
             nargs="*",
-            help="""Incidence rate of the vaccinated (default to zero), which should be
-            the probability that vaccinated individual is currently affected with the virus (not
-            necessarily show any symptom). Multipliers are allowed to specify incidence rate
-            for each group. If specified, --incidence-rate is considered to be
-            unvaccinated.""",
+            help="""Type of individuals to be tested, can be "infected", "uninfected",
+            "quarantined", "recovered", "vaccinated", "unvaccinated", or "all", or
+            '!' of its negation, and any combination of '&' and '|' of these. If
+            count is not specified, all matching individuals will be tested, otherwise
+            count number will be tested, following the order of types. Default to "all".""",
         )
         parser.add_argument(
             "--seroprevalence",
@@ -70,13 +71,24 @@ class init(BasePlugin):
     def apply(self, time, population, args=None):
         idx = 0
 
+        if args.target is not None:
+            is_targeted = parse_target_param(args.target)
+            inds = {id:ind for id,ind in population.individuals.items() if is_targeted(ind)}
+            pop = Population([], population.model, [], None)
+            pop.individuals = inds
+            pop.group_sizes = {x:0 for x in population.group_sizes.keys()}
+            for ind in inds.values():
+                pop.group_sizes[ind.group] += 1
+        else:
+            pop = population
+
         # population prevalence and incidence rate
         ir = parse_param_with_multiplier(
-            args.incidence_rate, subpops=population.group_sizes.keys(), default=0.0
+            args.incidence_rate, subpops=pop.group_sizes.keys(), default=0.0
         )
         #
         isp = parse_param_with_multiplier(
-            args.seroprevalence, subpops=population.group_sizes.keys(), default=0.0
+            args.seroprevalence, subpops=pop.group_sizes.keys(), default=0.0
         )
 
         infected = []
@@ -84,7 +96,7 @@ class init(BasePlugin):
             events = []
             n_ir = 0
             n_isp = 0
-            for name, sz in population.group_sizes.items():
+            for name, sz in pop.group_sizes.items():
                 pop_ir = ir.get(name if name in ir else "", 0.0)
                 sp_ir = int(sz * pop_ir)
 
@@ -100,14 +112,14 @@ class init(BasePlugin):
                 for idx, sts in zip(range(0, sz), pop_status):
                     if sts == 2:
                         ind_id = f"{name}_{idx}" if name else str(idx)
-                        population[ind_id].infected = -10.0
-                        population[ind_id].recovered = -2.0
-                        population[
+                        pop[ind_id].infected = -10.0
+                        pop[ind_id].recovered = -2.0
+                        pop[
                             ind_id
-                        ].immunity = population.model.params.immunity_of_recovered
-                        population[
+                        ].immunity = pop.model.params.immunity_of_recovered
+                        pop[
                             ind_id
-                        ].infectivity = population.model.params.infectivity_of_recovered
+                        ].infectivity = pop.model.params.infectivity_of_recovered
                     if sts == 1:
                         ID = f"{name}_{idx}" if name else str(idx)
                         infected.append(ID)
@@ -115,7 +127,7 @@ class init(BasePlugin):
                             Event(
                                 0.0,
                                 EventType.INFECTION,
-                                target=population[ID],
+                                target=pop[ID],
                                 logger=self.logger,
                                 priority=True,
                                 by=None,
@@ -129,7 +141,7 @@ class init(BasePlugin):
             events = []
             n_ir = 0
             n_isp = 0
-            for name, sz in population.group_sizes.items():
+            for name, sz in pop.group_sizes.items():
                 pop_ir = ir.get(name if name in ir else "", 0.0)
                 pop_isp = isp.get(name if name in isp else "", 0.0)
                 pop_isp = min(pop_isp, 1 - pop_ir)
@@ -144,7 +156,7 @@ class init(BasePlugin):
                             Event(
                                 0.0,
                                 EventType.INFECTION,
-                                target=population[ID],
+                                target=pop[ID],
                                 logger=self.logger,
                                 priority=True,
                                 by=None,
@@ -155,10 +167,10 @@ class init(BasePlugin):
                         )
                     elif rng < pop_ir + pop_isp:
                         n_isp += 1
-                        population[
+                        pop[
                             f"{name}_{idx}" if name else str(idx)
                         ].infected = -10.0
-                        population[
+                        pop[
                             f"{name}_{idx}" if name else str(idx)
                         ].recovered = -2.0
         infected_list = (

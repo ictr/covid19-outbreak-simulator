@@ -72,6 +72,11 @@ def parse_param_with_multiplier(args, subpops=None, default=None):
 def parse_target_param(status):
     if status is None:
         return lambda ind: True
+    if isinstance(status, list):
+        if len(status) == 1:
+            return parse_target_param(status[0])
+        else:
+            raise ValueError('parse_target_param currently only support a single value.')
 
     if '&' in status:
         if status.count('&') > 1:
