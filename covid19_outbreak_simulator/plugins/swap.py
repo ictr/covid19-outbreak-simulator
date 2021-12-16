@@ -47,11 +47,13 @@ class swap(BasePlugin):
         # add back
         for ID in ID1s:
             new_id = sp2 + '_' + ID.rsplit("_", 1)[1]
+            assert new_id not in population
             population.individuals[new_id] = pop1.pop(ID)
             population.individuals[new_id].id = new_id
 
         for ID in ID2s:
             new_id = sp1 + '_' + ID.rsplit("_", 1)[1]
+            assert new_id not in population
             population.individuals[new_id] = pop2.pop(ID)
             population.individuals[new_id].id = new_id
 

@@ -237,13 +237,19 @@ class FilteredStringIO(StringIO):
         super().__init__()
         self._track_events = track_events
         if self._track_events is not None:
-            self._track_events = set(self._track_events)
+            self._track_plugins = set([x.split('.')[-1] for x in self._track_events if x.startswith('PLUGIN')])
+            self._track_events = set([x.split('.')[0] for x in self._track_events if not x.startswith('PLUGIN')])
             for evt in ('START', 'ERROR', 'END'):
                 if evt not in self._track_events:
                     self._track_events.add(evt)
 
     def write(self, text):
-        if not self._track_events or text.split('\t')[1] in self._track_events:
+        _, evt, _, params = text.split('\t')
+        if evt == 'PLUGIN':
+            # output all plugins
+            if 'PLUGIN' in self._track_plugins or params.split(',')[0][5:] in self._track_plugins:
+                super().write(text)
+        elif not self._track_events or evt in self._track_events:
             super().write(text)
 
 
