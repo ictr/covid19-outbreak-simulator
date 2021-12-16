@@ -96,6 +96,7 @@ class Individual(object):
             lead_time = 0
 
         self.infected = float(time - lead_time)
+        self.infected_by = by_ind
         handle_symptomatic = parse_handle_symptomatic_options(
             kwargs.get("handle_symptomatic", None), self.group
         )
@@ -112,6 +113,7 @@ class Individual(object):
                     symp_time,
                     EventType.SHOW_SYMPTOM,
                     target=self,
+                    handle_symptomatic=kwargs.get("handle_symptomatic", None),
                     logger=self.logger,
                 )
             )
@@ -318,6 +320,7 @@ class Individual(object):
             lead_time = 0
 
         self.infected = float(time - lead_time)
+        self.infected_by = by_ind
 
         # REMOVAL ...
         evts = []
@@ -489,17 +492,6 @@ class Individual(object):
             )
             return []
 
-        if kwargs["by"] is not None and hasattr(kwargs["by"], "traced"):
-            time_trace, succ_rate = kwargs["by"].traced
-            if time_trace < time and np.random.uniform(0, 1, 1)[0] < succ_rate:
-                self.logger.write(
-                    f"{time:.2f}\t{EventType.INFECTION_IGNORED.name}\t{self.id}\tby={kwargs['by'].id},reason=traced\n"
-                )
-                return []
-            else:
-                self.logger.write(
-                    f"{time:.2f}\t{EventType.WARNING.name}\t{self.id}\treason=tracing failed\n"
-                )
         if self.susceptibility < 1 and rand() > self.susceptibility:
             by_id = "." if kwargs["by"] is None else kwargs["by"].id
             self.logger.write(

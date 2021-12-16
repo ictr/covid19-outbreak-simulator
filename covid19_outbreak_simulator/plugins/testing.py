@@ -244,7 +244,6 @@ class testing(BasePlugin):
             )
             proportion = handle_positive.get("proportion", 1)
             infected_only = handle_positive.get("infected", None)
-            trace_succ_rate = handle_positive.get('tracing', None)
 
             if infected_only and not (
                 isinstance(population[ID].infected, float)
@@ -252,8 +251,17 @@ class testing(BasePlugin):
             ):
                 continue
 
-            if trace_succ_rate is not None:
-                population[ID].traced = [time + args.turnaround_time, trace_succ_rate]
+            if handle_positive.get('tracing', None) is not None:
+                events.append(
+                    Event(
+                        time + args.turnaround_time,
+                        EventType.CONTACT_TRACING,
+                        target=population[ID],
+                        reason='detected',
+                        handle_infection=args.handle_positive,
+                        logger=self.logger,
+                    )
+                )
 
             if handle_positive["reaction"] == "remove":
                 if proportion == 1 or np.random.uniform(0, 1, 1)[0] <= proportion:

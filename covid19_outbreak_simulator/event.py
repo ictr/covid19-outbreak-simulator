@@ -1,4 +1,6 @@
 from enum import Enum
+import random
+from covid19_outbreak_simulator.utils import parse_handle_symptomatic_options
 
 
 class EventType(Enum):
@@ -37,6 +39,7 @@ class EventType(Enum):
     # vaccine shot
     VACCINATION = 16
     REPLACEMENT = 17
+    CONTACT_TRACING = 19
 
 
 class Event(object):
@@ -79,9 +82,11 @@ class Event(object):
                     )
                     return []
                 #
-                if self.kwargs.get('handle_infection', None) is not None:
-                    if self.kwargs['handle_infection'] != 'ignore=t/7<2':
-                        raise ValueError(f'Currently handle-infection only support option ignore=t/7<2')
+                if self.kwargs.get("handle_infection", None) is not None:
+                    if self.kwargs["handle_infection"] != "ignore=t/7<2":
+                        raise ValueError(
+                            f"Currently handle-infection only support option ignore=t/7<2"
+                        )
                     if self.time % 7 < 2:
                         self.logger.write(
                             f'{self.time:.2f}\t{EventType.INFECTION_IGNORED.name}\t.\tby={self.kwargs["by"]},reason=t/7<2\n'
@@ -155,7 +160,7 @@ class Event(object):
 
                 population.individuals.pop(restore_to.id)
                 population.individuals[self.target.id] = self.target
-                delattr(self.target, 'replaced_by')
+                delattr(self.target, "replaced_by")
                 self.logger.write(
                     f"{self.time:.2f}\t{EventType.REINTEGRATION.name}\t{self.target}\treason=replacement,with={restore_to}\n"
                 )
@@ -187,15 +192,99 @@ class Event(object):
         elif self.action == EventType.SHOW_SYMPTOM:
             if self.target.id in population:
                 self.target.show_symptom = self.time
-                self.logger.write(
-                    f"{self.time:.2f}\t{EventType.SHOW_SYMPTOM.name}\t{self.target}\t.\n"
+                handle_symptomatic = parse_handle_symptomatic_options(
+                    self.kwargs.get("handle_symptomatic", None), self.target.group
                 )
+                tracing = handle_symptomatic.get('tracing', None)
+                self.logger.write(
+                    f"{self.time:.2f}\t{EventType.SHOW_SYMPTOM.name}\t{self.target}\thandle_symptomatic={self.kwargs.get('handle_symptomatic', None)}\n"
+                )
+                if tracing is not None:
+                    return [
+                        Event(
+                            self.time,
+                            EventType.CONTACT_TRACING,
+                            target=self.target,
+                            reason='symptoms',
+                            handle_infection=self.kwargs.get('handle_symptomatic', None),
+                            logger=self.logger,
+                        )
+                    ]
             else:
                 self.logger.write(
                     f"{self.time:.2f}\t{EventType.WARNING.name}\t{self.target}\tmsg=SHOW_SYMPTOM target no longer exists\n"
                 )
             return []
 
+        elif self.action == EventType.CONTACT_TRACING:
+            handle_infection = parse_handle_symptomatic_options(
+                self.kwargs["handle_infection"], self.target.group)
+            succ_rate = handle_infection.get('tracing', None)
+
+            IDs = []
+            missed_IDs = []
+            events = []
+            for ind in population.values():
+                if (
+                    isinstance(ind.infected, float)
+                    and ind.infected_by == self.target
+                ):
+                    if random.random() > succ_rate:
+                        missed_IDs.append(ind.id)
+                        continue
+                    IDs.append(ind.id)
+                    if handle_infection["reaction"] == "remove":
+                        events.append(
+                            Event(
+                                self.time,
+                                EventType.REMOVAL,
+                                reason="contact tracing",
+                                target=ind,
+                                logger=self.logger,
+                            )
+                        )
+                    elif handle_infection["reaction"] == "quarantine":
+                        duration = handle_infection.get("duration", 14)
+                        events.append(
+                            Event(
+                                self.time,
+                                EventType.QUARANTINE,
+                                target=ind,
+                                logger=self.logger,
+                                till=self.time + duration,
+                                reason="contact tracing",
+                            )
+                        )
+                    elif handle_infection["reaction"] == "replace":
+                        duration = handle_infection.get("duration", 14)
+                        events.append(
+                            Event(
+                                self.time,
+                                EventType.REPLACEMENT,
+                                reason="contact tracing",
+                                till=self.time + duration,
+                                keep=["vaccinated"],
+                                target=ind,
+                                logger=self.logger,
+                            )
+                        )
+                    elif handle_infection["reaction"] == "reintegrate":
+                        events.append(
+                            Event(
+                                self.time,
+                                EventType.REINTEGRATION,
+                                target=ind,
+                                logger=self.logger,
+                            )
+                        )
+                    elif handle_infection["reaction"] != "keep":
+                        raise ValueError(
+                            f"Unsupported action for patients who test positive: {handle_infection}"
+                        )
+            self.logger.write(
+                f"{self.time:.2f}\t{EventType.CONTACT_TRACING.name}\t{self.target}\tsucc_rate={succ_rate},reason={self.kwargs['reason']},n_traced={len(IDs)},n_missed={len(missed_IDs)},handle_infection={handle_infection}\n"
+            )
+            return events
         elif self.action == EventType.REMOVAL:
             if self.target.id in population:
                 population.remove(self.target)
@@ -238,10 +327,10 @@ class Event(object):
                     return []
                 return [
                     Event(
-                    till,
-                    EventType.REINTEGRATION,
-                    target=self.target,
-                    logger=self.logger,
+                        till,
+                        EventType.REINTEGRATION,
+                        target=self.target,
+                        logger=self.logger,
                     )
                 ]
             else:
@@ -253,7 +342,9 @@ class Event(object):
             if not removed:
                 self.target.recovered = self.time
                 self.target.immunity = population.model.params.immunity_of_recovered
-                self.target.infectivity = population.model.params.infectivity_of_recovered
+                self.target.infectivity = (
+                    population.model.params.infectivity_of_recovered
+                )
             else:
                 self.logger.write(
                     f"{self.time:.2f}\t{EventType.WARNING.name}\t{self.target}\tmsg=RECOVER target no longer exists\n"
