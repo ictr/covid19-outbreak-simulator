@@ -3,7 +3,7 @@ from itertools import product
 from covid19_outbreak_simulator.population import Individual
 from covid19_outbreak_simulator.event import EventType
 
-from covid19_outbreak_simulator.utils import status_to_condition
+from covid19_outbreak_simulator.utils import parse_target_param
 
 
 @pytest.mark.parametrize(
@@ -49,7 +49,7 @@ def test_individual_status(default_model, logger, cond):
     elif cond == "infected|quarantined":
         ind.infected = 1.2
 
-    assert status_to_condition(cond)(ind), f"assert {cond} failed"
+    assert parse_target_param(cond)(ind), f"assert {cond} failed"
 
 
 @pytest.mark.parametrize(
@@ -91,4 +91,4 @@ def test_individual_negative_status(default_model, logger, cond):
     elif cond == "infected|quarantined":
         pass
 
-    assert not status_to_condition(cond)(ind), f"negative assert {cond} failed"
+    assert not parse_target_param(cond)(ind), f"negative assert {cond} failed"

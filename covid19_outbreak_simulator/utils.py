@@ -69,19 +69,22 @@ def parse_param_with_multiplier(args, subpops=None, default=None):
     return res
 
 
-def status_to_condition(status):
+def parse_target_param(status):
+    if status is None:
+        return lambda ind: True
+
     if '&' in status:
         if status.count('&') > 1:
             raise ValueError(f'Currently only 1 & condition is allowed.')
         sts = status.split('&')
-        return lambda ind: status_to_condition(sts[0])(ind) and status_to_condition(sts[1])(ind)
+        return lambda ind: parse_target_param(sts[0])(ind) and parse_target_param(sts[1])(ind)
     if '|' in status:
         if status.count('|') > 1:
             raise ValueError(f'Currently only 1 & condition is allowed.')
         sts = status.split('|')
-        return lambda ind: status_to_condition(sts[0])(ind) or status_to_condition(sts[1])(ind)
+        return lambda ind: parse_target_param(sts[0])(ind) or parse_target_param(sts[1])(ind)
     if status.startswith('!'):
-        return lambda ind: not status_to_condition(status[1:])(ind)
+        return lambda ind: not parse_target_param(status[1:])(ind)
 
     if status == 'infected':
         return lambda ind: isinstance(ind.infected, float) and not isinstance(
@@ -123,9 +126,10 @@ def select_individuals(population, IDs, targets, max_count=None):
 
     selected = []
     for target in targets or ['all']:
+        is_target = parse_target_param(target)
         selected.extend(
             add_ind(
-                status_to_condition(target),
+                is_target,
                 None if max_count is None else max_count - len(selected)))
         if max_count is not None and len(selected) == max_count:
             break

@@ -30,6 +30,15 @@ class init(BasePlugin):
             for each group.""",
         )
         parser.add_argument(
+            "--vaccinated-incidence-rate",
+            nargs="*",
+            help="""Incidence rate of the vaccinated (default to zero), which should be
+            the probability that vaccinated individual is currently affected with the virus (not
+            necessarily show any symptom). Multipliers are allowed to specify incidence rate
+            for each group. If specified, --incidence-rate is considered to be
+            unvaccinated.""",
+        )
+        parser.add_argument(
             "--seroprevalence",
             nargs="*",
             help="""Seroprevalence of the population (default to zero). This parameter
