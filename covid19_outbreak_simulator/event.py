@@ -238,7 +238,7 @@ class Event(object):
                             Event(
                                 self.time,
                                 EventType.REMOVAL,
-                                reason="contact tracing",
+                                reason=f"contact tracing (by {self.target})",
                                 target=ind,
                                 logger=self.logger,
                             )
@@ -252,7 +252,7 @@ class Event(object):
                                 target=ind,
                                 logger=self.logger,
                                 till=self.time + duration,
-                                reason="contact tracing",
+                                reason=f"contact tracing ({ind.infected} by {self.target})",
                             )
                         )
                     elif handle_infection["reaction"] == "replace":
@@ -261,7 +261,7 @@ class Event(object):
                             Event(
                                 self.time,
                                 EventType.REPLACEMENT,
-                                reason="contact tracing",
+                                reason=f"contact tracing (by {self.target})",
                                 till=self.time + duration,
                                 keep=["vaccinated"],
                                 target=ind,

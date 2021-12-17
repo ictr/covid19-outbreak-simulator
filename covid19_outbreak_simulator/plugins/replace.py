@@ -82,25 +82,25 @@ class replace(BasePlugin):
                 ]
                 IDs = select_individuals(population, spIDs, args.target, sz)
 
-            for ID in IDs:
-                events.append(
-                    Event(
-                        time,
-                        EventType.REPLACEMENT,
-                        reason="plugin",
-                        till=time + args.duration
-                        if args.duration is not None
-                        else None,
-                        keep=[] if args.keep is None else args.keep,
-                        target=population[ID],
-                        logger=self.logger,
+                for ID in IDs:
+                    events.append(
+                        Event(
+                            time,
+                            EventType.REPLACEMENT,
+                            reason="plugin",
+                            till=time + args.duration
+                            if args.duration is not None
+                            else None,
+                            keep=[] if args.keep is None else args.keep,
+                            target=population[ID],
+                            logger=self.logger,
+                        )
                     )
+                replaced_list = (
+                    f',replaced={",".join(IDs[:sz])}' if args.verbosity > 1 else ""
                 )
-            replaced_list = (
-                f',replaced={",".join(IDs[:sz])}' if args.verbosity > 1 else ""
-            )
-            if args.verbosity > 0:
-                self.logger.write(
-                    f"{time:.2f}\t{EventType.PLUGIN.name}\t.\tname=replace,subpop={name},size={sz}{replaced_list}\n"
-                )
+                if args.verbosity > 0 and len(IDs) > 0:
+                    self.logger.write(
+                        f"{time:.2f}\t{EventType.PLUGIN.name}\t.\tname=replace,subpop={name},size={sz}{replaced_list}\n"
+                    )
         return events
