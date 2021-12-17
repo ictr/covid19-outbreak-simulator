@@ -236,6 +236,7 @@ class FilteredStringIO(StringIO):
     def __init__(self, track_events=None):
         super().__init__()
         self._track_events = track_events
+        self._track_plugins = set()
         if self._track_events is not None:
             self._track_plugins = set([x.split('.')[-1] for x in self._track_events if x.startswith('PLUGIN')])
             self._track_events = set([x.split('.')[0] for x in self._track_events if not x.startswith('PLUGIN')])

@@ -225,10 +225,7 @@ class Event(object):
             missed_IDs = []
             events = []
             for ind in population.values():
-                if (
-                    isinstance(ind.infected, float)
-                    and ind.infected_by == self.target
-                ):
+                if getattr(ind, 'infected_by', None) == self.target:
                     if random.random() > succ_rate:
                         missed_IDs.append(ind.id)
                         continue
