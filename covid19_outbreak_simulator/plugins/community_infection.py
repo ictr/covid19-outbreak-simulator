@@ -48,7 +48,7 @@ class community_infection(BasePlugin):
         events = []
 
         probability = parse_param_with_multiplier(
-            args.probability, subpops=population.group_sizes.keys())
+            args.probability, subpops=population.group_sizes.keys(), default=1.0)
 
         is_targeted = parse_target_param(args.target)
 

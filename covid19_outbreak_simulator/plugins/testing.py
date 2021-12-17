@@ -30,6 +30,10 @@ class testing(BasePlugin):
             will be ignored with specified IDs for testing""",
         )
         parser.add_argument(
+            '--name',
+            help='''Name of the test, will be added to output message if specified.'''
+        )
+        parser.add_argument(
             "--proportion",
             nargs="+",
             help="""Proportion of individuals to test. Individuals who are tested
@@ -257,7 +261,7 @@ class testing(BasePlugin):
                         time + args.turnaround_time,
                         EventType.CONTACT_TRACING,
                         target=population[ID],
-                        reason='detected',
+                        reason='detected' + (f' by {args.name}' if args.name else ''),
                         handle_infection=args.handle_positive,
                         logger=self.logger,
                     )
@@ -269,7 +273,7 @@ class testing(BasePlugin):
                         Event(
                             time + args.turnaround_time,
                             EventType.REMOVAL,
-                            reason="detected",
+                            reason="detected" + (f' by {args.name}' if args.name else ''),
                             target=population[ID],
                             logger=self.logger,
                         )
@@ -284,7 +288,7 @@ class testing(BasePlugin):
                             target=population[ID],
                             logger=self.logger,
                             till=time + duration,
-                            reason="detected",
+                            reason="detected" + (f' by {args.name}' if args.name else ''),
                         )
                     )
             elif handle_positive["reaction"] == "replace":
@@ -294,7 +298,7 @@ class testing(BasePlugin):
                         Event(
                             time + args.turnaround_time,
                             EventType.REPLACEMENT,
-                            reason="detected",
+                            reason="detected" + (f' by {args.name}' if args.name else ''),
                             till=time + duration,
                             keep=["vaccinated"],
                             target=population[ID],
@@ -329,6 +333,8 @@ class testing(BasePlugin):
             n_false_negative_lod=n_false_negative_lod,
             n_false_negative_in_recovered=n_false_negative_in_recovered,
         )
+        if args.name:
+            res['test_name'] = args.name
         if IDs and args.verbosity > 1:
             res["detected_IDs"] = ",".join(IDs)
 

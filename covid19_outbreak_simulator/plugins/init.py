@@ -84,11 +84,11 @@ class init(BasePlugin):
 
         # population prevalence and incidence rate
         ir = parse_param_with_multiplier(
-            args.incidence_rate, subpops=pop.group_sizes.keys(), default=0.0
+            args.incidence_rate, subpops=pop.group_sizes.keys(), default=1.0
         )
         #
         isp = parse_param_with_multiplier(
-            args.seroprevalence, subpops=pop.group_sizes.keys(), default=0.0
+            args.seroprevalence, subpops=pop.group_sizes.keys(), default=1.0
         )
 
         infected = []
@@ -178,7 +178,7 @@ class init(BasePlugin):
         )
         if args.verbosity > 0:
             self.logger.write(
-                f"{time:.2f}\t{EventType.PLUGIN.name}\t.\tname=init,n_recovered={n_isp},n_infected={n_ir}{infected_list}\n"
+                f"{time:.2f}\t{EventType.PLUGIN.name}\t.\tname=init,n_initialized={sum(pop.group_sizes.values())},n_recovered={n_isp},n_infected={n_ir}{infected_list}\n"
             )
 
         return events
