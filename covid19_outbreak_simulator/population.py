@@ -68,7 +68,9 @@ class Individual(object):
         self.incubation_period = self.model.draw_random_incubation_period(
             group=self.group
         )
-        self.infect_params = self.model.draw_infection_params(symptomatic=True)
+
+        self.infect_params = self.model.draw_infection_params(symptomatic=True,
+            vaccinated=isinstance(self.vaccinated, float))
 
         #
         # infect others
@@ -292,7 +294,8 @@ class Individual(object):
         self.incubation_period = -1
 
         by_ind = kwargs.get("by")
-        self.infect_params = self.model.draw_infection_params(symptomatic=False)
+        self.infect_params = self.model.draw_infection_params(symptomatic=False,
+            vaccinated=isinstance(self.vaccinated, float))
 
         (x_grid, trans_prob) = self.model.get_asymptomatic_transmission_probability(
             self.r0 * self.r0_multiplier, self.infect_params

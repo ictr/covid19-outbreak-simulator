@@ -508,12 +508,12 @@ class Model(object):
         return ip * getattr(self.params,
                             f"incubation_period_multiplier_{group}", 1.0)
 
-    def draw_infection_params(self, symptomatic):
+    def draw_infection_params(self, symptomatic, vaccinated=None):
         if symptomatic:
             # duration of infection is 8 days after incubation
             if self.params.symptomatic_transmissibility_model[
                     "name"] == "normal":
-                return [8]
+                return [8 + (-1 if vaccinated else 0)]
             # duration of infection is shift + lognormal distribution
             else:
                 return [
@@ -524,13 +524,13 @@ class Model(object):
                         .symptomatic_transmissibility_model["duration_mean"],
                         self.params
                         .symptomatic_transmissibility_model["duration_sigma"],
-                    )
+                    ) + (-1 if vaccinated else 0)
                 ]
         else:
             # 12 day overall (with normal at 4.8)
             if self.params.asymptomatic_transmissibility_model[
                     "name"] == "normal":
-                return [12]
+                return [12 + (-1 if vaccinated else 0)]
             # asymptomatic
             else:
                 return [
@@ -541,7 +541,7 @@ class Model(object):
                         .asymptomatic_transmissibility_model["duration_mean"],
                         self.params
                         .asymptomatic_transmissibility_model["duration_sigma"],
-                    )
+                    ) + (-1 if vaccinated else 0)
                 ]
 
     def get_symptomatic_transmission_probability(self, incu, R0, params):
