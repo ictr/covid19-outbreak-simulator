@@ -146,7 +146,7 @@ class Event(object):
                         # A reintegrate with B, B restore to C,, C is in
                     except Exception as e:
                         self.logger.write(
-                            f"{self.time:.2f}\t{EventType.WARNING.name}\t{self.target} failed to restore.\n"
+                            f"{self.time:.2f}\t{EventType.WARNING.name}\t{self.target}\tfailed to restore {restore_to}.\n"
                         )
                         # case:
                         # A replaced by  B [B in, A out]
