@@ -220,7 +220,11 @@ def test_plugin_community_infection(clear_log):
         '--stop-if', 't>4', '--plugin', 'community_infection', '--probability',
         '1', 'A=0.0001', '--interval', '1'
     ])
-
+    main([
+        '--jobs', '1', '--repeats', '10', '--popsize', 'A=100', 'B=200',
+        '--stop-if', 't>4', '--plugin', 'community_infection', '--probability',
+        '1', 'A=0.0001', '--probability', '0.5', 'A=0.0001', '--at', '1', '2'
+    ])
 
 def test_plugin_insert_hetero_pop(clear_log):
     main([

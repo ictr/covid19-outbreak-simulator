@@ -22,7 +22,8 @@ class community_infection(BasePlugin):
         parser.add_argument(
             '--probability',
             nargs='+',
-            default=[0.005],
+            action='append',
+            default=[],
             help='''The probability of anyone to be affected at a given
             interval, which is usually per day (with option --interval 1).
             Multipliers are allowed to specify probability for each group.
@@ -32,7 +33,9 @@ class community_infection(BasePlugin):
             cause actual infection because the individual might be in quarantine,
             or has been infected. The default value of this parameter is 0.005.
             Note that individuals currently in quarantine will not be affected
-            by community infection.''')
+            by community infection. If multiple time points are specified with
+            option --at, multiple --probability parameters can be specified to specify
+            probability at each time points.''')
         parser.add_argument(
             "--target",
             nargs="*",
@@ -47,8 +50,22 @@ class community_infection(BasePlugin):
     def apply(self, time, population, args=None):
         events = []
 
-        probability = parse_param_with_multiplier(
-            args.probability, subpops=population.group_sizes.keys(), default=1.0)
+        assert isinstance(args.probability, list)
+        assert isinstance(args.probability[0], list)
+
+        if len(args.probability) == 1:
+            probability = parse_param_with_multiplier(
+                args.probability[0], subpops=population.group_sizes.keys(), default=1.0)
+        else:
+            if not args.at:
+                raise ValueError('Parameter --at is expected when multiple probability values are specified.')
+            if time not in args.at:
+                raise ValueError(f'{time} is not in the list of --at {args.at}')
+            idx = args.at.index(time)
+            if len(args.probability) < idx + 1:
+                raise ValueError(f'No value of --probability corresponding to time {time}')
+            probability = parse_param_with_multiplier(
+                args.probability[idx], subpops=population.group_sizes.keys(), default=1.0)
 
         is_targeted = parse_target_param(args.target)
 
