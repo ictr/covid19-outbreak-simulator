@@ -82,8 +82,8 @@ class testing(BasePlugin):
         parser.add_argument(
             "--no-retest",
             type=int,
-            default=90,
-            help="""Do not retest for 90 days by default.""",
+            default=0,
+            help="""Do not retest if has been recovered for less than the specified days.""",
         )
         parser.add_argument(
             "--handle-positive",
@@ -193,7 +193,7 @@ class testing(BasePlugin):
 
             if (
                 isinstance(ind.recovered, float)
-                and ind.recovered - time < args.no_retest
+                and time - ind.recovered < args.no_retest
             ):
                 n_no_retest += 1
                 if affected:
