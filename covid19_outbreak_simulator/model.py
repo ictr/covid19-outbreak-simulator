@@ -545,12 +545,12 @@ class Model(object):
                 ]
 
     def get_symptomatic_transmission_probability(self, incu, R0, params):
-        assert self.params.symptomatic_transmissibility_model["name"] != "normal":
+        assert self.params.symptomatic_transmissibility_model["name"] == "piecewise"
         return self.get_normal_symptomatic_transmission_probability(
                 incu, R0, params)
 
     def get_asymptomatic_transmission_probability(self, R0, params):
-        assert self.params.asymptomatic_transmissibility_model["name"] != "normal":
+        assert self.params.asymptomatic_transmissibility_model["name"] != "piecewise"
         return self.get_piecewise_asymptomatic_transmissibility_probability(
                 R0, params)
 
