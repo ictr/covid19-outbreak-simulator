@@ -1,6 +1,7 @@
 import os
 import re
 from fnmatch import fnmatch
+from xml.dom import xmlbuilder
 
 import numpy as np
 import pandas as pd
@@ -507,24 +508,28 @@ class Model(object):
     def draw_infection_params(self, symptomatic, vaccinated=None):
         if symptomatic:
             # duration of infection is 8 days after incubation
-            return [
-                self.params.symptomatic_transmissibility_model["duration_shift"]
+            return {
+                "duration": self.params.symptomatic_transmissibility_model[
+                    "duration_shift"
+                ]
                 + np.random.lognormal(
                     self.params.symptomatic_transmissibility_model["duration_mean"],
                     self.params.symptomatic_transmissibility_model["duration_sigma"],
-                )
-                + (-1 if vaccinated else 0)
-            ]
+                ),
+                "vaccinated": vaccinated,
+            }
         else:
             # 12 day overall (with normal at 4.8)
-            return [
-                self.params.asymptomatic_transmissibility_model["duration_shift"]
+            return {
+                "duration": self.params.asymptomatic_transmissibility_model[
+                    "duration_shift"
+                ]
                 + np.random.lognormal(
                     self.params.asymptomatic_transmissibility_model["duration_mean"],
                     self.params.asymptomatic_transmissibility_model["duration_sigma"],
-                )
-                + (-1 if vaccinated else 0)
-            ]
+                ),
+                "vaccinated": vaccinated,
+            }
 
     def get_symptomatic_transmission_probability(self, incu, R0, params):
         """Transmission probability.
@@ -544,7 +549,7 @@ class Model(object):
         y
             probability of transmission for each time point
         """
-        duration = incu + params[0]
+        duration = incu + params["duration"]
         #
         x = np.linspace(0, duration, int(duration / self.params.simulation_interval))
         infect_time = (
@@ -562,11 +567,32 @@ class Model(object):
             [x < infect_time, (x >= infect_time) & (x < peak_time), x >= peak_time],
             [
                 0,
-                lambda y: (y - infect_time) / (peak_time - infect_time),
-                lambda y: (duration - y) / (duration - peak_time),
+                lambda t: (t - infect_time) / (peak_time - infect_time),
+                lambda t: (duration - t) / (duration - peak_time),
             ],
         )
         y = np.minimum(y / sum(y) * R0, 1)
+        if params["vaccinated"]:
+            duration = duration * 0.75
+            x = np.linspace(
+                0, duration, int(duration / self.params.simulation_interval)
+            )
+            if peak_time < duration:
+                # from peak_time to duration, drop to zero
+                y_max = max(y)
+                y = np.piecewise(
+                    x,
+                    [
+                        x < infect_time,
+                        (x >= infect_time) & (x < peak_time),
+                        x >= peak_time,
+                    ],
+                    [
+                        0,
+                        lambda t: y_max * (t - infect_time) / (peak_time - infect_time),
+                        lambda t: y_max * (duration - t) / (duration - peak_time),
+                    ],
+                )
         return x, y
 
     def get_asymptomatic_transmission_probability(self, R0, params):
@@ -584,7 +610,7 @@ class Model(object):
         y
             probability of transmission for each time point
         """
-        duration = params[0]
+        duration = params["duration"]
         #
         x = np.linspace(0, duration, int(duration / self.params.simulation_interval))
         infect_time = (
@@ -610,6 +636,27 @@ class Model(object):
         y = np.minimum(y / sum(y) * R0, 1)
         # we assume that viral load is 2 times the transmissibility
         # for asymptomatic cases.
+        if params["vaccinated"]:
+            duration = duration * 0.75
+            x = np.linspace(
+                0, duration, int(duration / self.params.simulation_interval)
+            )
+            if peak_time < duration:
+                # from peak_time to duration, drop to zero
+                y_max = max(y)
+                y = np.piecewise(
+                    x,
+                    [
+                        x < infect_time,
+                        (x >= infect_time) & (x < peak_time),
+                        x >= peak_time,
+                    ],
+                    [
+                        0,
+                        lambda t: y_max * (t - infect_time) / (peak_time - infect_time),
+                        lambda t: y_max * (duration - t) / (duration - peak_time),
+                    ],
+                )
         return x, y
 
 
