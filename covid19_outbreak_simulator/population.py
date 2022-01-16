@@ -59,6 +59,7 @@ class Individual(object):
         self.r0 = self.model.draw_random_r0(symptomatic=True, group=self.group)
 
         if self.infectivity is not None:
+            assert self.infectivity[0] > 0 and self.infectivity[0] <= 1
             self.r0 *= self.infectivity[0]
 
         self.r0_multiplier = getattr(
@@ -285,6 +286,7 @@ class Individual(object):
         else:
             self.r0 = self.model.draw_random_r0(symptomatic=False)
             if self.infectivity is not None:
+                assert self.infectivity[1] > 0 and self.infectivity[1] <= 1
                 self.r0 *= self.infectivity[1]
 
         self.r0_multiplier = getattr(

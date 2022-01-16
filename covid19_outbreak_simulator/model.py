@@ -400,7 +400,7 @@ class Params:
         # set some default values first
         self.set("simulation_interval", "self", args.interval if args else 1 / 24)
         self.set("immunity_of_recovered", "self", [0.99, 0.99])
-        self.set("infectivity_of_recovered", "self", [0.50, 0.50])
+        self.set("infectivity_of_recovered", "self", [1, 1])
         self.set("prop_asym_carriers", "loc", 0.4)
         self.set("prop_asym_carriers", "scale", 0)
         self.set("symptomatic_r0", "loc", (1.4 + 2.8) / 2)
@@ -671,8 +671,8 @@ def print_stats(data, name):
     print("\n" + name + ":")
     print(f"            mean:  {series.mean():.4f}")
     print(f"             std:  {series.std():.4f}")
-    for q in (0.025, 0.05, 0.5, 0.95, 0.975):
-        print(f"  {q*100:4.1f}% quantile:  {series.quantile(q):.4f}")
+    #for q in (0.025, 0.05, 0.5, 0.95, 0.975):
+    #    print(f"  {q*100:4.1f}% quantile:  {series.quantile(q):.4f}")
 
 
 def print_cnt(data, name):

@@ -45,11 +45,11 @@ class vaccinate(BasePlugin):
             '--infectivity',
             type=float,
             nargs='+',
-            default=[0.5, 0.5],
-            help='''The reduction of infectivity, which will be simulated as a reduction
-            of R0. If two numbers are given, they are assumed to be for symptomatic cases
-            and asyptoatic carriers respectively. If zero is given, vaccinated individuals
-            can be as infectious as non-vaccinated.''')
+            default=[1, 1],
+            help='''The infectivity, which will be simulated as a proportion of R0. If two numbers are given,
+            they are assumed to be for symptomatic cases
+            and asyptoatic carriers respectively. If 1 is given, vaccinated individuals
+            can be as infectious as non-vaccinated (default).''')
 
         return parser
 
@@ -104,7 +104,7 @@ class vaccinate(BasePlugin):
                     target=population[ID],
                     priority=True,
                     immunity=expandto2(args.immunity),
-                    infectivity=[1 - x for x in expandto2(args.infectivity)],
+                    infectivity=expandto2(args.infectivity),
                     logger=self.logger))
 
         vaccinated_list = f',vaccinated={",".join(IDs)}' if args.verbosity > 1 else ''

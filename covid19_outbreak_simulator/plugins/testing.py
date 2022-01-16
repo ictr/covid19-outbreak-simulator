@@ -198,6 +198,7 @@ class testing(BasePlugin):
                 n_no_retest += 1
                 if affected:
                     n_no_retest_infected += 1
+                    # print(time, ind.recovered, ind.infected, ind.id)
                 return False
 
             n_tested += 1
