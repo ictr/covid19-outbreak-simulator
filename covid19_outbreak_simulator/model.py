@@ -760,6 +760,48 @@ def summarize_model(args):
     print_stats(adu, "Total Duration (Asymptomatic)")
     print_cnt(acnt, "Number of infections (Asymptomatic)")
 
+
+    model.params.set("prop_asym_carriers", "loc", 0)
+    model.params.set("prop_asym_carriers", "scale", 0)
+
+    cp = []
+    du = []
+    cnt = []
+    with open(os.devnull, "w") as logger:
+        logger.id = 1
+        model.draw_prop_asym_carriers()
+        for _ in range(N):
+            ind = Individual(id="0", susceptibility=1, model=model, logger=logger)
+            ind.vaccinate(0, immunity=[0.75, 0.75], infectivity=[1, 1])
+            evts = ind.symptomatic_infect(time=0, by=None, handle_symptomatic=["keep"])
+            cnt.append(len([x for x in evts if x.action == EventType.INFECTION]))
+            cp.append(ind.communicable_period())
+            du.append(ind.total_duration())
+
+    model.params.set("prop_asym_carriers", "loc", 1)
+    model.params.set("prop_asym_carriers", "scale", 0)
+
+    acp = []
+    adu = []
+    acnt = []
+    with open(os.devnull, "w") as logger:
+        logger.id = 1
+        model.draw_prop_asym_carriers()
+        for _ in range(N):
+            ind = Individual(id="0", susceptibility=1, model=model, logger=logger)
+            ind.vaccinate(0, immunity=[0.75, 0.75], infectivity=[1, 1])
+            evts = ind.asymptomatic_infect(time=0, by=None, handle_symptomatic=["keep"])
+            acnt.append(len([x for x in evts if x.action == EventType.INFECTION]))
+            acp.append(ind.communicable_period())
+            adu.append(ind.total_duration())
+
+    print_stats(cp, "Communicable Period (Symptomatic Vaccinated)")
+    print_stats(du, "Total Duration (Symptomatic Vaccinated)")
+    print_cnt(cnt, "Number of infections (Symptomatic Vaccinated)")
+    print_stats(acp, "Communicable Period (Asymptomatic Vaccinated)")
+    print_stats(adu, "Total Duration (Asymptomatic Vaccinated)")
+    print_cnt(acnt, "Number of infections (Asymptomatic Vaccinated)")
+
     model.params.set("prop_asym_carriers", "loc", 0)
     model.params.set("prop_asym_carriers", "scale", 0)
 

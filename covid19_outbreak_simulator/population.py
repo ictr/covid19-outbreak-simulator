@@ -46,7 +46,7 @@ class Individual(object):
         return [Event(till, EventType.REINTEGRATION, target=self, logger=self.logger)]
 
     def vaccinate(self, time, immunity, infectivity, **kwargs):
-        self.vaccinated = time
+        self.vaccinated = float(time)
         self.immunity = immunity
         self.infectivity = infectivity
 
