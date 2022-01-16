@@ -12,7 +12,6 @@ from covid19_outbreak_simulator.utils import as_float, as_int
 
 
 class Params:
-
     def __init__(self, args=None):
         # args should be args returned from argparser
         self.params = {
@@ -31,20 +30,19 @@ class Params:
         self.set_params(args)
 
     def __str__(self):
-
         def float_representer(dumper, value):
-            text = '{0:.4f}'.format(value)
-            return dumper.represent_scalar(u'tag:yaml.org,2002:float', text)
+            text = "{0:.4f}".format(value)
+            return dumper.represent_scalar("tag:yaml.org,2002:float", text)
 
         yaml.add_representer(float, float_representer)
 
         val = {
             x: list(y) if isinstance(y, set) else y
             for x, y in self.__dict__.items()
-            if x != 'params'
+            if x != "params"
         }
-        if 'groups' in val and len(val['groups']) == 1:
-            val['groups'] = {'Unnamed': list(val['groups'].values())[0]}
+        if "groups" in val and len(val["groups"]) == 1:
+            val["groups"] = {"Unnamed": list(val["groups"].values())[0]}
         return yaml.dump(val, sort_keys=True, indent=4)
 
     def set(self, param, prop, value):
@@ -61,8 +59,7 @@ class Params:
                     f'Group {group} does not exist for parameter {param}. Available groups are: {", ".join(self.groups.keys())}'
                 )
             if value < 0:
-                raise ValueError(
-                    f"Multiplier should be positive {value} specified")
+                raise ValueError(f"Multiplier should be positive {value} specified")
             if group == "":
                 for grp in self.groups:
                     setattr(self, f"{param}_{prop}{group}", value)
@@ -75,9 +72,8 @@ class Params:
                 setattr(self, f"{param}_scale", 0)
             else:
                 sd = bisect(
-                    lambda x: norm.cdf(value, loc=loc, scale=x) - lq,
-                    a=0.00001,
-                    b=25)
+                    lambda x: norm.cdf(value, loc=loc, scale=x) - lq, a=0.00001, b=25
+                )
                 setattr(self, f"{param}_scale", sd)
         else:
             raise ValueError(f"Unrecognized property {prop}")
@@ -109,9 +105,10 @@ class Params:
                 name = ""
                 size = ps
             size = as_int(size)
-            if name == 'all':
+            if name == "all":
                 raise ValueError(
-                    'Group name "all" is reserved for the entire population.')
+                    'Group name "all" is reserved for the entire population.'
+                )
             if name in self.groups:
                 raise ValueError(f'Group "{name}" has been specified before')
             self.groups[name] = size
@@ -124,15 +121,15 @@ class Params:
 
     def _set_multiplier(self, multiplier, param_name):
         name, value = multiplier.split("=", 1)
-        value = as_float(value,
-                         "Multiplier should have format name=float_value")
-        if name == 'all':
+        value = as_float(value, "Multiplier should have format name=float_value")
+        if name == "all":
             self.set(param_name, "multiplier_", value)
         else:
             names = [x for x, y in self.groups.items() if fnmatch(x, name)]
             if not names:
                 raise ValueError(
-                    f"Invalid group name {name} in multiplier {multiplier}")
+                    f"Invalid group name {name} in multiplier {multiplier}"
+                )
             for name in names:
                 self.set(param_name, f"multiplier_{name}", value)
 
@@ -164,8 +161,7 @@ class Params:
             self.set("symptomatic_r0", "quantile_2.5", p0)
 
         elif len(pars) > 2:
-            raise ValueError(
-                "The symptomatic_r0 should be one or two float number.")
+            raise ValueError("The symptomatic_r0 should be one or two float number.")
         #
         for multiplier in [x for x in val if "=" in x]:
             self._set_multiplier(multiplier, "symptomatic_r0")
@@ -201,8 +197,7 @@ class Params:
                 p0,
             )
         elif len(pars) > 2:
-            raise ValueError(
-                "The asymptomatic_r0 should be one or two float number.")
+            raise ValueError("The asymptomatic_r0 should be one or two float number.")
         #
         for multiplier in [x for x in val if "=" in x]:
             self._set_multiplier(multiplier, "asymptomatic_r0")
@@ -238,12 +233,13 @@ class Params:
                         as_float(
                             pars[0],
                             "First parameter of incubation_period should be a float number if not model name",
-                        )) - 1 / 2 * 0.418**2,
+                        )
+                    )
+                    - 1 / 2 * 0.418 ** 2,
                 )
                 self.set("incubation_period", "sigma", 0.418)
             else:
-                raise ValueError(
-                    'Unacceptable specification of incubation period')
+                raise ValueError("Unacceptable specification of incubation period")
 
         # multipliers
         for multiplier in [x for x in val if "=" in x]:
@@ -265,13 +261,10 @@ class Params:
     # a, b
 
     def set_symptomatic_transmissibility_model(self, val):
-        if not val or val[0] not in ('normal', 'piecewise'):
-            raise ValueError("Only a normal and a piecewise model is supported")
+        if not val or val[0] != "piecewise":
+            raise ValueError("Only a piecewise model is supported")
 
-        if val[0] == "normal":
-            self.symptomatic_transmissibility_model = dict(name="normal")
-
-        elif len(val) == 1:
+        if len(val) == 1:
             self.symptomatic_transmissibility_model = dict(
                 name=val[0],
                 noninfectivity_proportion=0.2,
@@ -307,11 +300,9 @@ class Params:
     # [n + rng.quantile(x) for x in [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.975]]
 
     def set_asymptomatic_transmissibility_model(self, val):
-        if not val or val[0] not in ('normal', 'piecewise'):
-            raise ValueError("Only a normal and a piecewise model is supported")
-        if val[0] == "normal":
-            self.asymptomatic_transmissibility_model = dict(name="normal")
-        elif len(val) == 1:
+        if not val or val[0] != "piecewise":
+            raise ValueError("Only a piecewise model is supported")
+        if len(val) == 1:
             self.asymptomatic_transmissibility_model = dict(
                 name=val[0],
                 noninfectivity_proportion=0.1,
@@ -347,11 +338,9 @@ class Params:
         elif len(base) > 1:
             raise ValueError("Susceptibility should be a single number.")
         else:
-            base_val = as_float(base[0],
-                                "Susceptibility should be a float number")
+            base_val = as_float(base[0], "Susceptibility should be a float number")
             if base_val > 1 or base_val < 0:
-                raise ValueError(
-                    "suscepbility should be betwee 0 and 1: {base_val}")
+                raise ValueError("suscepbility should be betwee 0 and 1: {base_val}")
             self.set("susceptibility", "mean", base_val)
 
         for multiplier in [x for x in val if isinstance(x, str) and "=" in x]:
@@ -377,8 +366,7 @@ class Params:
             self.set("prop_asym_carriers", "loc", (pars[0] + pars[1]) / 2)
             self.set("prop_asym_carriers", "quantile_2.5", pars[0])
         elif len(pars) > 2:
-            raise ValueError(
-                "Parameter prop-asym-carriers accepts one or two numbers.")
+            raise ValueError("Parameter prop-asym-carriers accepts one or two numbers.")
         #
         for multiplier in [x for x in val if "=" in x]:
             self._set_multiplier(multiplier, "prop_asym_carriers")
@@ -387,27 +375,29 @@ class Params:
         if not val:
             return
         if len(val) == 1:
-            self.set('immunity_of_recovered', 'self', [val[0], val[0]])
+            self.set("immunity_of_recovered", "self", [val[0], val[0]])
         elif len(val) == 2:
-            self.set('immunity_of_recovered', 'self', val)
+            self.set("immunity_of_recovered", "self", val)
         else:
-            raise ValueError('Immunity of recovered should be an array of one or two values.')
+            raise ValueError(
+                "Immunity of recovered should be an array of one or two values."
+            )
 
     def set_infectivity_of_recovered(self, val):
         if not val:
             return
         if len(val) == 1:
-            self.set('infectivity_of_recovered', 'self', [val[0], val[0]])
+            self.set("infectivity_of_recovered", "self", [val[0], val[0]])
         elif len(val) == 2:
-            self.set('infectivity_of_recovered', 'self', val)
+            self.set("infectivity_of_recovered", "self", val)
         else:
-            raise ValueError('Infectivity of recovered should be an array of one or two values.')
-
+            raise ValueError(
+                "Infectivity of recovered should be an array of one or two values."
+            )
 
     def set_params(self, args):
         # set some default values first
-        self.set("simulation_interval", "self",
-                 args.interval if args else 1 / 24)
+        self.set("simulation_interval", "self", args.interval if args else 1 / 24)
         self.set("immunity_of_recovered", "self", [0.99, 0.99])
         self.set("infectivity_of_recovered", "self", [0.50, 0.50])
         self.set("prop_asym_carriers", "loc", 0.4)
@@ -418,10 +408,10 @@ class Params:
         self.set("asymptomatic_r0", "quantile_2.5", 1.4 * 0.75)
         self.set("incubation_period", "mean", 1.621)
         self.set("incubation_period", "sigma", 0.418)
-        self.symptomatic_transmissibility_model = {"name": "normal"}
-        self.asymptomatic_transmissibility_model = {"name": "normal"}
 
         if not args:
+            self.set_symptomatic_transmissibility_model(["piecewise"])
+            self.set_asymptomatic_transmissibility_model(["piecewise"])
             return
 
         self.set_popsize(args.popsize)
@@ -431,9 +421,11 @@ class Params:
         self.set_asymptomatic_r0(args.asymptomatic_r0)
         self.set_incubation_period(args.incubation_period)
         self.set_symptomatic_transmissibility_model(
-            args.symptomatic_transmissibility_model)
+            args.symptomatic_transmissibility_model
+        )
         self.set_asymptomatic_transmissibility_model(
-            args.asymptomatic_transmissibility_model)
+            args.asymptomatic_transmissibility_model
+        )
         self.set_susceptibility(args.susceptibility)
         self.set_prop_asym_carriers(args.prop_asym_carriers)
         self.set_immunity_of_recovered(args.immunity_of_recovered)
@@ -456,8 +448,8 @@ class Model(object):
         )
         return min(
             max(
-                self.params.prop_asym_carriers * getattr(
-                    self.params, f"prop_asym_carriers_multiplier_{group}", 1.0),
+                self.params.prop_asym_carriers
+                * getattr(self.params, f"prop_asym_carriers_multiplier_{group}", 1.0),
                 0,
             ),
             1,
@@ -476,16 +468,21 @@ class Model(object):
             else:
                 return max(
                     0,
-                    np.random.normal(self.params.symptomatic_r0_loc,
-                                     self.params.symptomatic_r0_scale))
+                    np.random.normal(
+                        self.params.symptomatic_r0_loc, self.params.symptomatic_r0_scale
+                    ),
+                )
         else:
             if self.params.asymptomatic_r0_scale == 0.0:
                 return self.params.asymptomatic_r0_loc
             else:
                 return max(
                     0,
-                    np.random.normal(self.params.asymptomatic_r0_loc,
-                                     self.params.asymptomatic_r0_scale))
+                    np.random.normal(
+                        self.params.asymptomatic_r0_loc,
+                        self.params.asymptomatic_r0_scale,
+                    ),
+                )
 
     def draw_random_incubation_period(self, group=""):
         """
@@ -505,57 +502,31 @@ class Model(object):
                 mean=self.params.incubation_period_mean,
                 sigma=self.params.incubation_period_sigma,
             )
-        return ip * getattr(self.params,
-                            f"incubation_period_multiplier_{group}", 1.0)
+        return ip * getattr(self.params, f"incubation_period_multiplier_{group}", 1.0)
 
     def draw_infection_params(self, symptomatic, vaccinated=None):
         if symptomatic:
             # duration of infection is 8 days after incubation
-            if self.params.symptomatic_transmissibility_model[
-                    "name"] == "normal":
-                return [8 + (-1 if vaccinated else 0)]
-            # duration of infection is shift + lognormal distribution
-            else:
-                return [
-                    self.params
-                    .symptomatic_transmissibility_model["duration_shift"] +
-                    np.random.lognormal(
-                        self.params
-                        .symptomatic_transmissibility_model["duration_mean"],
-                        self.params
-                        .symptomatic_transmissibility_model["duration_sigma"],
-                    ) + (-1 if vaccinated else 0)
-                ]
+            return [
+                self.params.symptomatic_transmissibility_model["duration_shift"]
+                + np.random.lognormal(
+                    self.params.symptomatic_transmissibility_model["duration_mean"],
+                    self.params.symptomatic_transmissibility_model["duration_sigma"],
+                )
+                + (-1 if vaccinated else 0)
+            ]
         else:
             # 12 day overall (with normal at 4.8)
-            if self.params.asymptomatic_transmissibility_model[
-                    "name"] == "normal":
-                return [12 + (-1 if vaccinated else 0)]
-            # asymptomatic
-            else:
-                return [
-                    self.params
-                    .asymptomatic_transmissibility_model["duration_shift"] +
-                    np.random.lognormal(
-                        self.params
-                        .asymptomatic_transmissibility_model["duration_mean"],
-                        self.params
-                        .asymptomatic_transmissibility_model["duration_sigma"],
-                    ) + (-1 if vaccinated else 0)
-                ]
+            return [
+                self.params.asymptomatic_transmissibility_model["duration_shift"]
+                + np.random.lognormal(
+                    self.params.asymptomatic_transmissibility_model["duration_mean"],
+                    self.params.asymptomatic_transmissibility_model["duration_sigma"],
+                )
+                + (-1 if vaccinated else 0)
+            ]
 
     def get_symptomatic_transmission_probability(self, incu, R0, params):
-        assert self.params.symptomatic_transmissibility_model["name"] == "piecewise"
-        return self.get_normal_symptomatic_transmission_probability(
-                incu, R0, params)
-
-    def get_asymptomatic_transmission_probability(self, R0, params):
-        assert self.params.asymptomatic_transmissibility_model["name"] != "piecewise"
-        return self.get_piecewise_asymptomatic_transmissibility_probability(
-                R0, params)
-
-    def get_piecewise_symptomatic_transmission_probability(
-            self, incu, R0, params):
         """Transmission probability.
         incu
             incubation period in days (can be float)
@@ -575,21 +546,20 @@ class Model(object):
         """
         duration = incu + params[0]
         #
-        x = np.linspace(0, duration,
-                        int(duration / self.params.simulation_interval))
+        x = np.linspace(0, duration, int(duration / self.params.simulation_interval))
         infect_time = (
-            incu * self.params
-            .symptomatic_transmissibility_model["noninfectivity_proportion"])
+            incu
+            * self.params.symptomatic_transmissibility_model[
+                "noninfectivity_proportion"
+            ]
+        )
         peak_time = (
-            incu *
-            self.params.symptomatic_transmissibility_model["peak_proportion"])
+            incu * self.params.symptomatic_transmissibility_model["peak_proportion"]
+        )
 
         y = np.piecewise(
             x,
-            [
-                x < infect_time,
-                (x >= infect_time) & (x < peak_time), x >= peak_time
-            ],
+            [x < infect_time, (x >= infect_time) & (x < peak_time), x >= peak_time],
             [
                 0,
                 lambda y: (y - infect_time) / (peak_time - infect_time),
@@ -599,8 +569,7 @@ class Model(object):
         y = np.minimum(y / sum(y) * R0, 1)
         return x, y
 
-    def get_piecewise_asymptomatic_transmissibility_probability(
-            self, R0, params):
+    def get_asymptomatic_transmission_probability(self, R0, params):
         """Asymptomatic Transmission probability.
         R0
             reproductive number, which is the expected number of infectees
@@ -617,21 +586,21 @@ class Model(object):
         """
         duration = params[0]
         #
-        x = np.linspace(0, duration,
-                        int(duration / self.params.simulation_interval))
+        x = np.linspace(0, duration, int(duration / self.params.simulation_interval))
         infect_time = (
-            duration * self.params
-            .asymptomatic_transmissibility_model["noninfectivity_proportion"])
+            duration
+            * self.params.asymptomatic_transmissibility_model[
+                "noninfectivity_proportion"
+            ]
+        )
         peak_time = (
-            duration *
-            self.params.asymptomatic_transmissibility_model["peak_proportion"])
+            duration
+            * self.params.asymptomatic_transmissibility_model["peak_proportion"]
+        )
 
         y = np.piecewise(
             x,
-            [
-                x < infect_time,
-                (x >= infect_time) & (x < peak_time), x >= peak_time
-            ],
+            [x < infect_time, (x >= infect_time) & (x < peak_time), x >= peak_time],
             [
                 0,
                 lambda y: (y - infect_time) / (peak_time - infect_time),
@@ -646,23 +615,25 @@ class Model(object):
 
 def print_proportion(data, name):
     series = pd.Series(data)
-    print('\n' + name + ':')
-    print(f'      proportion:  {series.mean():.4f}')
+    print("\n" + name + ":")
+    print(f"      proportion:  {series.mean():.4f}")
 
 
 def print_stats(data, name):
     series = pd.Series(data)
-    print('\n' + name + ':')
-    print(f'            mean:  {series.mean():.4f}')
-    print(f'             std:  {series.std():.4f}')
+    print("\n" + name + ":")
+    print(f"            mean:  {series.mean():.4f}")
+    print(f"             std:  {series.std():.4f}")
     for q in (0.025, 0.05, 0.5, 0.95, 0.975):
-        print(f'  {q*100:4.1f}% quantile:  {series.quantile(q):.4f}')
+        print(f"  {q*100:4.1f}% quantile:  {series.quantile(q):.4f}")
+
 
 def print_cnt(data, name):
     nums = sorted(list(set(data)))
-    print('\n' + name + ':')
+    print("\n" + name + ":")
     for n in nums:
-        print(f'    {n}:\t{data.count(n)/len(data)*100:.1f}%')
+        print(f"    {n}:\t{data.count(n)/len(data)*100:.1f}%")
+
 
 def sample_prop_asymp_carriers(model, N=1000):
     asym_carriers = []
@@ -674,91 +645,94 @@ def sample_prop_asymp_carriers(model, N=1000):
 
 def summarize_model(args):
     from .population import Individual
+
     params = Params(args)
-    print('Parameters (in YAML format)\n')
+    print("Parameters (in YAML format)\n")
     print(params)
     print()
     #
-    print('Properties:')
+    print("Properties:")
     N = 5000
     model = Model(params)
     print_proportion(
-        sample_prop_asymp_carriers(model, N),
-        'Proportion of asymptomatic carriers')
+        sample_prop_asymp_carriers(model, N), "Proportion of asymptomatic carriers"
+    )
 
     #
-    model.params.set('prop_asym_carriers', 'loc', 0)
-    model.params.set('prop_asym_carriers', 'scale', 0)
-    print_stats([model.draw_random_incubation_period() for x in range(N)],
-                'Incubation period')
+    model.params.set("prop_asym_carriers", "loc", 0)
+    model.params.set("prop_asym_carriers", "scale", 0)
+    print_stats(
+        [model.draw_random_incubation_period() for x in range(N)], "Incubation period"
+    )
 
-    print_stats([model.draw_random_r0(symptomatic=True) for x in range(N)],
-                'Production Number (Symptomatic)')
-    print_stats([model.draw_random_r0(symptomatic=False) for x in range(N)],
-                'Production Number (Asymptomatic)')
+    print_stats(
+        [model.draw_random_r0(symptomatic=True) for x in range(N)],
+        "Production Number (Symptomatic)",
+    )
+    print_stats(
+        [model.draw_random_r0(symptomatic=False) for x in range(N)],
+        "Production Number (Asymptomatic)",
+    )
 
-    model.params.set('prop_asym_carriers', 'loc', 0)
-    model.params.set('prop_asym_carriers', 'scale', 0)
+    model.params.set("prop_asym_carriers", "loc", 0)
+    model.params.set("prop_asym_carriers", "scale", 0)
 
     cp = []
     du = []
     cnt = []
-    with open(os.devnull, 'w') as logger:
+    with open(os.devnull, "w") as logger:
         logger.id = 1
         model.draw_prop_asym_carriers()
         for _ in range(N):
-            ind = Individual(
-                id='0', susceptibility=1, model=model, logger=logger)
-            evts = ind.symptomatic_infect(
-                time=0, by=None, handle_symptomatic=['keep'])
+            ind = Individual(id="0", susceptibility=1, model=model, logger=logger)
+            evts = ind.symptomatic_infect(time=0, by=None, handle_symptomatic=["keep"])
             cnt.append(len([x for x in evts if x.action == EventType.INFECTION]))
             cp.append(ind.communicable_period())
             du.append(ind.total_duration())
 
-    model.params.set('prop_asym_carriers', 'loc', 1)
-    model.params.set('prop_asym_carriers', 'scale', 0)
+    model.params.set("prop_asym_carriers", "loc", 1)
+    model.params.set("prop_asym_carriers", "scale", 0)
 
     acp = []
     adu = []
     acnt = []
-    with open(os.devnull, 'w') as logger:
+    with open(os.devnull, "w") as logger:
         logger.id = 1
         model.draw_prop_asym_carriers()
         for _ in range(N):
-            ind = Individual(
-                id='0', susceptibility=1, model=model, logger=logger)
-            evts = ind.asymptomatic_infect(
-                time=0, by=None, handle_symptomatic=['keep'])
+            ind = Individual(id="0", susceptibility=1, model=model, logger=logger)
+            evts = ind.asymptomatic_infect(time=0, by=None, handle_symptomatic=["keep"])
             acnt.append(len([x for x in evts if x.action == EventType.INFECTION]))
             acp.append(ind.communicable_period())
             adu.append(ind.total_duration())
 
-    print_stats(cp, 'Communicable Period (Symptomatic)')
-    print_stats(du, 'Total Duration (Symptomatic)')
-    print_cnt(cnt, 'Number of infections (Symptomatic)')
-    print_stats(acp, 'Communicable Period (Asymptomatic)')
-    print_stats(adu, 'Total Duration (Asymptomatic)')
-    print_cnt(acnt, 'Number of infections (Asymptomatic)')
+    print_stats(cp, "Communicable Period (Symptomatic)")
+    print_stats(du, "Total Duration (Symptomatic)")
+    print_cnt(cnt, "Number of infections (Symptomatic)")
+    print_stats(acp, "Communicable Period (Asymptomatic)")
+    print_stats(adu, "Total Duration (Asymptomatic)")
+    print_cnt(acnt, "Number of infections (Asymptomatic)")
 
-    model.params.set('prop_asym_carriers', 'loc', 0)
-    model.params.set('prop_asym_carriers', 'scale', 0)
+    model.params.set("prop_asym_carriers", "loc", 0)
+    model.params.set("prop_asym_carriers", "scale", 0)
 
     si = []
     gt = []
 
-    with open(os.devnull, 'w') as logger:
+    with open(os.devnull, "w") as logger:
         logger.id = 1
         model.draw_prop_asym_carriers()
         for _ in range(N):
-            ind = Individual(
-                id='0', susceptibility=1, model=model, logger=logger)
-            evts = ind.symptomatic_infect(
-                time=0, by=None, handle_symptomatic=['keep'])
-            for evt in [x for x in evts if x.action.name == 'INFECTION']:
+            ind = Individual(id="0", susceptibility=1, model=model, logger=logger)
+            evts = ind.symptomatic_infect(time=0, by=None, handle_symptomatic=["keep"])
+            for evt in [x for x in evts if x.action.name == "INFECTION"]:
                 gt.append(evt.time)
-                si.append(evt.time + ind.model.draw_random_incubation_period() -
-                          ind.incubation_period)
+                si.append(
+                    evt.time
+                    + ind.model.draw_random_incubation_period()
+                    - ind.incubation_period
+                )
                 break
 
-    print_stats(si, 'Serial Interval')
-    print_stats(gt, 'Generation Time')
+    print_stats(si, "Serial Interval")
+    print_stats(gt, "Generation Time")

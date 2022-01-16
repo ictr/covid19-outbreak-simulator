@@ -169,37 +169,6 @@ def draw_random_incubation_period(default_model):
         scale=default_model.params.incubation_period_sigma) < 0.001
 
 
-def test_get_normal_symptomatic_transmission_probability(default_model):
-
-    incu = default_model.draw_random_incubation_period()
-    R0 = default_model.draw_random_r0(symptomatic=True)
-
-    N = 10000
-    r = []
-    for i in range(N):
-        x_grid, prob = default_model.get_symptomatic_transmission_probability(
-            incu, R0, default_model.draw_infection_params(symptomatic=True))
-        infected = np.random.binomial(1, prob, len(x_grid))
-        r.append(sum(infected))
-    #
-    assert math.fabs(sum(r) / N) - R0 < 0.05
-
-
-def test_get_normal_asymptomatic_transmission_probability(default_model):
-
-    R0 = default_model.draw_random_r0(symptomatic=False)
-
-    N = 10000
-    r = []
-    for i in range(N):
-        x_grid, prob = default_model.get_asymptomatic_transmission_probability(
-            R0, default_model.draw_infection_params(symptomatic=False))
-        infected = np.random.binomial(1, prob, len(x_grid))
-        r.append(sum(infected))
-    #
-    assert math.fabs(sum(r) / N) - R0 < 0.05
-
-
 
 def test_get_piecewise_symptomatic_transmission_probability(default_model):
 
