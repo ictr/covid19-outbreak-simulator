@@ -30,8 +30,8 @@ class testing(BasePlugin):
             will be ignored with specified IDs for testing""",
         )
         parser.add_argument(
-            '--name',
-            help='''Name of the test, will be added to output message if specified.'''
+            "--name",
+            help="""Name of the test, will be added to output message if specified.""",
         )
         parser.add_argument(
             "--proportion",
@@ -44,8 +44,8 @@ class testing(BasePlugin):
             "--target",
             nargs="*",
             help="""Type of individuals to be tested, can be "infected", "uninfected",
-            "quarantined", "recovered", "vaccinated", "unvaccinated", or "all", or
-            '!' of its negation, and any combination of '&' and '|' of these. If
+            "quarantined", "recovered", "nonrecovered", "vaccinated", "unvaccinated", or "all", or
+            '!' of its negation, and any combination of '&' and '|' of these. "nonrecovered"If
             count is not specified, all matching individuals will be tested, otherwise
             count number will be tested, following the order of types. Default to "all".""",
         )
@@ -78,6 +78,12 @@ class testing(BasePlugin):
             default=0,
             help="""Time interval from the time of submission of process to the time of the
                 completion of the process.""",
+        )
+        parser.add_argument(
+            "--no-retest",
+            type=int,
+            default=90,
+            help="""Do not retest for 90 days by default.""",
         )
         parser.add_argument(
             "--handle-positive",
@@ -157,6 +163,8 @@ class testing(BasePlugin):
         n_false_negative = 0
         n_false_negative_in_recovered = 0
         n_tested = 0
+        n_no_retest_infected = 0
+        n_no_retest = 0
         n_false_negative_lod = 0
 
         if args.ignore_vaccinated:
@@ -178,8 +186,19 @@ class testing(BasePlugin):
             nonlocal n_false_negative
             nonlocal n_false_negative_in_recovered
             nonlocal n_false_negative_lod
+            nonlocal n_no_retest_infected
+            nonlocal n_no_retest
 
             affected = isinstance(ind.infected, float)
+
+            if (
+                isinstance(ind.recovered, float)
+                and ind.recovered - time < args.no_retest
+            ):
+                n_no_retest += 1
+                if affected:
+                    n_no_retest_infected += 1
+                return False
 
             n_tested += 1
             if affected:
@@ -255,13 +274,13 @@ class testing(BasePlugin):
             ):
                 continue
 
-            if handle_positive.get('tracing', None) is not None:
+            if handle_positive.get("tracing", None) is not None:
                 events.append(
                     Event(
                         time + args.turnaround_time,
                         EventType.CONTACT_TRACING,
                         target=population[ID],
-                        reason='detected' + (f' by {args.name}' if args.name else ''),
+                        reason="detected" + (f" by {args.name}" if args.name else ""),
                         handle_infection=args.handle_positive,
                         logger=self.logger,
                     )
@@ -273,7 +292,8 @@ class testing(BasePlugin):
                         Event(
                             time + args.turnaround_time,
                             EventType.REMOVAL,
-                            reason="detected" + (f' by {args.name}' if args.name else ''),
+                            reason="detected"
+                            + (f" by {args.name}" if args.name else ""),
                             target=population[ID],
                             logger=self.logger,
                         )
@@ -288,7 +308,8 @@ class testing(BasePlugin):
                             target=population[ID],
                             logger=self.logger,
                             till=time + duration,
-                            reason="detected" + (f' by {args.name}' if args.name else ''),
+                            reason="detected"
+                            + (f" by {args.name}" if args.name else ""),
                         )
                     )
             elif handle_positive["reaction"] == "replace":
@@ -298,7 +319,8 @@ class testing(BasePlugin):
                         Event(
                             time + args.turnaround_time,
                             EventType.REPLACEMENT,
-                            reason="detected" + (f' by {args.name}' if args.name else ''),
+                            reason="detected"
+                            + (f" by {args.name}" if args.name else ""),
                             till=time + duration,
                             keep=["vaccinated"],
                             target=population[ID],
@@ -328,13 +350,15 @@ class testing(BasePlugin):
             n_ignore_uninfected=n_ignore_uninfected,
             n_recovered=n_recovered,
             n_detected=len(IDs),
+            n_no_retest_infected=n_no_retest_infected,
+            n_no_retest=n_no_retest,
             n_false_positive=n_false_positive,
             n_false_negative=n_false_negative,
             n_false_negative_lod=n_false_negative_lod,
             n_false_negative_in_recovered=n_false_negative_in_recovered,
         )
         if args.name:
-            res['test_name'] = args.name
+            res["test_name"] = args.name
         if IDs and args.verbosity > 1:
             res["detected_IDs"] = ",".join(IDs)
 
