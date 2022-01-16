@@ -93,8 +93,7 @@ def parse_args(args=None):
         nargs='+',
         default=['piecewise'],
         help='''Model used for asymptomatic cases with parameters. The default model
-            normal has a duration of 8 days after incubation, and a peak happens at 2/3 of
-            incubation. An alternative piece wise model has a stage of no infectivity, a stage
+            piecewise has a stage of no infectivity, a stage
             for increasing and a stage for decreasing infectivity. The proportion of stages
             and time after incubation period are controlled by a lognormal distribution.
             Parameters to this model could be specified but not recommended.

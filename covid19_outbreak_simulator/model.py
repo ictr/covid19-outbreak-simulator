@@ -545,76 +545,14 @@ class Model(object):
                 ]
 
     def get_symptomatic_transmission_probability(self, incu, R0, params):
-        if self.params.symptomatic_transmissibility_model["name"] == "normal":
-            return self.get_normal_symptomatic_transmission_probability(
-                incu, R0, params)
-        else:
-            return self.get_piecewise_symptomatic_transmission_probability(
+        assert self.params.symptomatic_transmissibility_model["name"] != "normal":
+        return self.get_normal_symptomatic_transmission_probability(
                 incu, R0, params)
 
     def get_asymptomatic_transmission_probability(self, R0, params):
-        if self.params.asymptomatic_transmissibility_model["name"] == "normal":
-            return self.get_normal_asymptomatic_transmissibility_probability(
+        assert self.params.asymptomatic_transmissibility_model["name"] != "normal":
+        return self.get_piecewise_asymptomatic_transmissibility_probability(
                 R0, params)
-        else:
-            return self.get_piecewise_asymptomatic_transmissibility_probability(
-                R0, params)
-
-    def get_normal_symptomatic_transmission_probability(self, incu, R0, params):
-        """Transmission probability.
-        incu
-            incubation period in days (can be float)
-
-        R0
-            reproductive number, which is the expected number of infectees
-
-        interval
-            interval of simulation, default to 1/24, which is by hours
-
-        returns
-
-        x
-            time point
-        y
-            probability of transmission for each time point
-        """
-        # right side with 6 day interval
-        incu = incu * 2 / 3
-        dist_right = norm(incu, self.sd_6)
-
-        # if there is no left-hand-side
-        if incu <= self.params.simulation_interval:
-            x = np.linspace(
-                0,
-                incu + params[0],
-                int((incu + params[0]) / self.params.simulation_interval),
-            )
-            y = dist_right.pdf(x)
-        else:
-            # left hand side with a incu day interval
-            try:
-                sd_left = bisect(
-                    lambda x: norm.cdf(2 * incu, loc=incu, scale=x) - 0.99,
-                    a=0.001,
-                    b=15,
-                    xtol=0.001,
-                )
-            except:
-                # if incubation period is zer0
-                sd_left = 0.0
-            dist_left = norm(incu, sd_left)
-            scale = dist_right.pdf(incu) / dist_left.pdf(incu)
-
-            x = np.linspace(
-                0,
-                incu + params[0],
-                int((incu + params[0]) / self.params.simulation_interval),
-            )
-            idx = int(incu / self.params.simulation_interval)
-            y = np.concatenate(
-                [dist_left.pdf(x[:idx]) * scale,
-                 dist_right.pdf(x[idx:])])
-        return x, y / sum(y) * R0
 
     def get_piecewise_symptomatic_transmission_probability(
             self, incu, R0, params):
@@ -660,27 +598,6 @@ class Model(object):
         )
         y = np.minimum(y / sum(y) * R0, 1)
         return x, y
-
-    def get_normal_asymptomatic_transmissibility_probability(self, R0, params):
-        """Asymptomatic Transmission probability.
-        R0
-            reproductive number, which is the expected number of infectees
-
-        interval
-            interval of simulation, default to 1/24, which is by hours
-
-        returns
-
-        x
-            time point
-        y
-            probability of transmission for each time point
-        """
-        dist = norm(4.8, self.sd_5)
-        x = np.linspace(0, params[0],
-                        int(params[0] / self.params.simulation_interval))
-        y = dist.pdf(x)
-        return x, y / sum(y) * R0
 
     def get_piecewise_asymptomatic_transmissibility_probability(
             self, R0, params):
