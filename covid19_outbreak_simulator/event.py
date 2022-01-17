@@ -342,7 +342,6 @@ class Event(object):
                 self.target.infectivity = (
                     population.model.params.infectivity_of_recovered
                 )
-                self.target.infected = False
             else:
                 self.logger.write(
                     f"{self.time:.2f}\t{EventType.WARNING.name}\t{self.target}\tmsg=RECOVER target no longer exists\n"

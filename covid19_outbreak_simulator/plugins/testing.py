@@ -196,7 +196,8 @@ class testing(BasePlugin):
                 and time - ind.recovered < args.no_retest
             ):
                 n_no_retest += 1
-                if affected:
+                # if this is a new infection
+                if affected and ind.infected > ind.recovered:
                     n_no_retest_infected += 1
                     # print(time, ind.recovered, ind.infected, ind.id)
                 return False
