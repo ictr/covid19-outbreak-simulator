@@ -233,7 +233,7 @@ class testing(BasePlugin):
             IDs = [x for x in args.IDs if select(population[x])]
         else:
             proportions = parse_param_with_multiplier(
-                args.proportion, subpops=population.group_sizes.keys(), default=1.0
+                args.proportion, subpops=population.group_sizes.keys()
             )
 
             IDs = []

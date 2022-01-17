@@ -21,7 +21,7 @@ def as_int(val, msg=''):
         ) from e
 
 
-def parse_param_with_multiplier(args, subpops=None, default=None):
+def parse_param_with_multiplier(args, subpops=None, default=0, default_base=1):
     if args is None:
         if default is not None:
             return {'': default}
@@ -30,9 +30,7 @@ def parse_param_with_multiplier(args, subpops=None, default=None):
 
     base = [x for x in args if not isinstance(x, str) or '=' not in x]
     if not base:
-        if default is None:
-            raise ValueError(f'No base value for multiplier: {" ".join(args)}')
-        base = default
+        base = default_base
     else:
         try:
             base = [float(x) for x in base]
@@ -42,9 +40,9 @@ def parse_param_with_multiplier(args, subpops=None, default=None):
             raise ValueError(f'Invalid parameter {" ".join(base)}') from e
 
     if not subpops:
-        return {'': base}
+        return {'': default}
 
-    res = {x: base for x in subpops}
+    res = {x: default for x in subpops}
     for arg in [x for x in args if isinstance(x, str) and '=' in x]:
         sp, val = arg.split('=', 1)
         if sp.startswith('!'):

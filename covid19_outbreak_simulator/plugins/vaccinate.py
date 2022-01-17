@@ -66,8 +66,7 @@ class vaccinate(BasePlugin):
         else:
             proportions = parse_param_with_multiplier(
                 args.proportion,
-                subpops=population.group_sizes.keys(),
-                default=1.0)
+                subpops=population.group_sizes.keys())
             IDs = []
             for name, sz in population.group_sizes.items():
                 prop = proportions.get(name if name in proportions else '', 1.0)

@@ -55,7 +55,7 @@ class community_infection(BasePlugin):
 
         if len(args.probability) == 1:
             probability = parse_param_with_multiplier(
-                args.probability[0], subpops=population.group_sizes.keys(), default=1.0)
+                args.probability[0], subpops=population.group_sizes.keys())
         else:
             if not args.at:
                 raise ValueError('Parameter --at is expected when multiple probability values are specified.')
@@ -65,7 +65,7 @@ class community_infection(BasePlugin):
             if len(args.probability) < idx + 1:
                 raise ValueError(f'No value of --probability corresponding to time {time}')
             probability = parse_param_with_multiplier(
-                args.probability[idx], subpops=population.group_sizes.keys(), default=1.0)
+                args.probability[idx], subpops=population.group_sizes.keys())
 
         is_targeted = parse_target_param(args.target)
 

@@ -61,11 +61,11 @@ class quarantine(BasePlugin):
         else:
             if args.count:
                 counts = parse_param_with_multiplier(
-                    args.count, subpops=population.group_sizes.keys(), default=1
+                    args.count, subpops=population.group_sizes.keys()
                 )
             else:
                 proportions = parse_param_with_multiplier(
-                    args.proportion, subpops=population.group_sizes.keys(), default=1.0
+                    args.proportion, subpops=population.group_sizes.keys()
                 )
                 counts = {}
                 for name, sz in population.group_sizes.items():
