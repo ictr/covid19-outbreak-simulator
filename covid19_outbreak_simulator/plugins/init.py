@@ -115,15 +115,15 @@ class init(BasePlugin):
                 n_isp += sp_isp
                 for ind_id, sts in zip(spIDs[name], pop_status):
                     if sts == 2:
-                        pop[ind_id].infected = -10.0
-                        pop[ind_id].recovered = -2.0
+                        pop[ind_id].infected = time - 10.0
+                        pop[ind_id].recovered = time - 2.0
                         pop[ind_id].immunity = pop.model.params.immunity_of_recovered
                         pop[ind_id].infectivity = pop.model.params.infectivity_of_recovered
                     if sts == 1:
                         infected.append(ind_id)
                         events.append(
                             Event(
-                                0.0,
+                                time,
                                 EventType.INFECTION,
                                 target=pop[ind_id],
                                 logger=self.logger,
@@ -151,7 +151,7 @@ class init(BasePlugin):
                         infected.append(ind_id)
                         events.append(
                             Event(
-                                0.0,
+                                time,
                                 EventType.INFECTION,
                                 target=pop[ind_id],
                                 logger=self.logger,
@@ -164,8 +164,8 @@ class init(BasePlugin):
                         )
                     elif rng < pop_ir + pop_isp:
                         n_isp += 1
-                        pop[ind_id].infected = -10.0
-                        pop[ind_id].recovered = -2.0
+                        pop[ind_id].infected = time - 10.0
+                        pop[ind_id].recovered = time - 2.0
         infected_list = (
             f',infected={",".join(infected)}' if infected and args.verbosity > 1 else ""
         )
