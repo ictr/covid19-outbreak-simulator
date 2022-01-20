@@ -42,7 +42,7 @@ def parse_param_with_multiplier(args, subpops=None, default=0, default_base=1):
     if not subpops:
         return {'': default}
 
-    res = {x: default for x in subpops}
+    res = {x: base for x in subpops}
     for arg in [x for x in args if isinstance(x, str) and '=' in x]:
         sp, val = arg.split('=', 1)
         if sp.startswith('!'):
