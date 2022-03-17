@@ -160,7 +160,7 @@ class Event(object):
 
                 population.individuals.pop(restore_to.id)
                 population.individuals[self.target.id] = self.target
-                delattr(self.target, "replaced_by")
+                self.target.reintegrate(time=self.time, **self.kwargs)
                 self.logger.write(
                     f"{self.time:.2f}\t{EventType.REINTEGRATION.name}\t{self.target}\treason=replacement,with={restore_to}\n"
                 )

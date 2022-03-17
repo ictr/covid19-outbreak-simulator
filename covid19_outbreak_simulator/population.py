@@ -51,6 +51,8 @@ class Individual(object):
         self.infectivity = infectivity
 
     def reintegrate(self, time):
+        if hasattr(self, "replaced_by"):
+            delattr(self, "replaced_by")
         self.quarantined = False
         self.reintegrated = float(time)
         return []
