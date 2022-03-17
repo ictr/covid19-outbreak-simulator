@@ -181,7 +181,7 @@ class Event(object):
                 self.logger.write(
                     f"{self.time:.2f}\t{EventType.REINTEGRATION.name}\t{self.target}\treason=quarantine\n"
                 )
-                return self.target.reintegrate(**self.kwargs)
+                return self.target.reintegrate(time=self.time, **self.kwargs)
 
         elif self.action == EventType.INFECTION_AVOIDED:
             self.logger.write(

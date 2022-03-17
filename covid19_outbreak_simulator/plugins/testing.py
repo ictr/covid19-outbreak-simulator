@@ -192,8 +192,8 @@ class testing(BasePlugin):
             affected = isinstance(ind.infected, float)
 
             if (
-                isinstance(ind.recovered, float)
-                and time - ind.recovered < args.no_retest
+                hasattr(ind, 'reintegrated') and
+                time - ind.reintegrated < args.no_retest
             ):
                 n_no_retest += 1
                 # if this is a new infection

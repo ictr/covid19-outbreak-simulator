@@ -50,8 +50,9 @@ class Individual(object):
         self.immunity = immunity
         self.infectivity = infectivity
 
-    def reintegrate(self):
+    def reintegrate(self, time):
         self.quarantined = False
+        self.reintegrated = float(time)
         return []
 
     def symptomatic_infect(self, time, **kwargs):
