@@ -685,7 +685,7 @@ class Population(object):
         self.group_sizes[subpop] += len(items)
         self.max_ids[subpop] += len(items)
 
-    def replace(self, ind, keep=[], **kwargs):
+    def replace(self, ind, time, keep=[], force=[], **kwargs):
         assert isinstance(ind, Individual)
 
         grp = ind.group
@@ -713,6 +713,14 @@ class Population(object):
         # we keep the susceptibility parameter...
         for attr in keep:
             setattr(new_ind, attr, getattr(ind, attr))
+
+        for item in force:
+            if item == 'vaccinated':
+                new_ind.vaccinated = time
+            if item == 'unaffected':
+                new_ind.infected = False
+                new_ind.show_symptom = False
+                new_ind.recovered = False
 
         # remove old one, add new one
         if "till" in kwargs and kwargs["till"] is not None:

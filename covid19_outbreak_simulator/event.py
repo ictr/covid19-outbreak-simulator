@@ -296,7 +296,7 @@ class Event(object):
                                     EventType.REPLACEMENT,
                                     reason=f"contact tracing (by {self.target})",
                                     till=self.time + ct_q - 0.1,
-                                    keep=["vaccinated"],
+                                    force=["unaffected", "vaccinated"],
                                     target=ind,
                                     logger=self.logger,
                                 )
@@ -343,7 +343,7 @@ class Event(object):
                             EventType.REPLACEMENT,
                             reason=f"contact tracing (by {self.target})",
                             till=self.time + duration,
-                            keep=["vaccinated"],
+                            force=["unaffected", "vaccinated"],
                             target=ind,
                             logger=self.logger,
                         )
@@ -396,7 +396,7 @@ class Event(object):
                 )
                 return []
 
-            by_ind = population.replace(self.target, **self.kwargs)
+            by_ind = population.replace(self.target, time=self.time, **self.kwargs)
 
             self.logger.write(
                 f'{self.time:.2f}\t{EventType.REPLACEMENT.name}\t{self.target}\treason={self.kwargs["reason"]},infected={"False" if self.target.infected is False else "True"},by={by_ind}\n'
