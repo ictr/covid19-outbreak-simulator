@@ -108,12 +108,14 @@ class testing(BasePlugin):
             "--handle-positive-vaccinated",
             nargs="*",
             default=["remove"],
-            help='''The same as --handle-positive, but only applicable to vaccinated''')
+            help="""The same as --handle-positive, but only applicable to vaccinated""",
+        )
         parser.add_argument(
             "--handle-positive-unvaccinated",
             nargs="*",
             default=["remove"],
-            help='''The same as --handle-positive, but only applicable to vaccinated''')
+            help="""The same as --handle-positive, but only applicable to vaccinated""",
+        )
         return parser
 
     def summarize_model(self, simu_args, args):
@@ -202,8 +204,8 @@ class testing(BasePlugin):
             affected = isinstance(ind.infected, float)
 
             if (
-                hasattr(ind, 'reintegrated') and
-                time - ind.reintegrated < args.no_retest
+                hasattr(ind, "reintegrated")
+                and time - ind.reintegrated < args.no_retest
             ):
                 n_no_retest += 1
                 # if this is a new infection
@@ -275,10 +277,11 @@ class testing(BasePlugin):
                 raise ValueError(f"Invalid ID to quanrantine {ID}")
 
             handle_positive = parse_handle_symptomatic_options(
-                args.handle_positive, args.handle_positive_vaccinated,
+                args.handle_positive,
+                args.handle_positive_vaccinated,
                 args.handle_positive_unvaccinated,
                 population[ID].group,
-                isinstance(population[ID].vaccinated, float)
+                isinstance(population[ID].vaccinated, float),
             )
             proportion = handle_positive.get("proportion", 1)
             infected_only = handle_positive.get("infected", None)
@@ -289,14 +292,19 @@ class testing(BasePlugin):
             ):
                 continue
 
-            if handle_positive.get("tracing", None) is not None:
+            tracing = handle_positive.get("tracing", None)
+            if tracing is not None and tracing > 0.0:
                 events.append(
                     Event(
                         time + args.turnaround_time,
                         EventType.CONTACT_TRACING,
                         target=population[ID],
                         reason="detected" + (f" by {args.name}" if args.name else ""),
-                        handle_infection=args.handle_positive,
+                        handle_traced=[
+                            args.handle_positive,
+                            args.handle_positive_vaccinated,
+                            args.handle_positive_unvaccinated,
+                        ],
                         logger=self.logger,
                     )
                 )

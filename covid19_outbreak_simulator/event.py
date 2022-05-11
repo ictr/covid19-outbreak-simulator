@@ -196,20 +196,27 @@ class Event(object):
                     self.kwargs.get("handle_symptomatic", None),
                     self.kwargs.get("handle_symptomatic_vaccinated", None),
                     self.kwargs.get("handle_symptomatic_unvaccinated", None),
-                    self.target.group, isinstance(self.target.vaccinated, float)
+                    self.target.group,
+                    isinstance(self.target.vaccinated, float),
                 )
-                tracing = handle_symptomatic.get('tracing', None)
+                tracing = handle_symptomatic.get("tracing", None)
                 self.logger.write(
                     f"{self.time:.2f}\t{EventType.SHOW_SYMPTOM.name}\t{self.target}\thandle_symptomatic={self.kwargs.get('handle_symptomatic', None)}\n"
                 )
-                if tracing is not None:
+                if tracing is not None and tracing > 0.0:
                     return [
                         Event(
                             self.time,
                             EventType.CONTACT_TRACING,
                             target=self.target,
-                            reason='symptoms',
-                            handle_infection=self.kwargs.get('handle_symptomatic', None),
+                            reason="symptoms",
+                            handle_traved=[
+                                self.kwargs.get("handle_symptomatic", None),
+                                self.kwargs.get("handle_symptomatic_vaccinated", None),
+                                self.kwargs.get(
+                                    "handle_symptomatic_unvaccinated", None
+                                ),
+                            ],
                             logger=self.logger,
                         )
                     ]
@@ -221,14 +228,17 @@ class Event(object):
 
         elif self.action == EventType.CONTACT_TRACING:
             handle_infection = parse_handle_symptomatic_options(
-                self.kwargs["handle_infection"], self.target.group)
-            succ_rate = handle_infection.get('tracing', None)
+                *self.kwargs["handle_traced"],
+                self.target.group,
+                isinstance(self.target.vaccinated, float),
+            )
+            succ_rate = handle_infection.get("tracing", None)
 
             IDs = []
             missed_IDs = []
             events = []
             for ind in population.values():
-                if getattr(ind, 'infected_by', None) == self.target:
+                if getattr(ind, "infected_by", None) == self.target:
                     if random.random() > succ_rate:
                         missed_IDs.append(ind.id)
                         continue
