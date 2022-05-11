@@ -53,6 +53,8 @@ class Individual(object):
     def reintegrate(self, time):
         if hasattr(self, "replaced_by"):
             delattr(self, "replaced_by")
+        if hasattr(self, "monitored"):
+            delattr(self, "monitored")
         self.quarantined = False
         self.reintegrated = float(time)
         return []

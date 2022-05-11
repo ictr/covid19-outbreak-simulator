@@ -177,6 +177,11 @@ class Event(object):
                     f"{self.time:.2f}\t{EventType.WARNING.name}\t{self.target}\tmsg=REINTEGRATION target is not in quarantine\n"
                 )
                 return []
+            elif hasattr(self.target, 'monitored'):
+                self.logger.write(
+                    f"{self.time:.2f}\t{EventType.REINTEGRATION.name}\t{self.target}\treason=monitored\n"
+                )
+                return self.target.reintegrate(time=self.time, **self.kwargs)
             else:
                 self.logger.write(
                     f"{self.time:.2f}\t{EventType.REINTEGRATION.name}\t{self.target}\treason=quarantine\n"
@@ -227,12 +232,12 @@ class Event(object):
             return []
 
         elif self.action == EventType.CONTACT_TRACING:
-            handle_infection = parse_handle_symptomatic_options(
+            handle_traced_infection = parse_handle_symptomatic_options(
                 *self.kwargs["handle_traced"],
                 self.target.group,
                 isinstance(self.target.vaccinated, float),
             )
-            succ_rate = handle_infection.get("tracing", None)
+            succ_rate = handle_traced_infection.get("tracing", None)
 
             IDs = []
             missed_IDs = []
@@ -243,7 +248,18 @@ class Event(object):
                         missed_IDs.append(ind.id)
                         continue
                     IDs.append(ind.id)
-                    if handle_infection["reaction"] == "remove":
+                    if handle_traced_infection.get("monitor", None) is not None:
+                        #
+                        ind.monitored = self.time
+                        events.append(
+                            Event(
+                                self.time + handle_traced_infection.get("monitor"),
+                                EventType.REINTEGRATION,
+                                target=ind,
+                                logger=self.logger,
+                            )
+                        )
+                    elif handle_traced_infection["reaction"] == "remove":
                         events.append(
                             Event(
                                 self.time,
@@ -253,8 +269,8 @@ class Event(object):
                                 logger=self.logger,
                             )
                         )
-                    elif handle_infection["reaction"] == "quarantine":
-                        duration = handle_infection.get("duration", 14)
+                    elif handle_traced_infection["reaction"] == "quarantine":
+                        duration = handle_traced_infection.get("duration", 14)
                         events.append(
                             Event(
                                 self.time,
@@ -265,8 +281,8 @@ class Event(object):
                                 reason=f"contact tracing ({ind.infected} by {self.target})",
                             )
                         )
-                    elif handle_infection["reaction"] == "replace":
-                        duration = handle_infection.get("duration", 14)
+                    elif handle_traced_infection["reaction"] == "replace":
+                        duration = handle_traced_infection.get("duration", 14)
                         events.append(
                             Event(
                                 self.time,
@@ -278,7 +294,7 @@ class Event(object):
                                 logger=self.logger,
                             )
                         )
-                    elif handle_infection["reaction"] == "reintegrate":
+                    elif handle_traced_infection["reaction"] == "reintegrate":
                         events.append(
                             Event(
                                 self.time,
@@ -287,12 +303,12 @@ class Event(object):
                                 logger=self.logger,
                             )
                         )
-                    elif handle_infection["reaction"] != "keep":
+                    elif handle_traced_infection["reaction"] != "keep":
                         raise ValueError(
-                            f"Unsupported action for patients who test positive: {handle_infection}"
+                            f"Unsupported action for patients who test positive: {handle_traced_infection}"
                         )
             self.logger.write(
-                f"{self.time:.2f}\t{EventType.CONTACT_TRACING.name}\t{self.target}\tsucc_rate={succ_rate},reason={self.kwargs['reason']},n_traced={len(IDs)},n_missed={len(missed_IDs)},handle_infection={handle_infection}\n"
+                f"{self.time:.2f}\t{EventType.CONTACT_TRACING.name}\t{self.target}\tsucc_rate={succ_rate},reason={self.kwargs['reason']},n_traced={len(IDs)},n_missed={len(missed_IDs)},handle_traced_infection={handle_traced_infection}\n"
             )
             return events
         elif self.action == EventType.REMOVAL:

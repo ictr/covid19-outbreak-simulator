@@ -104,6 +104,8 @@ def parse_target_param(status):
         return lambda ind: isinstance(ind.vaccinated, float)
     elif status == 'unvaccinated':
         return lambda ind: not isinstance(ind.vaccinated, float)
+    elif status == 'monitored':
+        return lambda ind: hasattr(ind, 'monitored') and isinstance(ind.monitored, float)
     elif status == 'all':
         return lambda ind: True
     else:
@@ -166,11 +168,11 @@ def parse_handle_symptomatic_options(handle_symptomatic_arg,
                 if '=' not in option:
                     raise ValueError(f'Wrong option {hs_args}')
                 k, v = option.split('=', 1)
-                if k not in ('proportion', 'duration', 'infected', 'tracing'):
+                if k not in ('proportion', 'duration', 'infected', 'tracing', 'monitor'):
                     raise ValueError(
                         f'Unrecognized option {k} in option {hs_args}')
 
-                if k in ('proportion', 'duration', 'tracing'):
+                if k in ('proportion', 'duration', 'tracing', 'monitor'):
                     try:
                         handle_symptomatic[k] = float(v)
                     except Exception as e:

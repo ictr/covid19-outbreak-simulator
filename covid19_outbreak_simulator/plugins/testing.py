@@ -44,8 +44,8 @@ class testing(BasePlugin):
             "--target",
             nargs="*",
             help="""Type of individuals to be tested, can be "infected", "uninfected",
-            "quarantined", "recovered", "nonrecovered", "vaccinated", "unvaccinated", or "all", or
-            '!' of its negation, and any combination of '&' and '|' of these. "nonrecovered"If
+            "quarantined", "recovered", "nonrecovered", "vaccinated", "unvaccinated", "monitored",
+            or "all", or '!' of its negation, and any combination of '&' and '|' of these. "nonrecovered"If
             count is not specified, all matching individuals will be tested, otherwise
             count number will be tested, following the order of types. Default to "all".""",
         )
