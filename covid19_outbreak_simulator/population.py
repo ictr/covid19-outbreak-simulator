@@ -37,6 +37,15 @@ class Individual(object):
     def __str__(self):
         return self.id
 
+    def monitor(self, **kwargs):
+        if "till" in kwargs:
+            till = kwargs["till"]
+        else:
+            raise ValueError("No till parameter is specified for monitor event.")
+        self.monitored = till
+        return [Event(till, EventType.REINTEGRATION, target=self, logger=self.logger)]
+
+
     def quarantine(self, **kwargs):
         if "till" in kwargs:
             till = kwargs["till"]
@@ -125,6 +134,8 @@ class Individual(object):
                     EventType.SHOW_SYMPTOM,
                     target=self,
                     handle_symptomatic=kwargs.get("handle_symptomatic", None),
+                    handle_symptomatic_vaccinated=kwargs.get("handle_symptomatic_vaccinated", None),
+                    handle_symptomatic_unvaccinated=kwargs.get("handle_symptomatic_unvaccinated", None),
                     logger=self.logger,
                 )
             )
@@ -254,6 +265,8 @@ class Individual(object):
                         logger=self.logger,
                         by=self,
                         handle_symptomatic=kwargs.get("handle_symptomatic", None),
+                        handle_symptomatic_vaccinated=kwargs.get("handle_symptomatic_vaccinated", None),
+                        handle_symptomatic_unvaccinated=kwargs.get("handle_symptomatic_unvaccinated", None),
                         handle_infection=kwargs.get("handle_infection", None),
                     )
                 )
@@ -373,6 +386,8 @@ class Individual(object):
                         logger=self.logger,
                         by=self,
                         handle_symptomatic=kwargs.get("handle_symptomatic", None),
+                        handle_symptomatic_vaccinated=kwargs.get("handle_symptomatic_vaccinated", None),
+                        handle_symptomatic_unvaccinated=kwargs.get("handle_symptomatic_unvaccinated", None),
                         handle_infection=kwargs.get("handle_infection", None),
                     )
                 )

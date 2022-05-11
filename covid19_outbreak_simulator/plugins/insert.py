@@ -89,6 +89,8 @@ class insert(BasePlugin):
                         logger=self.logger,
                         by=None,
                         handle_symptomatic=self.simulator.simu_args.handle_symptomatic,
+                        handle_symptomatic_vaccinated=self.simulator.simu_args.handle_symptomatic_vaccinated,
+                        handle_symptomatic_unvaccinated=self.simulator.simu_args.handle_symptomatic_vaccinated,
                         handle_infection=self.simulator.simu_args.handle_infection,
                         leadtime=args.leadtime,
                     )
