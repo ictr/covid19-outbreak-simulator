@@ -104,7 +104,10 @@ class Individual(object):
         self.infected = float(time - lead_time)
         self.infected_by = by_ind
         handle_symptomatic = parse_handle_symptomatic_options(
-            kwargs.get("handle_symptomatic", None), self.group
+            kwargs.get("handle_symptomatic", None),
+            kwargs.get("handle_symptomatic_vaccinated", None),
+            kwargs.get("handle_symptomatic_unvaccinated", None),
+            self.group, isinstance(self.vaccinated, float)
         )
 
         # show symptom

@@ -139,7 +139,14 @@ def select_individuals(population, IDs, targets, max_count=None):
     return selected
 
 
-def parse_handle_symptomatic_options(handle_symptomatic_arg, group):
+def parse_handle_symptomatic_options(handle_symptomatic_arg,
+     handle_symptomatic_arg_vaccinaed, handle_symptomatic_arg_unvaccinated,
+     group, vaccinated):
+    if vaccinated is True and handle_symptomatic_arg_vaccinaed is not None:
+        handle_symptomatic_arg = handle_symptomatic_arg_vaccinaed
+    if vaccinated is False and handle_symptomatic_arg_unvaccinated is not None:
+        handle_symptomatic_arg = handle_symptomatic_arg_unvaccinated
+
     hs_args = None
     for hs in handle_symptomatic_arg or []:
         # multiplier

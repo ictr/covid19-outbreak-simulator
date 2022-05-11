@@ -147,6 +147,16 @@ def parse_args(args=None):
             as multipliers (e.g. A=remove B=quarantine). Default to  "remove", meaning all symptomatic cases will be
             removed from population.''')
     parser.add_argument(
+        '--handle-symptomatic-vaccinated',
+        nargs='*',
+        help='''The same as --handle-symptomatic but only applicable for vaccinated individuals.'''
+    )
+    parser.add_argument(
+        '--handle-symptomatic-unvaccinated',
+        nargs='*',
+        help='''The same as --handle-symptomatic but only applicable for unvaccinated individuals.'''
+    )
+    parser.add_argument(
         '--handle-infection',
         help='''How infections are handled. Currently it only accepts ignore=t/7<2 which basically means infection during the
             first two days are ignored (weekend).'''

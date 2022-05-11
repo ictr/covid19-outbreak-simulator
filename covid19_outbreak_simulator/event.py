@@ -193,7 +193,10 @@ class Event(object):
             if self.target.id in population:
                 self.target.show_symptom = self.time
                 handle_symptomatic = parse_handle_symptomatic_options(
-                    self.kwargs.get("handle_symptomatic", None), self.target.group
+                    self.kwargs.get("handle_symptomatic", None),
+                    self.kwargs.get("handle_symptomatic_vaccinated", None),
+                    self.kwargs.get("handle_symptomatic_unvaccinated", None),
+                    self.target.group, isinstance(self.target.vaccinated, float)
                 )
                 tracing = handle_symptomatic.get('tracing', None)
                 self.logger.write(

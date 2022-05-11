@@ -104,6 +104,16 @@ class testing(BasePlugin):
                 will be removed from population. Multipliers are allows to specify
                 different reactions for individuals from different subpopulations.""",
         )
+        parser.add_argument(
+            "--handle-positive-vaccinated",
+            nargs="*",
+            default=["remove"],
+            help='''The same as --handle-positive, but only applicable to vaccinated''')
+        parser.add_argument(
+            "--handle-positive-unvaccinated",
+            nargs="*",
+            default=["remove"],
+            help='''The same as --handle-positive, but only applicable to vaccinated''')
         return parser
 
     def summarize_model(self, simu_args, args):
@@ -265,7 +275,10 @@ class testing(BasePlugin):
                 raise ValueError(f"Invalid ID to quanrantine {ID}")
 
             handle_positive = parse_handle_symptomatic_options(
-                args.handle_positive, population[ID].group
+                args.handle_positive, args.handle_positive_vaccinated,
+                args.handle_positive_unvaccinated,
+                population[ID].group,
+                isinstance(population[ID].vaccinated, float)
             )
             proportion = handle_positive.get("proportion", 1)
             infected_only = handle_positive.get("infected", None)
