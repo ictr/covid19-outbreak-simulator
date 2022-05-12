@@ -134,6 +134,7 @@ def parse_args(args=None):
     parser.add_argument(
         '--handle-symptomatic',
         nargs='*',
+        action='append',
         help='''How to handle individuals who show symptom, which should be "keep" (stay in
             population), "remove" (remove from population), "replace" (reset its infection status
             so that the individual is susceptible again), "quarantine" (put aside until
@@ -145,17 +146,11 @@ def parse_args(args=None):
             with XX being the success rate for contact tracing, If multiple
             subpopulation will have different ways to handle symptomatic cases, they should be specified
             as multipliers (e.g. A=remove B=quarantine). Default to  "remove", meaning all symptomatic cases will be
-            removed from population.''')
-    parser.add_argument(
-        '--handle-symptomatic-vaccinated',
-        nargs='*',
-        help='''The same as --handle-symptomatic but only applicable for vaccinated individuals.'''
-    )
-    parser.add_argument(
-        '--handle-symptomatic-unvaccinated',
-        nargs='*',
-        help='''The same as --handle-symptomatic but only applicable for unvaccinated individuals.'''
-    )
+            removed from population.
+
+            If two parameters are provided (e.g. --handle-symptomatic remove --handle-symptomatic replace),
+            they will be applied to vaccinated and unvaccinated groups respectively.
+            ''')
     parser.add_argument(
         '--handle-infection',
         help='''How infections are handled. Currently it only accepts ignore=t/7<2 which basically means infection during the

@@ -100,8 +100,6 @@ class Simulator(object):
                     logger=self.logger,
                     by=None,
                     handle_symptomatic=self.simu_args.handle_symptomatic,
-                    handle_symptomatic_vaccinated=self.simu_args.handle_symptomatic_vaccinated,
-                    handle_symptomatic_unvaccinated=self.simu_args.handle_symptomatic_unvaccinated,
                     handle_infection=self.simu_args.handle_infection,
                     leadtime=self.simu_args.leadtime))
 

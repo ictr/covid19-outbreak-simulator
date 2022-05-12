@@ -142,15 +142,25 @@ def select_individuals(population, IDs, targets, max_count=None):
 
 
 def parse_handle_symptomatic_options(handle_symptomatic_arg,
-     handle_symptomatic_arg_vaccinaed, handle_symptomatic_arg_unvaccinated,
      group, vaccinated):
-    if vaccinated is True and handle_symptomatic_arg_vaccinaed is not None:
-        handle_symptomatic_arg = handle_symptomatic_arg_vaccinaed
-    if vaccinated is False and handle_symptomatic_arg_unvaccinated is not None:
-        handle_symptomatic_arg = handle_symptomatic_arg_unvaccinated
+    if isinstance(handle_symptomatic_arg, list):
+        assert isinstance(handle_symptomatic_arg[0], list)
+        if len(handle_symptomatic_arg) == 1:
+            handle_symptomatic_arg = handle_symptomatic_arg[0]
+        elif len(handle_symptomatic_arg) == 2:
+            if vaccinated is True:
+                handle_symptomatic_arg = handle_symptomatic_arg[0]
+            else:
+                handle_symptomatic_arg = handle_symptomatic_arg[1]
+        else:
+            raise ValueError(f'Unallowed parameter {handle_symptomatic_arg}')
+    elif handle_symptomatic_arg is None:
+        handle_symptomatic_arg = []
+    else:
+        raise ValueError(f'Unallowed parameter {handle_symptomatic_arg}')
 
     hs_args = None
-    for hs in handle_symptomatic_arg or []:
+    for hs in handle_symptomatic_arg:
         # multiplier
         if '=' in hs.split('?', 1)[0]:
             if hs.startswith(group + '='):

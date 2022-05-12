@@ -116,8 +116,6 @@ class Individual(object):
         self.infected_by = by_ind
         handle_symptomatic = parse_handle_symptomatic_options(
             kwargs.get("handle_symptomatic", None),
-            kwargs.get("handle_symptomatic_vaccinated", None),
-            kwargs.get("handle_symptomatic_unvaccinated", None),
             self.group, isinstance(self.vaccinated, float)
         )
 
@@ -134,8 +132,6 @@ class Individual(object):
                     EventType.SHOW_SYMPTOM,
                     target=self,
                     handle_symptomatic=kwargs.get("handle_symptomatic", None),
-                    handle_symptomatic_vaccinated=kwargs.get("handle_symptomatic_vaccinated", None),
-                    handle_symptomatic_unvaccinated=kwargs.get("handle_symptomatic_unvaccinated", None),
                     logger=self.logger,
                 )
             )
@@ -265,8 +261,6 @@ class Individual(object):
                         logger=self.logger,
                         by=self,
                         handle_symptomatic=kwargs.get("handle_symptomatic", None),
-                        handle_symptomatic_vaccinated=kwargs.get("handle_symptomatic_vaccinated", None),
-                        handle_symptomatic_unvaccinated=kwargs.get("handle_symptomatic_unvaccinated", None),
                         handle_infection=kwargs.get("handle_infection", None),
                     )
                 )
@@ -386,8 +380,6 @@ class Individual(object):
                         logger=self.logger,
                         by=self,
                         handle_symptomatic=kwargs.get("handle_symptomatic", None),
-                        handle_symptomatic_vaccinated=kwargs.get("handle_symptomatic_vaccinated", None),
-                        handle_symptomatic_unvaccinated=kwargs.get("handle_symptomatic_unvaccinated", None),
                         handle_infection=kwargs.get("handle_infection", None),
                     )
                 )

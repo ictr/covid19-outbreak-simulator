@@ -216,8 +216,6 @@ class Event(object):
                 self.target.show_symptom = self.time
                 handle_symptomatic = parse_handle_symptomatic_options(
                     self.kwargs.get("handle_symptomatic", None),
-                    self.kwargs.get("handle_symptomatic_vaccinated", None),
-                    self.kwargs.get("handle_symptomatic_unvaccinated", None),
                     self.target.group,
                     isinstance(self.target.vaccinated, float),
                 )
@@ -232,13 +230,7 @@ class Event(object):
                             EventType.CONTACT_TRACING,
                             target=self.target,
                             reason="symptoms",
-                            handle_traced=[
-                                self.kwargs.get("handle_symptomatic", None),
-                                self.kwargs.get("handle_symptomatic_vaccinated", None),
-                                self.kwargs.get(
-                                    "handle_symptomatic_unvaccinated", None
-                                ),
-                            ],
+                            handle_traced=self.kwargs.get("handle_symptomatic", None),
                             logger=self.logger,
                         )
                     ]
@@ -250,7 +242,7 @@ class Event(object):
 
         elif self.action == EventType.CONTACT_TRACING:
             handle_traced_infection = parse_handle_symptomatic_options(
-                *self.kwargs["handle_traced"],
+                self.kwargs["handle_traced"],
                 self.target.group,
                 isinstance(self.target.vaccinated, float),
             )
@@ -266,7 +258,7 @@ class Event(object):
                     continue
                 # vaccinated and unvaccinated are handled differently
                 handle_traced_infection = parse_handle_symptomatic_options(
-                    *self.kwargs["handle_traced"],
+                    self.kwargs["handle_traced"],
                     self.target.group,
                     isinstance(ind.vaccinated, float),
                 )

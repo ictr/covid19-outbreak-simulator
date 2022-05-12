@@ -131,8 +131,6 @@ class init(BasePlugin):
                                 by=None,
                                 leadtime=args.leadtime,
                                 handle_symptomatic=self.simulator.simu_args.handle_symptomatic,
-                                handle_symptomatic_vaccinated=self.simulator.simu_args.handle_symptomatic_vaccinated,
-                                handle_symptomatic_unvaccinated=self.simulator.simu_args.handle_symptomatic_unvaccinated,
                                 handle_infection=self.simulator.simu_args.handle_infection,
                             )
                         )
@@ -161,8 +159,6 @@ class init(BasePlugin):
                                 by=None,
                                 leadtime=args.leadtime,
                                 handle_symptomatic=self.simulator.simu_args.handle_symptomatic,
-                                handle_symptomatic_vaccinated=self.simulator.simu_args.handle_symptomatic_vaccinated,
-                                handle_symptomatic_unvaccinated=self.simulator.simu_args.handle_symptomatic_vaccinated,
                                 handle_infection=self.simulator.simu_args.handle_infection,
                             )
                         )

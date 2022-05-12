@@ -15,6 +15,7 @@ from covid19_outbreak_simulator.utils import (
 
 
 class testing(BasePlugin):
+
     def __init__(self, *args, **kwargs):
         # this will set self.simualtor, self.logger
         super().__init__(*args, **kwargs)
@@ -88,7 +89,7 @@ class testing(BasePlugin):
         parser.add_argument(
             "--handle-positive",
             nargs="*",
-            default=["remove"],
+            action='append',
             help="""How to handle individuals who are tested positive, which should be
                 "keep" (do not do anything), "replace" (remove from population), "recover"
                 (instant recover, to model constant workforce size),  "quarantine"
@@ -102,19 +103,11 @@ class testing(BasePlugin):
                 infected carriers. Individuals that are already in quarantine will continue to be
                 quarantined. Default to "remove", meaning all symptomatic cases
                 will be removed from population. Multipliers are allows to specify
-                different reactions for individuals from different subpopulations.""",
-        )
-        parser.add_argument(
-            "--handle-positive-vaccinated",
-            nargs="*",
-            default=["remove"],
-            help="""The same as --handle-positive, but only applicable to vaccinated""",
-        )
-        parser.add_argument(
-            "--handle-positive-unvaccinated",
-            nargs="*",
-            default=["remove"],
-            help="""The same as --handle-positive, but only applicable to vaccinated""",
+                different reactions for individuals from different subpopulations.
+
+                If two parameters are provided (e.g. --handle-symptomatic remove --handle-symptomatic replace),
+                they will be applied to vaccinated and unvaccinated groups respectively.
+                """,
         )
         return parser
 
@@ -138,14 +131,13 @@ class testing(BasePlugin):
                 for i in range(10000):
                     model.draw_prop_asym_carriers()
                     ind = Individual(
-                        id="0", susceptibility=1, model=model, logger=logger
-                    )
+                        id="0", susceptibility=1, model=model, logger=logger)
                     ind.infect(0, by=None, leadtime=0)
 
                     for i in range(20):
                         test_lod = (
-                            args.sensitivity[1] if len(args.sensitivity) == 2 else 0
-                        )
+                            args.sensitivity[1]
+                            if len(args.sensitivity) == 2 else 0)
 
                         lod_sensitivity = ind.test_sensitivity(i, test_lod)
                         if lod_sensitivity == 0:
@@ -159,8 +151,12 @@ class testing(BasePlugin):
             print(
                 f"\nTest sensitivity (for {model.params.prop_asym_carriers*100:.1f}% asymptomatic carriers)"
             )
-            print(f"    <= 7 days:     {pd.Series(sensitivities7).mean() * 100:.1f}%")
-            print(f"    > 7 days:      {pd.Series(sensitivities20).mean() * 100:.1f}%")
+            print(
+                f"    <= 7 days:     {pd.Series(sensitivities7).mean() * 100:.1f}%"
+            )
+            print(
+                f"    > 7 days:      {pd.Series(sensitivities20).mean() * 100:.1f}%"
+            )
             print(
                 f"    all:           {pd.Series(sensitivities7 + sensitivities20).mean() * 100:.1f}%"
             )
@@ -203,10 +199,8 @@ class testing(BasePlugin):
 
             affected = isinstance(ind.infected, float)
 
-            if (
-                hasattr(ind, "reintegrated")
-                and time - ind.reintegrated < args.no_retest
-            ):
+            if (hasattr(ind, "reintegrated") and
+                    time - ind.reintegrated < args.no_retest):
                 n_no_retest += 1
                 # if this is a new infection
                 if affected and ind.infected > ind.recovered:
@@ -216,7 +210,8 @@ class testing(BasePlugin):
 
             n_tested += 1
             if affected:
-                test_lod = args.sensitivity[1] if len(args.sensitivity) == 2 else 0
+                test_lod = args.sensitivity[1] if len(
+                    args.sensitivity) == 2 else 0
                 lod_sensitivity = ind.test_sensitivity(time, test_lod)
                 #
                 sensitivity = lod_sensitivity * args.sensitivity[0]
@@ -236,7 +231,8 @@ class testing(BasePlugin):
             else:
                 n_uninfected += 1
 
-                res = args.specificity != 1 and args.specificity <= np.random.uniform()
+                res = args.specificity != 1 and args.specificity <= np.random.uniform(
+                )
                 if res:
                     n_false_positive += 1
                 return res
@@ -245,8 +241,7 @@ class testing(BasePlugin):
             IDs = [x for x in args.IDs if select(population[x])]
         else:
             proportions = parse_param_with_multiplier(
-                args.proportion, subpops=population.group_sizes.keys()
-            )
+                args.proportion, subpops=population.group_sizes.keys())
 
             IDs = []
             for name, sz in population.group_sizes.items():
@@ -260,15 +255,11 @@ class testing(BasePlugin):
                     for x in population.individuals.values()
                     if name in ("", x.group)
                 ]
-                IDs.extend(
-                    [
-                        x
-                        for x in select_individuals(
-                            population, spIDs, args.target, count
-                        )
-                        if select(population[x])
-                    ]
-                )
+                IDs.extend([
+                    x for x in select_individuals(population, spIDs,
+                                                  args.target, count)
+                    if select(population[x])
+                ])
 
         events = []
 
@@ -278,8 +269,6 @@ class testing(BasePlugin):
 
             handle_positive = parse_handle_symptomatic_options(
                 args.handle_positive,
-                args.handle_positive_vaccinated,
-                args.handle_positive_unvaccinated,
                 population[ID].group,
                 isinstance(population[ID].vaccinated, float),
             )
@@ -287,9 +276,8 @@ class testing(BasePlugin):
             infected_only = handle_positive.get("infected", None)
 
             if infected_only and not (
-                isinstance(population[ID].infected, float)
-                and not isinstance(population[ID].recovered, float)
-            ):
+                    isinstance(population[ID].infected, float) and
+                    not isinstance(population[ID].recovered, float)):
                 continue
 
             tracing = handle_positive.get("tracing", None)
@@ -299,31 +287,28 @@ class testing(BasePlugin):
                         time + args.turnaround_time,
                         EventType.CONTACT_TRACING,
                         target=population[ID],
-                        reason="detected" + (f" by {args.name}" if args.name else ""),
-                        handle_traced=[
-                            args.handle_positive,
-                            args.handle_positive_vaccinated,
-                            args.handle_positive_unvaccinated,
-                        ],
+                        reason="detected" +
+                        (f" by {args.name}" if args.name else ""),
+                        handle_traced=args.handle_positive,
                         logger=self.logger,
-                    )
-                )
+                    ))
 
             if handle_positive["reaction"] == "remove":
-                if proportion == 1 or np.random.uniform(0, 1, 1)[0] <= proportion:
+                if proportion == 1 or np.random.uniform(0, 1,
+                                                        1)[0] <= proportion:
                     events.append(
                         Event(
                             time + args.turnaround_time,
                             EventType.REMOVAL,
-                            reason="detected"
-                            + (f" by {args.name}" if args.name else ""),
+                            reason="detected" +
+                            (f" by {args.name}" if args.name else ""),
                             target=population[ID],
                             logger=self.logger,
-                        )
-                    )
+                        ))
             elif handle_positive["reaction"] == "quarantine":
                 duration = handle_positive.get("duration", 14)
-                if proportion == 1 or np.random.uniform(0, 1, 1)[0] <= proportion:
+                if proportion == 1 or np.random.uniform(0, 1,
+                                                        1)[0] <= proportion:
                     events.append(
                         Event(
                             time + args.turnaround_time,
@@ -331,35 +316,34 @@ class testing(BasePlugin):
                             target=population[ID],
                             logger=self.logger,
                             till=time + duration,
-                            reason="detected"
-                            + (f" by {args.name}" if args.name else ""),
-                        )
-                    )
+                            reason="detected" +
+                            (f" by {args.name}" if args.name else ""),
+                        ))
             elif handle_positive["reaction"] == "replace":
                 duration = handle_positive.get("duration", 14)
-                if proportion == 1 or np.random.uniform(0, 1, 1)[0] <= proportion:
+                if proportion == 1 or np.random.uniform(0, 1,
+                                                        1)[0] <= proportion:
                     events.append(
                         Event(
                             time + args.turnaround_time,
                             EventType.REPLACEMENT,
-                            reason="detected"
-                            + (f" by {args.name}" if args.name else ""),
+                            reason="detected" +
+                            (f" by {args.name}" if args.name else ""),
                             till=time + duration,
                             keep=["vaccinated"],
                             target=population[ID],
                             logger=self.logger,
-                        )
-                    )
+                        ))
             elif handle_positive["reaction"] == "reintegrate":
-                if proportion == 1 or np.random.uniform(0, 1, 1)[0] <= proportion:
+                if proportion == 1 or np.random.uniform(0, 1,
+                                                        1)[0] <= proportion:
                     events.append(
                         Event(
                             time + args.turnaround_time,
                             EventType.REINTEGRATION,
                             target=population[ID],
                             logger=self.logger,
-                        )
-                    )
+                        ))
             elif handle_positive["reaction"] != "keep":
                 raise ValueError(
                     f"Unsupported action for patients who test positive: {handle_positive}"
