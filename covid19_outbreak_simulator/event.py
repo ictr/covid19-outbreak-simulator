@@ -203,6 +203,7 @@ class Event(object):
                 self.logger.write(
                     f"{self.time:.2f}\t{EventType.WARNING.name}\t{self.target}\tmsg=REINTEGRATION target is still infected\n"
                 )
+                self.target.quarantined += 1
                 return [
                     Event(
                         self.time + 1,
