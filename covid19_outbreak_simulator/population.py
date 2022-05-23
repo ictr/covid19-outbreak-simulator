@@ -298,8 +298,6 @@ class Individual(object):
                 f"incu={self.incubation_period:.2f}",
             ]
         )
-        if lead_time != 0:
-            params.append(f"leadtime={lead_time}")
         self.logger.write(
             f'{time:.2f}\t{EventType.INFECTION.name}\t{self.id}\t{",".join(params)}\n'
         )
@@ -411,8 +409,6 @@ class Individual(object):
                 f"r_asym={asymptomatic_infected}",
             ]
         )
-        if lead_time != 0:
-            params.append(f"leadtime={lead_time}")
 
         self.logger.write(
             f'{time:.2f}\t{EventType.INFECTION.name}\t{self.id}\t{",".join(params)}\n'
@@ -515,6 +511,8 @@ class Individual(object):
         return viral_load / lod
 
     def infect(self, time, **kwargs):
+        # quarantined individuals should not be infected
+        assert not isinstance(self.quarantined, float)
 
         if isinstance(self.infected, float) and not isinstance(self.recovered, float):
             # during infection

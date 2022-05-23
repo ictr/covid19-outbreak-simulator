@@ -199,6 +199,7 @@ class Event(object):
                 isinstance(self.target.infected, float)
                 and not isinstance(self.target.recovered, float)
             ):
+                assert isinstance(self.target.quarantined, float)
                 self.logger.write(
                     f"{self.time:.2f}\t{EventType.WARNING.name}\t{self.target}\tmsg=REINTEGRATION target is still infected\n"
                 )

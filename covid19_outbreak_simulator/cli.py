@@ -12,7 +12,6 @@ import numpy as np
 from tqdm import tqdm
 
 from .model import Params, summarize_model
-from .report import summarize_simulations
 from .simulator import Simulator, load_plugins
 
 
@@ -226,8 +225,7 @@ def parse_args(args=None):
             supports this feature.''')
     parser.add_argument(
         '--summary-report',
-        help='''Generate a summary report and write to the specified file,
-          which can be "-" for standard output.''')
+        help=argparse.SUPPRESS)
     parser.add_argument(
         '--profile',
         help='''Profile worker and write profile result to specified file'''
@@ -458,7 +456,7 @@ def main(argv=None):
         # wait for workers to complete
         worker.join()
 
-    summarize_simulations(args.logfile, args.summary_report)
+    print(f'Event logs written to {args.logfile}')
     return 0
 
 
