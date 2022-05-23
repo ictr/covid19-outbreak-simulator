@@ -307,6 +307,7 @@ class testing(BasePlugin):
                         ))
             elif handle_positive["reaction"] == "quarantine":
                 duration = handle_positive.get("duration", 14)
+                test_before_release = handle_positive.get("test_before_release", None)
                 if proportion == 1 or np.random.uniform(0, 1,
                                                         1)[0] <= proportion:
                     events.append(
@@ -316,6 +317,7 @@ class testing(BasePlugin):
                             target=population[ID],
                             logger=self.logger,
                             till=time + duration,
+                            test_before_release=test_before_release,
                             reason="detected" +
                             (f" by {args.name}" if args.name else ""),
                         ))

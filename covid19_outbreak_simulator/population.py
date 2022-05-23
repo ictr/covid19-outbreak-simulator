@@ -45,21 +45,28 @@ class Individual(object):
         self.monitored = till
         return [Event(till, EventType.REINTEGRATION, target=self, logger=self.logger)]
 
-
     def quarantine(self, **kwargs):
         if "till" in kwargs:
             till = kwargs["till"]
         else:
             raise ValueError("No till parameter is specified for quarantine event.")
         self.quarantined = till
-        return [Event(till, EventType.REINTEGRATION, target=self, logger=self.logger)]
+        return [
+            Event(
+                till,
+                EventType.REINTEGRATION,
+                target=self,
+                test_before_release=kwargs.get("test_before_release", None),
+                logger=self.logger,
+            )
+        ]
 
     def vaccinate(self, time, immunity, infectivity, **kwargs):
         self.vaccinated = float(time)
         self.immunity = immunity
         self.infectivity = infectivity
 
-    def reintegrate(self, time):
+    def reintegrate(self, time, **kwargs):
         if hasattr(self, "replaced_by"):
             delattr(self, "replaced_by")
         if hasattr(self, "monitored"):
@@ -84,8 +91,9 @@ class Individual(object):
             group=self.group
         )
 
-        self.infect_params = self.model.draw_infection_params(symptomatic=True,
-            vaccinated=isinstance(self.vaccinated, float))
+        self.infect_params = self.model.draw_infection_params(
+            symptomatic=True, vaccinated=isinstance(self.vaccinated, float)
+        )
 
         #
         # infect others
@@ -116,7 +124,8 @@ class Individual(object):
         self.infected_by = by_ind
         handle_symptomatic = parse_handle_symptomatic_options(
             kwargs.get("handle_symptomatic", None),
-            self.group, isinstance(self.vaccinated, float)
+            self.group,
+            isinstance(self.vaccinated, float),
         )
 
         # show symptom
@@ -206,6 +215,7 @@ class Individual(object):
                     )
         elif handle_symptomatic["reaction"] == "quarantine":
             quarantine_duration = handle_symptomatic.get("duration", 14)
+            test_before_release = handle_symptomatic.get("test_before_release", None)
             proportion = handle_symptomatic.get("proportion", 1)
             if proportion == 1 or np.random.uniform(0, 1, 1)[0] <= proportion:
                 if symp_time >= 0:
@@ -217,6 +227,7 @@ class Individual(object):
                             target=self,
                             logger=self.logger,
                             till=symp_time + quarantine_duration,
+                            test_before_release=test_before_release,
                             reason="symptom",
                         )
                     )
@@ -311,8 +322,9 @@ class Individual(object):
         self.incubation_period = -1
 
         by_ind = kwargs.get("by")
-        self.infect_params = self.model.draw_infection_params(symptomatic=False,
-            vaccinated=isinstance(self.vaccinated, float))
+        self.infect_params = self.model.draw_infection_params(
+            symptomatic=False, vaccinated=isinstance(self.vaccinated, float)
+        )
 
         (x_grid, trans_prob) = self.model.get_asymptomatic_transmission_probability(
             self.r0 * self.r0_multiplier, self.infect_params
@@ -707,9 +719,9 @@ class Population(object):
             setattr(new_ind, attr, getattr(ind, attr))
 
         for item in force:
-            if item == 'vaccinated':
+            if item == "vaccinated":
                 new_ind.vaccinated = time
-            if item == 'unaffected':
+            if item == "unaffected":
                 new_ind.infected = False
                 new_ind.show_symptom = False
                 new_ind.recovered = False

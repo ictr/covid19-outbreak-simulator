@@ -194,6 +194,23 @@ class Event(object):
                     f"{self.time:.2f}\t{EventType.WARNING.name}\t{self.target}\tmsg=REINTEGRATION target is not in quarantine\n"
                 )
                 return []
+            #
+            elif self.kwargs.get("test_before_release", None) and (
+                isinstance(self.target.infected, float)
+                and not isinstance(self.target.recovered, float)
+            ):
+                self.logger.write(
+                    f"{self.time:.2f}\t{EventType.WARNING.name}\t{self.target}\tmsg=REINTEGRATION target is still infected\n"
+                )
+                return [
+                    Event(
+                        self.time + 1,
+                        EventType.REINTEGRATION,
+                        target=self.target,
+                        test_before_release=True,
+                        logger=self.logger,
+                    )
+                ]
             elif hasattr(self.target, "monitored"):
                 self.logger.write(
                     f"{self.time:.2f}\t{EventType.REINTEGRATION.name}\t{self.target}\treason=monitored\n"
@@ -272,6 +289,9 @@ class Event(object):
                     ct_q = 0
                     if handle_traced_infection.get("ct_quarantine", None) is not None:
                         ct_q = handle_traced_infection.get("ct_quarantine", None)
+                        test_before_release = handle_traced_infection.get(
+                            "test_before_release", None
+                        )
                         if ct_q > 0:
                             events.append(
                                 Event(
@@ -280,6 +300,7 @@ class Event(object):
                                     target=ind,
                                     logger=self.logger,
                                     till=self.time + ct_q,
+                                    test_before_release=test_before_release,
                                     reason=f"contact tracing ({ind.infected} by {self.target})",
                                 )
                             )

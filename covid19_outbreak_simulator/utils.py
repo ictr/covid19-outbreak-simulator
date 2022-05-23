@@ -180,7 +180,7 @@ def parse_handle_symptomatic_options(handle_symptomatic_arg,
                 if '=' not in option:
                     raise ValueError(f'Wrong option {hs_args}')
                 k, v = option.split('=', 1)
-                if k not in ('proportion', 'duration', 'infected', 'tracing', 'ct_quarantine', 'ct_replace', 'ct_monitor'):
+                if k not in ('proportion', 'duration', 'infected', 'tracing', 'ct_quarantine', 'ct_replace', 'ct_monitor', 'test_before_release'):
                     raise ValueError(
                         f'Unrecognized option {k} in option {hs_args}')
 
@@ -196,7 +196,7 @@ def parse_handle_symptomatic_options(handle_symptomatic_arg,
                         raise ValueError(
                             f'Proportion in "--handle-symptomatic remove/keep prop" should be a float number between 0 and 1: {handle_symptomatic[k]} provided'
                         )
-                elif k == 'infected':
+                elif k in ('test_before_release', 'infected'):
                     if v.lower() == 'true':
                         handle_symptomatic[k] = True
                     elif v.lower() == 'false':
