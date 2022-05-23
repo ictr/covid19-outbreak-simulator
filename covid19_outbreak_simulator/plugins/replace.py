@@ -101,6 +101,6 @@ class replace(BasePlugin):
                 )
                 if args.verbosity > 0 and len(IDs) > 0:
                     self.logger.write(
-                        f"{time:.2f}\t{EventType.PLUGIN.name}\t.\tname=replace,subpop={name},size={sz}{replaced_list}\n"
+                        f"{time:.2f}\t{EventType.PLUGIN.name}\t.\tname=replace,subpop={name},size={sz},n_replaced={len(IDs)}{replaced_list}\n"
                     )
         return events

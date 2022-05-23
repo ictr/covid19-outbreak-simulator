@@ -113,6 +113,8 @@ def parse_target_param(status):
 
 
 def select_individuals(population, IDs, targets, max_count=None):
+    if max_count == 0:
+        return []
     from_IDs = copy.deepcopy(IDs)
     random.shuffle(from_IDs)
 
