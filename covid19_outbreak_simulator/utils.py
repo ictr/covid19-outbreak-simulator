@@ -180,7 +180,7 @@ def parse_handle_symptomatic_options(handle_symptomatic_arg,
                 if '=' not in option:
                     raise ValueError(f'Wrong option {hs_args}')
                 k, v = option.split('=', 1)
-                if k not in ('proportion', 'duration', 'infected', 'tracing', 'ct_quarantine', 'ct_replace', 'ct_monitor', 'test_before_release'):
+                if k not in ('proportion', 'duration', 'infected', 'tracing', 'ct_quarantine', 'ct_groups', 'ct_replace', 'ct_monitor', 'test_before_release'):
                     raise ValueError(
                         f'Unrecognized option {k} in option {hs_args}')
 
@@ -203,6 +203,8 @@ def parse_handle_symptomatic_options(handle_symptomatic_arg,
                         handle_symptomatic[k] = False
                     else:
                         raise ValueError(f'Parameter infected can only be True or False. {v} specified')
+                elif k == 'ct_groups':
+                    handle_symptomatic[k] = v.split(',')
         else:
             handle_symptomatic['proportion'] = 1
 

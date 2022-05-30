@@ -281,6 +281,9 @@ class Event(object):
                     self.target.group,
                     isinstance(ind.vaccinated, float),
                 )
+                ct_groups = handle_traced_infection.get("ct_groups", None)
+                if ct_groups is not None and ind.group not in ct_groups:
+                    continue
                 IDs.append(ind.id)
                 if (
                     handle_traced_infection.get("ct_monitor", None) is not None
