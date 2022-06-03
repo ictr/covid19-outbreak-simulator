@@ -63,8 +63,14 @@ class Individual(object):
 
     def vaccinate(self, time, immunity, infectivity, **kwargs):
         self.vaccinated = float(time)
-        self.immunity = immunity
-        self.infectivity = infectivity
+        if self.immunity is not None:
+            self.immunity = [max(x,y) for x,y in zip(self.immunity, immunity)]
+        else:
+            self.immunity = immunity
+        if self.infectivity is not None:
+            self.infectivity = [min(x,y) for x,y in zip(self.infectivity, infectivity)]
+        else:
+            self.infectivity = infectivity
 
     def reintegrate(self, time, **kwargs):
         if hasattr(self, "replaced_by"):
