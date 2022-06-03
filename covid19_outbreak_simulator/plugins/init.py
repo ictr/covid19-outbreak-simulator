@@ -166,6 +166,8 @@ class init(BasePlugin):
                         n_isp += 1
                         pop[ind_id].infected = time - 10.0
                         pop[ind_id].recovered = time - 2.0
+                        pop[ind_id].immunity = pop.model.params.immunity_of_recovered
+                        pop[ind_id].infectivity = pop.model.params.infectivity_of_recovered
         infected_list = (
             f',infected={",".join(infected)}' if infected and args.verbosity > 1 else ""
         )
