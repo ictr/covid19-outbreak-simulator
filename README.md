@@ -4,6 +4,7 @@
 [![Build Status](https://travis-ci.org/ictr/covid19-outbreak-simulator.svg?branch=master)](https://travis-ci.org/ictr/covid19-outbreak-simulator)
 [![Coverage Status](https://coveralls.io/repos/github/ictr/covid19-outbreak-simulator/badge.svg?branch=master&service=github)](https://coveralls.io/github/ictr/covid19-outbreak-simulator?branch=master)
 [![Documentation Status](https://readthedocs.org/projects/covid19-outbreak-simulator/badge/?version=latest)](https://covid19-outbreak-simulator.readthedocs.io/en/latest/?badge=latest)
+[<img alt="snippets" src="https://media.bioworkflows.com/static/img/badge_snippets.svg" height="20px">](https://bioworkflows.com/snippets/?keyword=tool%2Fbiotools%2FCOVID19+Outbreak+Simulator)
 
 # COVID19 Outbreak Simulator
 
